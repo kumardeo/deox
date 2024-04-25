@@ -1,0 +1,37 @@
+# dependencies
+node_modules
+
+# production
+build
+dist
+
+# cloudflare
+.wrangler
+.dev.vars
+
+# turbo
+.turbo
+
+# ignore
+.ignore
+
+# Environment variables
+actions.env
+secrets.env
+
+# misc
+.DS_Store
+
+# cert
+.cert
+
+# debugs
+npm-debug.log
+yarn-error.log
+yarn.lock
+.yarnclean
+
+# private
+*.log
+*.key
+*.crt

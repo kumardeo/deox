@@ -1,0 +1,14 @@
+# dependencies
+node_modules/
+
+# production
+dist/
+
+# static
+public/
+
+# wrangler
+.wrangler/
+
+# turbo
+.turbo/

@@ -1,0 +1,37 @@
+{
+	"eslint.workingDirectories": [
+		{ "directory": "workspaces/server", "changeProcessCWD": true }
+	],
+	"[javascript]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[javascriptreact]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[typescript]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[typescriptreact]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	},
+	"[markdown]": {
+		"editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
+	},
+	"markdownlint.config": {
+		"no-trailing-spaces": false
+	},
+	"typescript.tsdk": "node_modules/typescript/lib",
+	"editor.formatOnSave": true,
+	"json.schemas": [
+		{
+			"fileMatch": [".ncurc", ".ncurc.json"],
+			"url": "https://raw.githubusercontent.com/raineorshine/npm-check-updates/main/src/types/RunOptions.json"
+		}
+	],
+	"yaml.schemas": {
+		"https://raw.githubusercontent.com/raineorshine/npm-check-updates/main/src/types/RunOptions.json": [
+			".ncurc.yml"
+		]
+	},
+	"cSpell.words": []
+}

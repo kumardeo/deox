@@ -1,0 +1,64 @@
+{
+	"name": "@deox/cors-worker",
+	"version": "0.0.1",
+	"private": false,
+	"description": "Cors web worker",
+	"keywords": [],
+	"license": "MIT",
+	"author": {
+		"name": "Deo Kumar",
+		"url": "https://github.com/kumardeo"
+	},
+	"homepage": "https://github.com/kumardeo/deox/tree/main/packages/og#readme",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/kumardeo/deox",
+		"directory": "packages/cors-worker"
+	},
+	"bugs": {
+		"url": "https://github.com/kumardeo/deox/issues"
+	},
+	"files": [
+		"dist"
+	],
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		},
+		"./register": {
+			"types": "./dist/register/index.d.ts",
+			"default": "./dist/register/index.js"
+		}
+	},
+	"typesVersions": {
+		"*": {
+			"register": [
+				"./dist/register/index.d.ts"
+			],
+			"*": [
+				"./dist/index.d.ts"
+			]
+		}
+	},
+	"scripts": {
+		"lint": "cross-env DEBUG=eslint:cli-engine eslint --fix --ignore-path ../../.eslintignore .",
+		"format": "prettier --write --ignore-path ../../.prettierignore .",
+		"dev": "webpack server --config webpack.dev.cjs",
+		"prebuild": "rimraf dist",
+		"build": "tsc",
+		"clean": "rimraf dist"
+	},
+	"devDependencies": {
+		"babel-loader": "^9.1.3",
+		"html-webpack-plugin": "^5.6.0",
+		"source-map-loader": "^5.0.0",
+		"ts-loader": "^9.5.1",
+		"webpack": "^5.91.0",
+		"webpack-cli": "^5.1.4",
+		"webpack-define-config": "^0.0.1",
+		"webpack-dev-server": "^5.0.4"
+	}
+}
