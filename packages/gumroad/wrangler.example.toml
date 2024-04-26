@@ -1,0 +1,7 @@
+name = "gumroad-api-client-dev"
+main = "./dev/index.ts"
+tsconfig = "./dev/tsconfig.json"
+compatibility_date = "2024-04-19"
+
+[vars]
+GUMROAD_API_KEY = "GUMROAD_API_KEY_HERE"

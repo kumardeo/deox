@@ -12,9 +12,8 @@ module.exports = defineConfig({
 	},
 	plugins: [
 		new HtmlWebpackPlugin({
-			filename: `index.html`,
-			templateContent:
-				"<html><head></head><body>Nothing to show here! Open DevTools.</body></html>",
+			filename: "index.html",
+			template: "./index.html",
 			chunks: "all",
 			chunksSortMode: "manual",
 			minify: false

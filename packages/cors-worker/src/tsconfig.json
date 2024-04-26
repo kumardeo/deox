@@ -1,8 +1,9 @@
 {
 	"compilerOptions": {
-		"target": "ES6",
+		"composite": true,
+		"target": "ES2015",
 		"module": "CommonJS",
-		"lib": ["ES2015", "DOM", "WebWorker"],
+		"lib": ["ES2022", "DOM", "WebWorker"],
 		"declaration": true,
 		"moduleResolution": "Node10",
 		"esModuleInterop": true,
@@ -12,10 +13,9 @@
 		"noUnusedLocals": false,
 		"noUnusedParameters": false,
 		"baseUrl": ".",
-		"rootDir": "src",
-		"outDir": "dist",
-		"types": ["node"]
+		"outDir": "../dist",
+		"tsBuildInfoFile": "../dist/.tsbuildinfo"
 	},
-	"include": ["src"],
+	"include": ["."],
 	"exclude": ["node_modules"]
 }

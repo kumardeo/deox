@@ -1,4 +1,5 @@
 {
+	"references": [{ "path": "../src" }],
 	"compilerOptions": {
 		"target": "ES2015",
 		"module": "ESNext",
@@ -14,8 +15,8 @@
 		"allowSyntheticDefaultImports": true,
 		"forceConsistentCasingInFileNames": true,
 		"skipLibCheck": true,
-		"baseUrl": "./dev"
+		"baseUrl": "."
 	},
-	"include": ["dev"],
-	"exclude": ["node_modules"]
+	"include": ["."],
+	"exclude": ["node_modules", "webpack.dev.cjs"]
 }

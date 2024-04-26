@@ -7,6 +7,7 @@ dist
 
 # cloudflare
 .wrangler
+wrangler.toml
 .dev.vars
 
 # turbo

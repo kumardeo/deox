@@ -10,8 +10,9 @@ const eslintConfig = {
 			{
 				devDependencies: [
 					path.resolve(__dirname, "scripts/**/*"),
-					path.resolve(__dirname, "vitest.config.*"),
 					path.resolve(__dirname, "webpack.*.*"),
+					path.resolve(__dirname, "dev/**/*"),
+					path.resolve(__dirname, "vitest.config.*"),
 					path.resolve(__dirname, "**/*.{test,spec}.?(c|m)[jt]s?(x)")
 				],
 				includeInternal: false,
