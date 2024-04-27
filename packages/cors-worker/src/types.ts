@@ -9,7 +9,8 @@ export type Async<T> = Promise<Await<T>>;
 
 export type AwaitFunc<T extends (...args: any[]) => any> = Await<Return<T>>;
 
-export type MayBePromise<T> = T extends Promise<infer C> ? C : T;
+export type MayBePromise<T> =
+	T extends Promise<infer C> ? C | Promise<C> : T | Promise<T>;
 
 export type Inc<T, U> = T extends U ? T : never;
 

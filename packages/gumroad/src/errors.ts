@@ -1,5 +1,8 @@
 /* eslint-disable max-classes-per-file */
 
+/**
+ * Represents error for Gumroad
+ */
 export class GumroadError extends Error {
 	constructor(message: string, options?: ErrorOptions) {
 		super(message, options);
@@ -8,6 +11,9 @@ export class GumroadError extends Error {
 	}
 }
 
+/**
+ * Represents type error for Gumroad
+ */
 export class GumroadTypeError extends GumroadError {
 	constructor(message: string, options?: ErrorOptions) {
 		super(message, options);
@@ -16,6 +22,9 @@ export class GumroadTypeError extends GumroadError {
 	}
 }
 
+/**
+ * Represents error thrown while making an API request
+ */
 export class GumroadRequestError extends GumroadError {
 	response: Response | undefined;
 

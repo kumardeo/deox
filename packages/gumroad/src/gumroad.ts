@@ -2,11 +2,12 @@
 
 import clc from "console-log-colors";
 import { type Bindings, createBindings } from "./bindings";
-import { GumroadTypeError } from "./errors";
-import { validators, error } from "./utils";
-import request, { type RequestOptions } from "./request";
+import { GumroadError, GumroadTypeError } from "./errors";
+import { validators, error, parseDeepFormData } from "./utils";
+import { request, type RequestOptions } from "./request";
 import type {
 	CustomField,
+	MayBePromise,
 	OfferCode,
 	Product,
 	Purchase,
@@ -14,6 +15,7 @@ import type {
 	ResourceSubscriptionName,
 	Sale,
 	Subscriber,
+	UpdateMap,
 	User,
 	Variant,
 	VariantCategory
@@ -33,6 +35,8 @@ const resourceSubscriptionNames = [
 	"subscription_restarted"
 ];
 
+const updateNames = [...resourceSubscriptionNames, "ping"];
+
 /**
  * An interface representing options for {@link Gumroad} constructor
  */
@@ -44,6 +48,21 @@ export interface GumroadOptions {
 	 */
 	debug?: boolean;
 }
+
+export type Context<T extends keyof UpdateMap = keyof UpdateMap> = {
+	data: UpdateMap[T];
+	// eslint-disable-next-line no-use-before-define
+	api: Gumroad;
+	type: T;
+	vars: Record<string, any>;
+};
+
+export type Handler<T extends keyof UpdateMap = keyof UpdateMap> = (
+	ctx: Context<T>,
+	next: () => Promise<void>
+) => MayBePromise<unknown>;
+
+export type ErrorHandler = (err: Error, ctx: Context) => MayBePromise<unknown>;
 
 export class Gumroad {
 	/**
@@ -68,7 +87,7 @@ export class Gumroad {
 			validators.notBlank(license_key, "Argument 'license_key'");
 
 			return (
-				await request<{ purchase: Purchase }>("/licenses/verify", null, {
+				await request<{ purchase: Purchase }>("./licenses/verify", null, {
 					method: "POST",
 					baseUrl: Gumroad.baseUrl,
 					params: {
@@ -91,7 +110,7 @@ export class Gumroad {
 	/**
 	 * Base URL for the Gumroad API
 	 */
-	public static readonly baseUrl = "https://api.gumroad.com/v2";
+	public static readonly baseUrl = "https://api.gumroad.com/v2/";
 
 	/**
 	 * Gumroad API access token
@@ -139,10 +158,8 @@ export class Gumroad {
 		path: string,
 		options: RequestOptions = {}
 	) {
-		const pathname = path.startsWith("/") ? path : `/${path}`;
-
 		return (
-			await request<T>(pathname, this.accessToken, {
+			await request<T>(path, this.accessToken, {
 				...options,
 				baseUrl: Gumroad.baseUrl,
 				debug: this.shouldDebug
@@ -189,6 +206,267 @@ export class Gumroad {
 	}
 
 	/**
+	 * Record of events for handling pings
+	 */
+	private events: {
+		[K in keyof UpdateMap]?: Handler<K>[];
+	} = {};
+
+	/**
+	 * The error handler for the pings handlers
+	 */
+	private errorHandler: ErrorHandler | undefined;
+
+	/**
+	 * Registers an error handler for pings errors
+	 * Note that if an error handler was previously set using this method, it will overwrite that.
+	 * Only one handler can be registered
+	 *
+	 * @param handler An error handling function
+	 */
+	public onError(handler: ErrorHandler) {
+		if (typeof handler !== "function") {
+			throw new GumroadError(
+				`Argument 'handler' must be of type function, provided type is ${typeof handler}`
+			);
+		}
+		this.errorHandler = handler;
+
+		return this;
+	}
+
+	/**
+	 * Calls error handler
+	 *
+	 * @param err The `Error` object
+	 * @param context The {@link Context}
+	 */
+	private async handleError(err: unknown, context: Context) {
+		if (err instanceof Error && this.errorHandler) {
+			await this.errorHandler(err, context);
+		} else {
+			throw err;
+		}
+	}
+
+	/**
+	 * Registers an handler for ping
+	 *
+	 * @param update_name The name of update
+	 * @param handlers A function for handling the ping
+	 */
+	public on<T extends keyof UpdateMap>(
+		update_name: T,
+		...handlers: Handler<T>[]
+	) {
+		validators.notBlank(update_name, "Argument 'update_name'");
+		if (!updateNames.includes(update_name)) {
+			throw new GumroadTypeError(
+				`Argument 'update_name' should be one of ${updateNames.map((name) => `"${name}"`).join(", ")} but provided: ${update_name}`
+			);
+		}
+
+		if (!this.events[update_name]) {
+			this.events[update_name] = [];
+		}
+
+		this.events[update_name]?.push(
+			...handlers.filter((handler, i) => {
+				if (typeof handler === "function") {
+					return handler;
+				}
+				throw new GumroadTypeError(
+					`Argument at position ${i + 2} must of type function, provided type is ${typeof handler}`
+				);
+			})
+		);
+
+		return this;
+	}
+
+	/**
+	 * Compose
+	 *
+	 * @param handlers The handlers
+	 * @param errorHandler The error handler
+	 *
+	 * @returns A function which can be used to dispatch events
+	 */
+	// eslint-disable-next-line class-methods-use-this
+	private compose<T extends keyof UpdateMap>(
+		handlers: Handler<T>[],
+		errorHandler?: ErrorHandler
+	) {
+		return (context: Context<T>, next?: () => Promise<void>) => {
+			let index = -1;
+
+			async function dispatch(i: number) {
+				if (i <= index) {
+					throw new GumroadError("next() called multiple times");
+				}
+
+				index = i;
+				let handler;
+
+				if (handlers[i]) {
+					handler = handlers[i];
+				} else {
+					handler = (i === handlers.length && next) || undefined;
+				}
+
+				if (handler) {
+					try {
+						await handler(context, () => dispatch(i + 1));
+					} catch (err) {
+						if (err instanceof Error && errorHandler) {
+							await errorHandler(err, context);
+						} else {
+							throw err;
+						}
+					}
+				}
+			}
+
+			return dispatch(0);
+		};
+	}
+
+	/**
+	 * Dispatches an event
+	 *
+	 * @param update_name The name of update (event)
+	 * @param payload The payload for context
+	 */
+	private async dispatch<T extends keyof UpdateMap>(
+		update_name: T,
+		payload: UpdateMap[T]
+	) {
+		const handlers = this.events[update_name];
+
+		if (handlers && handlers.length !== 0) {
+			const context: Context<T> = {
+				type: update_name,
+				api: this,
+				data: payload,
+				vars: {}
+			};
+
+			// If there is only one handler
+			if (handlers.length === 1) {
+				try {
+					await handlers[0](context, async () => {
+						// No next handlers
+					});
+				} catch (err) {
+					await this.handleError(err, context);
+				}
+			} else {
+				await this.compose(handlers, this.errorHandler)(context);
+			}
+		}
+	}
+
+	/**
+	 * Formats the payload data from gumroad ping
+	 *
+	 * @param payload The payload data
+	 *
+	 * @returns The same reference to the payload data but formatted
+	 */
+	// eslint-disable-next-line class-methods-use-this
+	private formatPayload<T extends keyof UpdateMap>(payload: UpdateMap[T]) {
+		// Validate card field
+		if ("card" in payload) {
+			const card = payload.card || {};
+			card.visual =
+				typeof card.visual === "string" && card.visual.trim().length !== 0
+					? card.visual
+					: null;
+			card.type =
+				typeof card.type === "string" && card.type.trim().length !== 0
+					? card.type
+					: null;
+			card.bin =
+				typeof card.bin === "string" && card.bin.trim().length !== 0
+					? card.bin
+					: null;
+			card.expiry_month =
+				typeof card.expiry_month === "string" &&
+				(card.expiry_month as string).trim().length !== 0
+					? Number(card.expiry_month)
+					: null;
+			card.expiry_year =
+				typeof card.expiry_year === "string" &&
+				(card.expiry_year as string).trim().length !== 0
+					? Number(card.expiry_year)
+					: null;
+
+			payload.card = card;
+		}
+
+		return payload;
+	}
+
+	/**
+	 * Handles a post request from gumroad ping
+	 *
+	 * @param req The `Request` object
+	 * @param update_name The name of update
+	 *
+	 * @returns On success, a `Response` object with 200 status code
+	 */
+	public async handle<T extends keyof UpdateMap>(req: Request, update_name: T) {
+		if (!(req instanceof Request)) {
+			throw new GumroadTypeError(
+				"Argument 'req' must be an instance of Request"
+			);
+		}
+
+		if (req.bodyUsed) {
+			throw new GumroadError(
+				"Request body is already used, make sure you pass a Request with unused body. Tip: You can use .clone() method of Request to clone it before using its body."
+			);
+		}
+
+		if (req.method.toUpperCase() !== "POST") {
+			throw new GumroadError(
+				`Request cannot be handled since only request with 'POST' method can be handled but the provided request's method is '${req.method.toUpperCase()}'`
+			);
+		}
+
+		validators.notBlank(update_name, "Argument 'update_name'");
+		if (!updateNames.includes(update_name)) {
+			throw new GumroadTypeError(
+				`Argument 'update_name' should be one of ${updateNames.map((name) => `"${name}"`).join(", ")} but provided: ${update_name}`
+			);
+		}
+
+		const contentType = req.headers.get("Content-Type");
+		if (!contentType) {
+			throw new GumroadError("Request has no 'Content-Type' header");
+		}
+		let payload;
+		if (
+			contentType.startsWith("multipart/form-data") ||
+			contentType.startsWith("application/x-www-form-urlencoded")
+		) {
+			payload = parseDeepFormData(await req.formData(), {
+				parseBoolean: true,
+				parseNull: true,
+				parseNumber: true
+			}) as UpdateMap[T];
+		} else if (contentType.startsWith("application/json")) {
+			payload = (await req.json()) as UpdateMap[T];
+		} else {
+			throw new GumroadError(`Content-Type '${contentType}' is not supported`);
+		}
+
+		await this.dispatch(update_name, this.formatPayload(payload));
+
+		return new Response(null, { status: 200 });
+	}
+
+	/**
 	 * Retrieve all of the existing products for the authenticated user.
 	 *
 	 * @returns On success, an Array of {@link Product}
@@ -198,7 +476,7 @@ export class Gumroad {
 	public async listProducts() {
 		try {
 			return (
-				await this.request<{ products: Product[] }>("/products")
+				await this.request<{ products: Product[] }>("./products")
 			).products.map((product) => this.bindings.product(product));
 		} catch (e) {
 			this.logError(e, "listProducts");
@@ -223,7 +501,7 @@ export class Gumroad {
 			return this.bindings.product(
 				(
 					await this.request<{ product: Product }>(
-						`/products/${encodeURI(product_id)}`
+						`./products/${encodeURI(product_id)}`
 					)
 				).product
 			);
@@ -251,7 +529,7 @@ export class Gumroad {
 		try {
 			validators.notBlank(product_id, "Argument 'product_id'");
 
-			await this.request(`/products/${encodeURI(product_id)}`, {
+			await this.request(`./products/${encodeURI(product_id)}`, {
 				method: "DELETE"
 			});
 
@@ -283,7 +561,7 @@ export class Gumroad {
 			return this.bindings.product(
 				(
 					await this.request<{ product: Product }>(
-						`/products/${encodeURI(product_id)}/enable`,
+						`./products/${encodeURI(product_id)}/enable`,
 						{
 							method: "PUT"
 						}
@@ -317,7 +595,7 @@ export class Gumroad {
 			return this.bindings.product(
 				(
 					await this.request<{ product: Product }>(
-						`/products/${encodeURI(product_id)}/disable`,
+						`./products/${encodeURI(product_id)}/disable`,
 						{
 							method: "PUT"
 						}
@@ -351,7 +629,7 @@ export class Gumroad {
 			return (
 				await this.request<{
 					variant_categories: VariantCategory[];
-				}>(`/products/${encodeURI(product_id)}/variant_categories`)
+				}>(`./products/${encodeURI(product_id)}/variant_categories`)
 			).variant_categories.map((v) =>
 				this.bindings.variant_category(v, product_id)
 			);
@@ -387,7 +665,7 @@ export class Gumroad {
 			return this.bindings.variant_category(
 				(
 					await this.request<{ variant_category: VariantCategory }>(
-						`/products/${encodeURI(product_id)}/variant_categories/${encodeURI(variant_category_id)}`
+						`./products/${encodeURI(product_id)}/variant_categories/${encodeURI(variant_category_id)}`
 					)
 				).variant_category,
 				product_id
@@ -424,7 +702,7 @@ export class Gumroad {
 			return this.bindings.variant_category(
 				(
 					await this.request<{ variant_category: VariantCategory }>(
-						`/products/${encodeURI(product_id)}/variant_categories`,
+						`./products/${encodeURI(product_id)}/variant_categories`,
 						{ method: "POST", params: { title } }
 					)
 				).variant_category,
@@ -468,7 +746,7 @@ export class Gumroad {
 			return this.bindings.variant_category(
 				(
 					await this.request<{ variant_category: VariantCategory }>(
-						`/products/${encodeURI(product_id)}/variant_categories/${encodeURI(variant_category_id)}`,
+						`./products/${encodeURI(product_id)}/variant_categories/${encodeURI(variant_category_id)}`,
 						{
 							method: "PUT",
 							params: { title }
@@ -511,7 +789,7 @@ export class Gumroad {
 			);
 
 			await this.request(
-				`/products/${encodeURI(product_id)}/variant_categories/${encodeURI(variant_category_id)}`,
+				`./products/${encodeURI(product_id)}/variant_categories/${encodeURI(variant_category_id)}`,
 				{
 					method: "DELETE"
 				}
@@ -551,7 +829,7 @@ export class Gumroad {
 
 			return (
 				await this.request<{ variants: Variant[] }>(
-					`/products/${encodeURI(product_id)}/variant_categories/${encodeURI(variant_category_id)}/variants`
+					`./products/${encodeURI(product_id)}/variant_categories/${encodeURI(variant_category_id)}/variants`
 				)
 			).variants.map((v) =>
 				this.bindings.variant(v, product_id, variant_category_id)
@@ -594,7 +872,7 @@ export class Gumroad {
 			return this.bindings.variant(
 				(
 					await this.request<{ variant: Variant }>(
-						`/products/${encodeURI(product_id)}/variant_categories/${encodeURI(variant_category_id)}/variants/${encodeURI(variant_id)}`
+						`./products/${encodeURI(product_id)}/variant_categories/${encodeURI(variant_category_id)}/variants/${encodeURI(variant_id)}`
 					)
 				).variant,
 				product_id,
@@ -646,7 +924,7 @@ export class Gumroad {
 			return this.bindings.variant(
 				(
 					await this.request<{ variant: Variant }>(
-						`/products/${encodeURI(product_id)}/variant_categories/${encodeURI(variant_category_id)}/variants`,
+						`./products/${encodeURI(product_id)}/variant_categories/${encodeURI(variant_category_id)}/variants`,
 						{
 							method: "POST",
 							params: {
@@ -683,7 +961,7 @@ export class Gumroad {
 	 * @param product_id The id of the product
 	 * @param variant_category_id The id of the variant category
 	 * @param variant_id The id of the category
-	 * @param options Options
+	 * @param options Options, provide at-least one property (`name`, `price_difference_cents` or `max_purchase_count`)
 	 *
 	 * @returns On success, a {@link Variant} | `null` if either product, variant category or variant was not found
 	 *
@@ -710,7 +988,7 @@ export class Gumroad {
 			return this.bindings.variant(
 				(
 					await this.request<{ variant: Variant }>(
-						`/products/${encodeURI(product_id)}/variant_categories/${encodeURI(variant_category_id)}/variants/${encodeURI(variant_id)}`,
+						`./products/${encodeURI(product_id)}/variant_categories/${encodeURI(variant_category_id)}/variants/${encodeURI(variant_id)}`,
 						{
 							method: "PUT",
 							params: options
@@ -761,7 +1039,7 @@ export class Gumroad {
 			validators.notBlank(variant_id, "Argument 'variant_id'");
 
 			await this.request(
-				`/products/${encodeURI(product_id)}/variant_categories/${encodeURI(variant_category_id)}/variants/${encodeURI(variant_id)}`,
+				`./products/${encodeURI(product_id)}/variant_categories/${encodeURI(variant_category_id)}/variants/${encodeURI(variant_id)}`,
 				{
 					method: "DELETE"
 				}
@@ -801,7 +1079,7 @@ export class Gumroad {
 
 			return (
 				await this.request<{ offer_codes: OfferCode[] }>(
-					`/products/${encodeURI(product_id)}/offer_codes`
+					`./products/${encodeURI(product_id)}/offer_codes`
 				)
 			).offer_codes.map((o) => this.bindings.offer_code(o, product_id));
 		} catch (e) {
@@ -836,7 +1114,7 @@ export class Gumroad {
 			return this.bindings.offer_code(
 				(
 					await this.request<{ offer_code: OfferCode }>(
-						`/products/${encodeURI(product_id)}/offer_codes/${encodeURI(offer_code_id)}`
+						`./products/${encodeURI(product_id)}/offer_codes/${encodeURI(offer_code_id)}`
 					)
 				).offer_code,
 				product_id
@@ -885,7 +1163,7 @@ export class Gumroad {
 			return this.bindings.offer_code(
 				(
 					await this.request<{ offer_code: OfferCode }>(
-						`/products/${encodeURI(product_id)}/offer_codes`,
+						`./products/${encodeURI(product_id)}/offer_codes`,
 						{
 							method: "POST",
 							params: { ...options, name, amount_off }
@@ -938,7 +1216,7 @@ export class Gumroad {
 			return this.bindings.offer_code(
 				(
 					await this.request<{ offer_code: OfferCode }>(
-						`/products/${encodeURI(product_id)}/offer_codes/${encodeURI(offer_code_id)}`,
+						`./products/${encodeURI(product_id)}/offer_codes/${encodeURI(offer_code_id)}`,
 						{
 							method: "PUT",
 							params: options
@@ -978,7 +1256,7 @@ export class Gumroad {
 			validators.notBlank(offer_code_id, "Argument 'offer_code_id'");
 
 			await this.request(
-				`/products/${encodeURI(product_id)}/offer_codes/${encodeURI(offer_code_id)}`,
+				`./products/${encodeURI(product_id)}/offer_codes/${encodeURI(offer_code_id)}`,
 				{ method: "DELETE" }
 			);
 
@@ -1009,7 +1287,7 @@ export class Gumroad {
 
 			return (
 				await this.request<{ custom_fields: CustomField[] }>(
-					`/products/${encodeURI(product_id)}/custom_fields`
+					`./products/${encodeURI(product_id)}/custom_fields`
 				)
 			).custom_fields.map((c) => this.bindings.custom_field(c, product_id));
 		} catch (e) {
@@ -1049,7 +1327,7 @@ export class Gumroad {
 			return this.bindings.custom_field(
 				(
 					await this.request<{ custom_field: CustomField }>(
-						`/products/${encodeURI(product_id)}/custom_fields`,
+						`./products/${encodeURI(product_id)}/custom_fields`,
 						{
 							method: "POST",
 							params: {
@@ -1109,7 +1387,7 @@ export class Gumroad {
 			return this.bindings.custom_field(
 				(
 					await this.request<{ custom_field: CustomField }>(
-						`/products/${encodeURI(product_id)}/custom_fields/${encodeURI(name)}`,
+						`./products/${encodeURI(product_id)}/custom_fields/${encodeURI(name)}`,
 						{
 							method: "PUT",
 							params: {
@@ -1157,7 +1435,7 @@ export class Gumroad {
 			validators.notBlank(name, "Argument 'name'");
 
 			await this.request(
-				`/products/${encodeURI(product_id)}/custom_fields/${encodeURI(name)}`,
+				`./products/${encodeURI(product_id)}/custom_fields/${encodeURI(name)}`,
 				{
 					method: "DELETE"
 				}
@@ -1184,7 +1462,7 @@ export class Gumroad {
 	 */
 	async getUser() {
 		try {
-			return (await this.request<{ user: User }>("/user")).user;
+			return (await this.request<{ user: User }>("./user")).user;
 		} catch (e) {
 			this.logError(e, "getUser");
 
@@ -1207,7 +1485,7 @@ export class Gumroad {
 
 			return (
 				await this.request<{ resource_subscriptions: ResourceSubscription[] }>(
-					"/resource_subscriptions",
+					"./resource_subscriptions",
 					{
 						params: { resource_name }
 					}
@@ -1258,7 +1536,7 @@ export class Gumroad {
 							post_url: string;
 							resource_name: ResourceSubscriptionName;
 						};
-					}>("/resource_subscriptions", {
+					}>("./resource_subscriptions", {
 						method: "PUT"
 					})
 				).resource_subscription
@@ -1289,7 +1567,7 @@ export class Gumroad {
 				"Argument 'resource_subscription_id'"
 			);
 			await this.request(
-				`/resource_subscriptions/${encodeURI(resource_subscription_id)}`,
+				`./resource_subscriptions/${encodeURI(resource_subscription_id)}`,
 				{
 					method: "DELETE"
 				}
@@ -1351,7 +1629,7 @@ export class Gumroad {
 					next_page_url?: string;
 					next_page_key?: string;
 					sales: Sale[];
-				}>("/sales", {
+				}>("./sales", {
 					params: options
 				})
 			);
@@ -1378,7 +1656,7 @@ export class Gumroad {
 			validators.notBlank(sale_id, "Argument 'sale_id'");
 
 			return this.bindings.sale(
-				(await this.request<{ sale: Sale }>(`/sales/${encodeURI(sale_id)}`))
+				(await this.request<{ sale: Sale }>(`./sales/${encodeURI(sale_id)}`))
 					.sale
 			);
 		} catch (e) {
@@ -1411,7 +1689,7 @@ export class Gumroad {
 			return this.bindings.sale(
 				(
 					await this.request<{ sale: Sale }>(
-						`/sales/${encodeURI(sale_id)}/mark_as_shipped`,
+						`./sales/${encodeURI(sale_id)}/mark_as_shipped`,
 						{ params: { tracking_url } }
 					)
 				).sale
@@ -1449,7 +1727,7 @@ export class Gumroad {
 			return this.bindings.sale(
 				(
 					await this.request<{ sale: Sale }>(
-						`/sales/${encodeURI(sale_id)}/refund`,
+						`./sales/${encodeURI(sale_id)}/refund`,
 						{ params: { amount_cents } }
 					)
 				).sale
@@ -1488,7 +1766,7 @@ export class Gumroad {
 
 			return (
 				await this.request<{ subscribers: Subscriber[] }>(
-					`/products/${encodeURI(product_id)}/subscribers`,
+					`./products/${encodeURI(product_id)}/subscribers`,
 					{ params: { email } }
 				)
 			).subscribers;
@@ -1520,7 +1798,7 @@ export class Gumroad {
 
 			return (
 				await this.request<{ subscriber: Subscriber }>(
-					`/subscribers/${encodeURI(subscriber_id)}`
+					`./subscribers/${encodeURI(subscriber_id)}`
 				)
 			).subscriber;
 		} catch (e) {
@@ -1556,7 +1834,7 @@ export class Gumroad {
 
 			return this.bindings.purchase(
 				await this.request<{ uses: number; purchase: Purchase }>(
-					"/licenses/verify",
+					"./licenses/verify",
 					{
 						method: "POST",
 						params: { product_id, license_key, increment_uses_count }
@@ -1595,7 +1873,7 @@ export class Gumroad {
 
 			return this.bindings.purchase(
 				await this.request<{ uses: number; purchase: Purchase }>(
-					"/licenses/enable",
+					"./licenses/enable",
 					{
 						method: "PUT",
 						params: { product_id, license_key }
@@ -1633,7 +1911,7 @@ export class Gumroad {
 
 			return this.bindings.purchase(
 				await this.request<{ uses: number; purchase: Purchase }>(
-					"/licenses/disable",
+					"./licenses/disable",
 					{
 						method: "PUT",
 						params: { product_id, license_key }
@@ -1671,7 +1949,7 @@ export class Gumroad {
 
 			return this.bindings.purchase(
 				await this.request<{ uses: number; purchase: Purchase }>(
-					"/licenses/decrement_uses_count",
+					"./licenses/decrement_uses_count",
 					{
 						method: "PUT",
 						params: { product_id, license_key }

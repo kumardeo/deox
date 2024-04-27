@@ -1,7 +1,23 @@
+/**
+ * TODO: These types are not yet finalized since there is no reference for conditional data in gumroad api docs
+ * * So I read the docs and wrote the expected types but not yet tested
+ * * Sorry for my bad English!
+ */
+
 import type { StringWithSuggestions } from "./utils";
 
+/**
+ * * API method types
+ */
+
+/**
+ * Type of recurrence
+ */
 export type Recurrence = "monthly" | "quarterly" | "biannually" | "yearly";
 
+/**
+ * Name of Resource subscription
+ */
 export type ResourceSubscriptionName =
 	| "sale"
 	| "refund"
@@ -18,6 +34,9 @@ export type PurchasingPowerParityPrices = {
 	EC: number;
 };
 
+/**
+ * The visual information of the card used
+ */
 export type Card = {
 	visual: string | null;
 	type: StringWithSuggestions<"visa" | "paypal"> | null;
@@ -39,15 +58,19 @@ export type RecurrencePrices = {
 
 export type ProductVariantOption = {
 	name: string;
+
 	/**
 	 * set for non-membership product options
 	 */
 	price_difference?: number;
+
 	/**
 	 * set for non-membership product options
 	 */
 	purchasing_power_parity_prices?: PurchasingPowerParityPrices;
+
 	is_pay_what_you_want: boolean;
+
 	/**
 	 * present for membership products; otherwise null
 	 */
@@ -59,14 +82,38 @@ export type ProductVariant = {
 	options: ProductVariantOption[];
 };
 
+/**
+ * Represents information of the file
+ */
 export type FileInfo = {
+	/**
+	 * Size of file in readable format
+	 */
 	Size: string;
 };
 
+/**
+ * A custom field
+ */
 export type CustomField = {
+	/**
+	 * The id of the custom field
+	 */
 	id: string;
+
+	/**
+	 * The type of the custom field
+	 */
 	type: "text" | "checkbox" | "terms";
+
+	/**
+	 * The name of the custom field
+	 */
 	name: string;
+
+	/**
+	 * Indicates whether the custom field is required
+	 */
 	required: boolean;
 };
 
@@ -310,6 +357,13 @@ export type Sale = {
 	};
 };
 
+/**
+ * * Update (Resource subscriptions post data) types
+ */
+
+/**
+ * Represents a tier
+ */
 export type Tier = {
 	id: string;
 	name: string;
@@ -347,7 +401,7 @@ export type UpdatePingCommon = {
 	variants?: string | Record<string, string>;
 	offer_code?: string;
 	test: boolean;
-	custom_fields?: string | Record<string, string>;
+	custom_fields?: Record<string, string>;
 	shipping_information?: string | Record<string, string>;
 	is_preorder_authorization?: boolean;
 	license_key?: string;
@@ -359,8 +413,8 @@ export type UpdatePingCommon = {
 	discover_fee_charged: boolean;
 	can_contact: boolean;
 	referrer?: StringWithSuggestions<"direct">;
-	gumroad_fee: string;
-	card: string | Card;
+	gumroad_fee: number;
+	card: Card;
 } & (
 	| {
 			is_gift_receiver_purchase: false;
@@ -462,12 +516,15 @@ export type UpdateCancellation = {
 };
 
 export type UpdateMap = {
-	[K in "ping" | "sale" | "refund" | "dispute" | "dispute_won"]: UpdatePing;
-} & {
+	ping: UpdatePing;
+	sale: UpdatePing;
+	refund: UpdatePing;
+	dispute: UpdatePing;
+	dispute_won: UpdatePing;
+	cancellation: UpdateCancellation;
 	subscription_updated: UpdateSubscriptionUpdated;
 	subscription_ended: UpdateSubscriptionEnded;
 	subscription_restarted: UpdateSubscriptionRestarted;
-	cancellation: UpdateCancellation;
 };
 
 export type Update<T extends keyof UpdateMap> = UpdateMap[T];

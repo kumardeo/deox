@@ -1,69 +1,5 @@
 import { GumroadRequestError, GumroadTypeError } from "./errors";
 
-const check = <T>(value: T, included?: T[] | null, excluded?: T[] | null) => {
-	if (Array.isArray(included)) {
-		return included.includes(value);
-	}
-	if (Array.isArray(excluded)) {
-		return !excluded.includes(value);
-	}
-	return true;
-};
-
-const encode = (
-	objectOrArray: unknown,
-	included?: string[] | null,
-	excluded?: string[] | null,
-	param?: string,
-	paramArrayLike?: string[],
-	innerCall?: boolean
-) => {
-	const paramArray: string[] = Array.isArray(paramArrayLike)
-		? paramArrayLike
-		: [];
-
-	// Check if objectOrArray is either Object or Array
-	if (typeof objectOrArray === "object" && objectOrArray) {
-		Object.keys(objectOrArray).forEach((key) => {
-			const searchKey = param || key;
-			const searchValue = objectOrArray[key as keyof typeof objectOrArray];
-			if (check(searchKey, included, excluded)) {
-				encode(searchValue, null, null, searchKey, paramArray, true);
-			}
-		});
-	} else if (innerCall) {
-		if (["string", "boolean", "number"].includes(typeof objectOrArray)) {
-			const value = objectOrArray as string | boolean | number;
-			paramArray.push(
-				`${encodeURIComponent(param as string)}=${encodeURIComponent(value)}`
-			);
-		}
-	}
-
-	return paramArray.join("&");
-};
-
-export const encodeParams = (
-	params: { [K: string | number]: any },
-	included?: string[] | null,
-	excluded?: string[] | null
-) => encode(params, included, excluded);
-
-export const encodeUrl = (
-	url: string,
-	params: { [K: string | number]: any },
-	included?: string[] | null,
-	excluded?: string[] | null
-) => {
-	const query = encodeParams(params, included, excluded);
-
-	if (query) {
-		return `${url}?${query}`;
-	}
-
-	return url;
-};
-
 const getConfigurations = <M extends Record<string | number, any>>(
 	properties: M
 ) =>
@@ -180,4 +116,170 @@ export const error = {
 
 		return false;
 	}
+};
+
+export const getType = (input: unknown) =>
+	Object.prototype.toString
+		.call(input)
+		.replace(/(?:^\[object\s(.*?)\]$)/, "$1");
+
+export const isObject = (input: unknown): boolean =>
+	getType(input) === "Object";
+
+export const isPlainObject = (data: any): boolean => {
+	if (!isObject(data)) return false;
+
+	// If it has modified constructor
+	const { constructor } = data as object;
+	if (constructor === undefined) return true;
+
+	// If it has modified prototype
+	if (!isObject(constructor.prototype)) return false;
+
+	// If constructor does not have an Object-specific method
+	if (
+		!Object.prototype.hasOwnProperty.call(
+			constructor.prototype,
+			"isPrototypeOf"
+		)
+	) {
+		return false;
+	}
+
+	// Most likely a plain Object
+	return true;
+};
+
+export const isNumberValid = (input: unknown) => {
+	if (typeof input === "number") {
+		const numIsFinite = Number.isFinite ? Number.isFinite : globalThis.isFinite;
+		const numIsNan = Number.isNaN ? Number.isNaN : globalThis.isNaN;
+		if (numIsFinite(input) && !numIsNan(input)) {
+			return true;
+		}
+	}
+	return false;
+};
+
+export const convertToNumber = (input: unknown) => {
+	if (typeof input === "string") {
+		const numbered = Number(input);
+		return isNumberValid(numbered) ? numbered : undefined;
+	}
+	if (isNumberValid(input)) {
+		return input as number;
+	}
+	return undefined;
+};
+
+export type ParseValueOptions = {
+	parseBoolean?: boolean;
+	parseNumber?: boolean;
+	parseNull?: boolean;
+};
+
+export const parseValue = <T = unknown>(
+	input: T,
+	options: ParseValueOptions = {}
+) => {
+	if (typeof input === "string" && input.trim().length !== 0) {
+		const lowered = input.toLowerCase();
+		if (options.parseNull && lowered === "null") {
+			return null;
+		}
+		if (options.parseBoolean) {
+			if (lowered === "true" || lowered === "false") {
+				return lowered === "true";
+			}
+		}
+		if (options.parseNumber) {
+			const converted = convertToNumber(input);
+			if (typeof converted === "number") {
+				return converted;
+			}
+		}
+	}
+	return input;
+};
+
+export type ParsedFormDataValue = string | File | (string | File)[];
+
+export type ParsedFormData = Record<string, ParsedFormDataValue>;
+
+export const parseFormData = <T extends ParsedFormData = ParsedFormData>(
+	formData: FormData,
+	options: { all?: boolean } = {}
+): T => {
+	const result: ParsedFormData = {};
+
+	formData.forEach((value, key) => {
+		const shouldParseAllValues = options.all || key.endsWith("[]");
+		const currentValue = result[key];
+
+		if (!shouldParseAllValues) {
+			result[key] = value;
+		} else if (currentValue && Array.isArray(currentValue)) {
+			currentValue.push(value);
+		} else if (currentValue) {
+			result[key] = [currentValue, value];
+		} else {
+			result[key] = value;
+		}
+	});
+
+	return result as T;
+};
+
+export type ParsedDeepFormDataValue =
+	| ParsedFormDataValue
+	| number
+	| boolean
+	| null;
+
+export type ParsedDeepFormData = Record<
+	string,
+	ParsedDeepFormDataValue | Record<string, ParsedDeepFormDataValue>
+>;
+
+export type ParseDeepFormDataOptions = ParseValueOptions;
+
+export const parseDeepFormData = <
+	T extends ParsedDeepFormData = ParsedDeepFormData
+>(
+	formData: FormData,
+	options?: ParseDeepFormDataOptions
+) => {
+	const parsedData = parseFormData(formData);
+
+	return Object.keys(parsedData).reduce((result, e) => {
+		if (e.match(/\[(.*?)\]/gi)) {
+			const keys = e.split(/\[(.*?)\]/gi).filter((key) => key !== "");
+
+			keys.reduce(
+				(accumulator, key, i) => {
+					if (isPlainObject(accumulator)) {
+						const acc = accumulator as ParsedDeepFormData;
+						let value;
+						if (i !== keys.length - 1) {
+							if (!Object.hasOwnProperty.call(acc, key)) {
+								value = {};
+							} else {
+								value = parseValue(acc[key], options);
+							}
+						} else {
+							value = parseValue(parsedData[e], options);
+						}
+						acc[key] = value;
+						return value as ParsedDeepFormData;
+					}
+					return undefined;
+				},
+				result as ParsedDeepFormData | undefined
+			);
+		} else {
+			result[e] = parseValue(parsedData[e], options);
+		}
+
+		return result;
+	}, {} as ParsedDeepFormData) as T;
 };

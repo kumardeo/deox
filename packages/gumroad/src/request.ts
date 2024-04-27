@@ -1,33 +1,80 @@
 import clc from "console-log-colors";
 import { GumroadRequestError } from "./errors";
-import { encodeUrl } from "./utils";
+
+export interface RequestURLOptions {
+	clearParams?: boolean;
+	params?: Record<
+		string,
+		| string
+		| number
+		| boolean
+		| undefined
+		| (string | number | boolean | undefined)[]
+	>;
+}
+
+export class RequestURL extends URL {
+	constructor(
+		url: string | URL,
+		base?: string | URL | undefined,
+		options: RequestURLOptions = {}
+	) {
+		super(url, base);
+		const { searchParams } = this;
+		if (options.clearParams) {
+			searchParams.forEach((value, key, params) => {
+				params.delete(key);
+			});
+		}
+		const append = (
+			key: string,
+			value: string | number | boolean | undefined
+		) => {
+			if (["string", "boolean", "number"].includes(typeof value)) {
+				searchParams.append(key, String(value));
+			}
+		};
+		if (typeof options.params === "object" && options.params) {
+			const queries = options.params;
+			Object.keys(queries).forEach((key) => {
+				const value = queries[key];
+				if (Array.isArray(value)) {
+					value.forEach((e) => append(key, e));
+				} else {
+					append(key, value);
+				}
+			});
+		}
+	}
+}
 
 export interface RequestOptions {
-	params?: Record<string, string | number | boolean | undefined>;
+	params?: RequestURLOptions["params"];
 	method?: string;
 	body?: unknown;
 	debug?: boolean;
-	baseUrl?: string;
+	baseUrl?: string | RequestURL;
 }
 
-const request = async <T extends NonNullable<unknown> = NonNullable<unknown>>(
-	pathname: string,
+export const request = async <
+	T extends NonNullable<unknown> = NonNullable<unknown>
+>(
+	path: string | RequestURL,
 	accessToken?: string | null,
 	{
 		method = "GET",
-		params,
+		params = {},
 		body,
 		debug = false,
-		baseUrl = "https://api.gumroad.com/v2"
+		baseUrl = "https://api.gumroad.com/v2/"
 	}: RequestOptions = {}
 ): Promise<{ data: T & { success: true }; response: Response }> => {
-	const path = pathname.startsWith("/") ? pathname : `/${pathname}`;
-	const endpoint = baseUrl + path;
-	const queries = params || {};
-	if (accessToken) {
-		Object.assign(queries, { access_token: accessToken });
-	}
-	const url = encodeUrl(endpoint, queries);
+	const endpoint = new RequestURL(path, baseUrl, {
+		params: {
+			...params,
+			...(accessToken ? { access_token: accessToken } : undefined)
+		}
+	});
 
 	const config: RequestInit = {
 		method,
@@ -40,7 +87,7 @@ const request = async <T extends NonNullable<unknown> = NonNullable<unknown>>(
 
 	const started = debug ? Date.now() : null;
 
-	const response = await fetch(url, config).catch((error) => {
+	const response = await fetch(endpoint, config).catch((error) => {
 		throw new GumroadRequestError("Fetch to Gumroad API failed", {
 			cause: error
 		});
@@ -57,7 +104,7 @@ const request = async <T extends NonNullable<unknown> = NonNullable<unknown>>(
 		}
 		// eslint-disable-next-line no-console
 		console.log(
-			`${clc.green("[gumroad:info]")} ${clc.bold(method)} ${path} ${coloredStatus} ${clc.dim(`(${Date.now() - started}ms)`)}`
+			`${clc.green("[gumroad:info]")} ${clc.bold(method)} ${endpoint.pathname} ${coloredStatus} ${clc.dim(`(${Date.now() - started}ms)`)}`
 		);
 	}
 
@@ -115,5 +162,3 @@ const request = async <T extends NonNullable<unknown> = NonNullable<unknown>>(
 		{ response }
 	);
 };
-
-export default request;

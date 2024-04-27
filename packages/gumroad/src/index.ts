@@ -1,6 +1,12 @@
 export { GumroadError, GumroadRequestError, GumroadTypeError } from "./errors";
 
-export { Gumroad } from "./gumroad";
+export {
+	Gumroad,
+	type GumroadOptions,
+	type Context,
+	type Handler,
+	type ErrorHandler
+} from "./gumroad";
 
 export type {
 	Card,
