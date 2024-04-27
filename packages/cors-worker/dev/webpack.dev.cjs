@@ -6,7 +6,7 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 module.exports = defineConfig({
 	mode: "development",
 	entry: "./index.ts",
-	context: path.resolve(__dirname, "dev"),
+	context: __dirname,
 	resolve: {
 		extensions: [".js", ".ts"]
 	},
@@ -37,14 +37,14 @@ module.exports = defineConfig({
 					{
 						loader: "ts-loader",
 						options: {
-							configFile: "tsconfig.dev.json"
+							configFile: "tsconfig.json"
 						}
 					}
 				]
 			},
 			{
 				test: /\.(js|ts)x?$/,
-				include: path.resolve(__dirname, "dev"),
+				include: __dirname,
 				enforce: "pre",
 				use: [
 					{
@@ -56,7 +56,6 @@ module.exports = defineConfig({
 	},
 	devServer: {
 		liveReload: true,
-		open: false,
-		hot: false
+		open: true
 	}
 });

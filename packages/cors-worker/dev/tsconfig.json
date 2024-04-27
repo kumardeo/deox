@@ -1,5 +1,4 @@
 {
-	"references": [{ "path": "../src" }],
 	"compilerOptions": {
 		"target": "ES2015",
 		"module": "ESNext",
@@ -17,6 +16,6 @@
 		"skipLibCheck": true,
 		"baseUrl": "."
 	},
-	"include": ["."],
+	"include": [".", "../src"],
 	"exclude": ["node_modules", "webpack.dev.cjs"]
 }

@@ -2,8 +2,11 @@
 	"name": "@deox/gumroad",
 	"version": "0.0.1",
 	"private": false,
-	"description": "Gumroad API client",
-	"keywords": [],
+	"description": "API client for Gumroad",
+	"keywords": [
+		"gumroad",
+		"gumroad-api"
+	],
 	"license": "MIT",
 	"author": {
 		"name": "Deo Kumar",
@@ -21,18 +24,20 @@
 	"files": [
 		"dist"
 	],
-	"main": "./dist/index.js",
-	"types": "./dist/index.d.ts",
+	"type": "module",
+	"module": "./dist/esm/index.js",
+	"types": "./dist/dts/index.d.ts",
 	"exports": {
 		".": {
-			"types": "./dist/index.d.ts",
-			"default": "./dist/index.js"
+			"types": "./dist/dts/index.d.ts",
+			"import": "./dist/esm/index.js",
+			"require": "./dist/cjs/index.js"
 		}
 	},
 	"typesVersions": {
 		"*": {
-			"*": [
-				"./dist/index.d.ts"
+			".": [
+				"./dist/dts/index.d.ts"
 			]
 		}
 	},
@@ -40,8 +45,8 @@
 		"lint": "cross-env DEBUG=eslint:cli-engine eslint --fix --ignore-path ../../.eslintignore .",
 		"format": "prettier --write --ignore-path ../../.prettierignore .",
 		"dev": "wrangler dev",
-		"prebuild": "rimraf dist",
-		"build": "tsc -p src",
+		"build": "rimraf dist && tsx ./build.ts",
+		"prepublishOnly": "tsx ./package.ts",
 		"clean": "rimraf dist"
 	},
 	"dependencies": {

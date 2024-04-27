@@ -2,6 +2,8 @@
 
 import { register } from "../src/register";
 
+declare const self: DedicatedWorkerGlobalScope;
+
 const registered = register((ctx: { info: string }) => ({
 	thisError: new Error("Custom error!"),
 	hello: () => "Hello from worker",
@@ -12,5 +14,10 @@ const registered = register((ctx: { info: string }) => ({
 		throw this.thisError;
 	}
 }));
+
+// This should not log any event
+self.addEventListener("message", (event) => {
+	console.warn("Log from message event: ", event);
+});
 
 export type Registered = typeof registered;

@@ -1,22 +1,14 @@
 const path = require("path");
+const { defineConfig } = require("eslint-define-config");
 
-/** @type {import("eslint-define-config").ESLintConfig} */
-const eslintConfig = {
+module.exports = defineConfig({
 	ignorePatterns: [],
 	extends: [path.resolve(__dirname, "../../.eslintrc.cjs")],
 	rules: {
 		"import/no-extraneous-dependencies": [
 			"error",
 			{
-				devDependencies: [
-					path.resolve(__dirname, "scripts/**/*"),
-					path.resolve(__dirname, "webpack.*.*"),
-					path.resolve(__dirname, "dev/**/*"),
-					path.resolve(__dirname, "vitest.config.*"),
-					path.resolve(__dirname, "**/*.{test,spec}.?(c|m)[jt]s?(x)")
-				],
-				includeInternal: false,
-				includeTypes: false,
+				devDependencies: [],
 				packageDir: [__dirname]
 			}
 		],
@@ -28,12 +20,12 @@ const eslintConfig = {
 			files: ["src/**/*.ts"],
 			excludedFiles: ["vitest.config.*", "**/*.{test,spec}.?(c|m)[jt]s?(x)"],
 			parserOptions: {
-				project: [path.resolve(__dirname, "src/tsconfig.json")]
+				project: [path.resolve(__dirname, "tsconfig.json")]
 			},
 			settings: {
 				"import/resolver": {
 					typescript: {
-						project: [path.resolve(__dirname, "src/tsconfig.json")]
+						project: [path.resolve(__dirname, "tsconfig.json")]
 					}
 				}
 			}
@@ -41,7 +33,10 @@ const eslintConfig = {
 		{
 			files: ["dev/**/*.ts"],
 			parserOptions: {
-				project: [path.resolve(__dirname, "dev/tsconfig.json")]
+				project: [
+					path.resolve(__dirname, "tsconfig.json"),
+					path.resolve(__dirname, "dev/tsconfig.json")
+				]
 			},
 			settings: {
 				"import/resolver": {
@@ -50,8 +45,27 @@ const eslintConfig = {
 					}
 				}
 			}
+		},
+		{
+			files: [
+				".eslintrc.*",
+				"webpack.*.*",
+				"dev/**/*",
+				"scripts/**/*",
+				"build.ts",
+				"package.ts",
+				"vitest.config.*",
+				"**/*.{test,spec}.?(c|m)[jt]s?(x)"
+			],
+			rules: {
+				"import/no-extraneous-dependencies": [
+					"error",
+					{
+						devDependencies: true,
+						packageDir: [__dirname, path.join(__dirname, "../..")]
+					}
+				]
+			}
 		}
 	]
-};
-
-module.exports = eslintConfig;
+});

@@ -1,5 +1,4 @@
 {
-	"references": [{ "path": "../src" }],
 	"compilerOptions": {
 		"target": "ES2021",
 		"module": "ESNext",
@@ -19,6 +18,6 @@
 		"baseUrl": ".",
 		"types": ["@cloudflare/workers-types"]
 	},
-	"include": ["."],
+	"include": [".", "../src"],
 	"exclude": ["node_modules"]
 }

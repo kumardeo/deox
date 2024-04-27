@@ -70,7 +70,7 @@ const eslintConfig = {
 			],
 			plugins: ["@typescript-eslint"],
 			parserOptions: {
-				project: [path.join(__dirname, "tsconfig.eslint.json")]
+				project: [path.join(__dirname, "tsconfig.json")]
 			}
 		}
 	]

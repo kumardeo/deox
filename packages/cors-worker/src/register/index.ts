@@ -37,6 +37,8 @@ export const register = <
 	eventHandler.set((event) => {
 		// Check if valid request
 		if (eventIsRequest(event)) {
+			event.stopImmediatePropagation();
+
 			const request = event.data;
 
 			if (request.type === "context") {
