@@ -31,8 +31,6 @@ export type {
 	UpdateMap,
 	UpdateCancellation,
 	UpdatePing,
-	UpdatePingCommon,
-	UpdatePingSubscription,
 	UpdateSubscription,
 	UpdateSubscriptionEnded,
 	UpdateSubscriptionUpdated,

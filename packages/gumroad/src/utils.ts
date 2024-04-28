@@ -283,3 +283,25 @@ export const parseDeepFormData = <
 		return result;
 	}, {} as ParsedDeepFormData) as T;
 };
+
+export const formatCustomField = <T extends { custom_fields: unknown }>(
+	input: T
+) => {
+	if (Array.isArray(input.custom_fields)) {
+		input.custom_fields = (input.custom_fields as string[]).reduce(
+			(acc, field) => {
+				if (typeof field === "string") {
+					const parts = field.split(/:(.*)/s).map((v) => v.trim());
+					const [key, value] = parts;
+					if (key.trim().length !== 0 && typeof value === "string") {
+						acc[key] = value;
+					}
+				}
+				return acc;
+			},
+			{} as Record<string, string>
+		);
+	}
+
+	return input;
+};

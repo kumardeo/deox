@@ -33,5 +33,13 @@
 			".ncurc.yml"
 		]
 	},
-	"cSpell.words": ["deox", "gumroad", "Hono", "outbase", "outdir", "typeof"]
+	"cSpell.words": [
+		"deox",
+		"gifter",
+		"gumroad",
+		"Hono",
+		"outbase",
+		"outdir",
+		"typeof"
+	]
 }

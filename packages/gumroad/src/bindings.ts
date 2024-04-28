@@ -430,11 +430,14 @@ export const createBindings = (gumroad: Gumroad) => ({
 	purchase(object: { uses: number; purchase: Purchase }) {
 		const methods: PurchaseMethods = {
 			async verify(this: Purchase, increment_uses_count?: boolean) {
-				return gumroad.verifyLicense(
-					this.product_id,
-					this.license_key,
-					increment_uses_count
-				);
+				if (this.license_key) {
+					return gumroad.verifyLicense(
+						this.product_id,
+						this.license_key,
+						increment_uses_count
+					);
+				}
+				return null;
 			},
 
 			async enable(this: Purchase) {
@@ -446,7 +449,7 @@ export const createBindings = (gumroad: Gumroad) => ({
 
 			async disable(this: Purchase) {
 				if (this.license_key) {
-					return gumroad.disableLicense(this.purchaser_id, this.license_key);
+					return gumroad.disableLicense(this.product_id, this.license_key);
 				}
 				return null;
 			},

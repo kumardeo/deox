@@ -3,7 +3,12 @@
 import clc from "console-log-colors";
 import { type Bindings, createBindings } from "./bindings";
 import { GumroadError, GumroadTypeError } from "./errors";
-import { validators, error, parseDeepFormData } from "./utils";
+import {
+	validators,
+	error,
+	parseDeepFormData,
+	formatCustomField
+} from "./utils";
 import { request, type RequestOptions } from "./request";
 import type {
 	CustomField,
@@ -35,6 +40,9 @@ const resourceSubscriptionNames = [
 	"subscription_restarted"
 ];
 
+/**
+ * A list of supported update names
+ */
 const updateNames = [...resourceSubscriptionNames, "ping"];
 
 /**
@@ -49,21 +57,56 @@ export interface GumroadOptions {
 	debug?: boolean;
 }
 
+/**
+ * Represents context for handler
+ */
 export type Context<T extends keyof UpdateMap = keyof UpdateMap> = {
+	/**
+	 * The data for current context
+	 */
 	data: UpdateMap[T];
+
+	/**
+	 * The {@link Gumroad}
+	 */
 	// eslint-disable-next-line no-use-before-define
 	api: Gumroad;
+
+	/**
+	 * Type of current update name
+	 */
 	type: T;
+
+	/**
+	 * Can be used to read and write custom variables in handlers
+	 */
 	vars: Record<string, any>;
 };
 
+/**
+ * A handler for update
+ */
 export type Handler<T extends keyof UpdateMap = keyof UpdateMap> = (
+	/**
+	 * Context for the current update
+	 */
 	ctx: Context<T>,
+
+	/**
+	 * When invoked and awaited, it triggers the next corresponding handler
+	 */
 	next: () => Promise<void>
 ) => MayBePromise<unknown>;
 
+/**
+ * An error handler
+ */
 export type ErrorHandler = (err: Error, ctx: Context) => MayBePromise<unknown>;
 
+/**
+ * The Gumroad class helps in making requests to Gumroad API easier.
+ * It also provides functionality for handing resource subscriptions (webhooks).
+ */
 export class Gumroad {
 	/**
 	 * Verify a license
@@ -86,18 +129,20 @@ export class Gumroad {
 			validators.notBlank(product_id, "Argument 'product_id'");
 			validators.notBlank(license_key, "Argument 'license_key'");
 
-			return (
-				await request<{ purchase: Purchase }>("./licenses/verify", null, {
-					method: "POST",
-					baseUrl: Gumroad.baseUrl,
-					params: {
-						product_id,
-						license_key,
-						increment_uses_count
-					},
-					debug: options.debug
-				})
-			).data.purchase;
+			return formatCustomField(
+				(
+					await request<{ purchase: Purchase }>("./licenses/verify", null, {
+						method: "POST",
+						baseUrl: Gumroad.baseUrl,
+						params: {
+							product_id,
+							license_key,
+							increment_uses_count
+						},
+						debug: options.debug
+					})
+				).data.purchase
+			);
 		} catch (e) {
 			if (error.isAnyNotFound(e)) {
 				return null;
@@ -119,8 +164,14 @@ export class Gumroad {
 	 */
 	private readonly accessToken: string;
 
+	/**
+	 * Indicates whether to enable debug mode
+	 */
 	private readonly shouldDebug: boolean;
 
+	/**
+	 * The {@link Bindings} object
+	 */
 	private readonly bindings: Bindings;
 
 	/**
@@ -1832,15 +1883,17 @@ export class Gumroad {
 			validators.notBlank(product_id, "Argument 'product_id'");
 			validators.notBlank(license_key, "Argument 'license_key'");
 
-			return this.bindings.purchase(
-				await this.request<{ uses: number; purchase: Purchase }>(
-					"./licenses/verify",
-					{
-						method: "POST",
-						params: { product_id, license_key, increment_uses_count }
-					}
-				)
+			const response = await this.request<{ uses: number; purchase: Purchase }>(
+				"./licenses/verify",
+				{
+					method: "POST",
+					params: { product_id, license_key, increment_uses_count }
+				}
 			);
+
+			formatCustomField(response.purchase);
+
+			return this.bindings.purchase(response);
 		} catch (e) {
 			this.logError(e, "verifyLicense", {
 				product_id,
@@ -1871,15 +1924,17 @@ export class Gumroad {
 			validators.notBlank(product_id, "Argument 'product_id'");
 			validators.notBlank(license_key, "Argument 'license_key'");
 
-			return this.bindings.purchase(
-				await this.request<{ uses: number; purchase: Purchase }>(
-					"./licenses/enable",
-					{
-						method: "PUT",
-						params: { product_id, license_key }
-					}
-				)
+			const response = await this.request<{ uses: number; purchase: Purchase }>(
+				"./licenses/enable",
+				{
+					method: "PUT",
+					params: { product_id, license_key }
+				}
 			);
+
+			formatCustomField(response.purchase);
+
+			return this.bindings.purchase(response);
 		} catch (e) {
 			this.logError(e, "enableLicense", {
 				product_id,
@@ -1909,15 +1964,17 @@ export class Gumroad {
 			validators.notBlank(product_id, "Argument 'product_id'");
 			validators.notBlank(license_key, "Argument 'license_key'");
 
-			return this.bindings.purchase(
-				await this.request<{ uses: number; purchase: Purchase }>(
-					"./licenses/disable",
-					{
-						method: "PUT",
-						params: { product_id, license_key }
-					}
-				)
+			const response = await this.request<{ uses: number; purchase: Purchase }>(
+				"./licenses/disable",
+				{
+					method: "PUT",
+					params: { product_id, license_key }
+				}
 			);
+
+			formatCustomField(response.purchase);
+
+			return this.bindings.purchase(response);
 		} catch (e) {
 			this.logError(e, "disableLicense", {
 				product_id,
@@ -1947,15 +2004,17 @@ export class Gumroad {
 			validators.notBlank(product_id, "Argument 'product_id'");
 			validators.notBlank(license_key, "Argument 'license_key'");
 
-			return this.bindings.purchase(
-				await this.request<{ uses: number; purchase: Purchase }>(
-					"./licenses/decrement_uses_count",
-					{
-						method: "PUT",
-						params: { product_id, license_key }
-					}
-				)
+			const response = await this.request<{ uses: number; purchase: Purchase }>(
+				"./licenses/decrement_uses_count",
+				{
+					method: "PUT",
+					params: { product_id, license_key }
+				}
 			);
+
+			formatCustomField(response.purchase);
+
+			return this.bindings.purchase(response);
 		} catch (e) {
 			this.logError(e, "decrementUsesCount", {
 				product_id,

@@ -1,8 +1,18 @@
 import clc from "console-log-colors";
 import { GumroadRequestError } from "./errors";
 
+/**
+ * An interface representing options for {@link RequestURL}
+ */
 export interface RequestURLOptions {
+	/**
+	 * Indicates whether to clear existing search queries
+	 */
 	clearParams?: boolean;
+
+	/**
+	 * A record of key value which should to added to search queries
+	 */
 	params?: Record<
 		string,
 		| string
@@ -13,6 +23,9 @@ export interface RequestURLOptions {
 	>;
 }
 
+/**
+ * Constructs an `URL` object for endpoints
+ */
 export class RequestURL extends URL {
 	constructor(
 		url: string | URL,
@@ -22,9 +35,7 @@ export class RequestURL extends URL {
 		super(url, base);
 		const { searchParams } = this;
 		if (options.clearParams) {
-			searchParams.forEach((value, key, params) => {
-				params.delete(key);
-			});
+			searchParams.forEach((_value, key, params) => params.delete(key));
 		}
 		const append = (
 			key: string,
@@ -48,14 +59,45 @@ export class RequestURL extends URL {
 	}
 }
 
+/**
+ * An interface representing options for {@link request} function
+ */
 export interface RequestOptions {
+	/**
+	 * The search queries
+	 */
 	params?: RequestURLOptions["params"];
+
+	/**
+	 * The method for request
+	 */
 	method?: string;
+
+	/**
+	 * The body which should be send
+	 */
 	body?: unknown;
+
+	/**
+	 * Indicates whether to enable debug mode
+	 */
 	debug?: boolean;
+
+	/**
+	 * The base url for Gumroad API
+	 */
 	baseUrl?: string | RequestURL;
 }
 
+/**
+ * Requests to Gumroad API
+ *
+ * @param path The relative path for endpoint
+ * @param accessToken The access token | can be `null` in case it is not requested by endpoint
+ * @param param2 Options
+ *
+ * @returns An object containing `data` and `response`
+ */
 export const request = async <
 	T extends NonNullable<unknown> = NonNullable<unknown>
 >(
@@ -76,12 +118,14 @@ export const request = async <
 		}
 	});
 
+	const shouldSendBody =
+		method.toUpperCase() === "POST" && typeof body !== "undefined";
 	const config: RequestInit = {
 		method,
-		body: body ? JSON.stringify(body) : undefined,
+		body: shouldSendBody ? JSON.stringify(body) : undefined,
 		headers: {
 			Accept: "application/json",
-			"Content-Type": "application/json"
+			...(shouldSendBody ? { "Content-Type": "application/json" } : undefined)
 		}
 	};
 

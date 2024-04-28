@@ -24,19 +24,16 @@ app.use(async (c, next) => {
 	gumroad.on(
 		"ping",
 		async (ctx, n) => {
-			console.log(ctx.data);
 			const sale = await gumroad.getSale(ctx.data.sale_id);
 
-			ctx.vars.email = sale?.email;
+			console.log(sale);
 
-			await n();
+			if (sale?.email) {
+				await n();
+			}
 		},
 		async (ctx, n) => {
-			const vars = ctx.vars as {
-				email: string | undefined;
-			};
-
-			console.log(vars);
+			console.log(ctx.data.email);
 
 			await n();
 		}
@@ -63,9 +60,12 @@ app.get("/listResources/sales", async (c) => {
 	return c.json(await gumroad.listResourceSubscriptions("sale"));
 });
 
-app.post("/ping", async (c) => {
-	await c.req.formData();
-	return c.get("gumroad").handle(c.req.raw, "ping");
+app.get("/getUser", async (c) => {
+	const gumroad = c.get("gumroad");
+
+	return c.json(await gumroad.getUser());
 });
+
+app.post("/ping", async (c) => c.get("gumroad").handle(c.req.raw, "ping"));
 
 export default app;
