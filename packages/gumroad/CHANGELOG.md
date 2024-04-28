@@ -1,5 +1,11 @@
 # @deox/gumroad
 
+## 0.0.3
+
+### Patch Changes
+
+- [`bf16068`](https://github.com/kumardeo/deox/commit/bf160682ae45a92dc7285685c84ce07c10a11cfa) Thanks [@kumardeo](https://github.com/kumardeo)! - feat: add methods for handling webhooks (resource subscriptions)
+
 ## 0.0.2
 
 ### Patch Changes
