@@ -1,5 +1,9 @@
 {
 	"name": "deox",
+	"private": true,
+	"workspaces": [
+		"packages/*"
+	],
 	"scripts": {
 		"upgrade": "pnpm ncu",
 		"lint": "pnpm turbo run lint --concurrency=1",

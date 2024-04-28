@@ -120,10 +120,6 @@ importers:
         specifier: ^5.0.4
         version: 5.0.4(webpack-cli@5.1.4)(webpack@5.91.0)
 
-  packages/cors-worker/dist/cjs: {}
-
-  packages/cors-worker/dist/dts: {}
-
   packages/gumroad:
     dependencies:
       console-log-colors:

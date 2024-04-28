@@ -8,8 +8,9 @@
 */
 
 import cp from "child_process";
-import fs from "fs";
 import path from "path";
+import fs from "fs";
+import fse from "fs-extra";
 import {
 	build as esbuild,
 	type Plugin,
@@ -89,3 +90,13 @@ Promise.all([esbuild(esmOptions), esbuild(cjsOptions)]).catch((error) => {
 });
 
 cp.execSync(`tsc --project tsconfig.dts.json`, { stdio: "inherit" });
+
+const cjsPackageJson = { type: "commonjs" };
+
+fse.writeJSONSync("./dist/cjs/package.json", cjsPackageJson, {
+	encoding: "utf8"
+});
+
+fse.writeJSONSync("./dist/dts/package.json", cjsPackageJson, {
+	encoding: "utf8"
+});
