@@ -17,7 +17,7 @@ const registered = register((ctx: { info: string }) => ({
 
 // This should not log any event
 self.addEventListener("message", (event) => {
-	console.warn("Log from message event: ", event);
+	console.warn("(thread:worker) Log from message event: ", event);
 });
 
 export type Registered = typeof registered;

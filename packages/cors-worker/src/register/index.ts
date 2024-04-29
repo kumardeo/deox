@@ -37,6 +37,7 @@ export const register = <
 	eventHandler.set((event) => {
 		// Check if valid request
 		if (eventIsRequest(event)) {
+			// Stop propagation
 			event.stopImmediatePropagation();
 
 			const request = event.data;

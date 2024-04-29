@@ -105,7 +105,11 @@ export class Worker<
 
 		// Add message event listener
 		this.addEventListener("message", (event: MessageEvent<MessageMain>) => {
+			// Check if valid response
 			if (eventIsResponse(event)) {
+				// Stop propagation
+				event.stopImmediatePropagation();
+
 				const response = event.data;
 
 				const { type: responseType, id: responseId } = response;
