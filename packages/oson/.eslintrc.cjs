@@ -14,31 +14,19 @@ module.exports = defineConfig({
 	overrides: [
 		{
 			files: ["src/**/*.ts"],
-			parserOptions: { project: [path.resolve(__dirname, "tsconfig.json")] },
-			settings: {
-				"import/resolver": {
-					typescript: { project: [path.resolve(__dirname, "tsconfig.json")] }
-				}
-			}
-		},
-		{
-			files: ["dev/**/*.ts"],
 			parserOptions: {
-				project: [
-					path.resolve(__dirname, "tsconfig.json"),
-					path.resolve(__dirname, "dev/tsconfig.json")
-				]
+				project: [path.resolve(__dirname, "tsconfig.json")]
 			},
 			settings: {
 				"import/resolver": {
 					typescript: {
-						project: [path.resolve(__dirname, "dev/tsconfig.json")]
+						project: [path.resolve(__dirname, "tsconfig.json")]
 					}
 				}
 			}
 		},
 		{
-			files: [".eslintrc.cjs", "dev/**/*", "build.ts"],
+			files: [".eslintrc.cjs", "build.ts"],
 			rules: {
 				"import/no-extraneous-dependencies": [
 					"error",

@@ -1,22 +1,21 @@
 {
-	"name": "@deox/gumroad",
-	"version": "0.0.3",
+	"name": "@deox/oson",
+	"version": "0.0.1",
 	"private": false,
-	"description": "API client for Gumroad",
+	"description": "json has a bunch of problems. oson fixes them.",
 	"keywords": [
-		"gumroad",
-		"gumroad-api"
+		"json"
 	],
 	"license": "MIT",
 	"author": {
-		"name": "Deo Kumar",
-		"url": "https://github.com/kumardeo"
+		"name": "KnorpelSenf",
+		"url": "https://github.com/KnorpelSenf"
 	},
-	"homepage": "https://github.com/kumardeo/deox/tree/main/packages/gumroad#readme",
+	"homepage": "https://github.com/kumardeo/deox/tree/main/packages/oson#readme",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/kumardeo/deox",
-		"directory": "packages/gumroad"
+		"directory": "packages/oson"
 	},
 	"bugs": {
 		"url": "https://github.com/kumardeo/deox/issues"
@@ -47,13 +46,5 @@
 				"./dist/dts/index.d.ts"
 			]
 		}
-	},
-	"dependencies": {
-		"console-log-colors": "^0.4.0"
-	},
-	"devDependencies": {
-		"@cloudflare/workers-types": "^4.20240419.0",
-		"hono": "^4.2.8",
-		"wrangler": "^3.52.0"
 	}
 }

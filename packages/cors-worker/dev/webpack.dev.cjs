@@ -1,5 +1,3 @@
-const path = require("path");
-
 const { defineConfig } = require("webpack-define-config");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 

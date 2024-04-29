@@ -1,0 +1,27 @@
+{
+	"compilerOptions": {
+		"target": "ES2022",
+		"lib": ["ES2022", "WebWorker"],
+		"declaration": true,
+		"moduleResolution": "Bundler",
+		"esModuleInterop": true,
+		"forceConsistentCasingInFileNames": true,
+		"isolatedModules": true,
+		"strict": true,
+		"allowJs": true,
+		"skipLibCheck": false,
+		"noUnusedLocals": false,
+		"noUnusedParameters": false,
+		"outDir": "./dist",
+		"types": []
+	},
+	"include": [
+		"src/**/*.ts",
+		"src/**/*.d.ts",
+		"src/**/*.mts",
+		"src/**/*.test.ts",
+		"src/**/*.test.tsx",
+		"src/**/*.js"
+	],
+	"exclude": ["node_modules"]
+}
