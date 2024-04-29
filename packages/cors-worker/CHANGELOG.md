@@ -1,5 +1,11 @@
 # @deox/cors-worker
 
+## 0.0.4
+
+### Patch Changes
+
+- [`f0fb6fd`](https://github.com/kumardeo/deox/commit/f0fb6fd20e93f136e0c333807122fce5f17ae54b) Thanks [@kumardeo](https://github.com/kumardeo)! - fix: stop propagation if response is valid
+
 ## 0.0.3
 
 ### Patch Changes
