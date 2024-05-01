@@ -1,6 +1,6 @@
 # @deox/cors-worker
 
-A cors web worker (supports creating a `Worker` instance for scripts from different hosts). Can be used with webpack or other bundler.
+A cors web worker (supports creating a `Worker` instance for scripts from different hosts). Can be used with webpack or other bundlers.
 
 ## Installation
 
