@@ -1,0 +1,50 @@
+{
+	"name": "@deox/check-types",
+	"version": "0.0.1",
+	"private": false,
+	"description": "Utilities for checking types",
+	"keywords": [
+		"types",
+		"check-types"
+	],
+	"license": "MIT",
+	"author": {
+		"name": "Deo Kumar",
+		"url": "https://github.com/kumardeo"
+	},
+	"homepage": "https://github.com/kumardeo/deox/tree/main/packages/check-types#readme",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/kumardeo/deox",
+		"directory": "packages/check-types"
+	},
+	"bugs": {
+		"url": "https://github.com/kumardeo/deox/issues"
+	},
+	"scripts": {
+		"lint": "cross-env DEBUG=eslint:cli-engine eslint --fix --ignore-path ../../.eslintignore .",
+		"format": "prettier --write --ignore-path ../../.prettierignore .",
+		"build": "rimraf dist && tsx ./build.ts",
+		"clean": "rimraf dist"
+	},
+	"files": [
+		"dist"
+	],
+	"type": "module",
+	"module": "./dist/esm/index.js",
+	"types": "./dist/dts/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/dts/index.d.ts",
+			"import": "./dist/esm/index.js",
+			"require": "./dist/cjs/index.js"
+		}
+	},
+	"typesVersions": {
+		"*": {
+			"*": [
+				"./dist/dts/index.d.ts"
+			]
+		}
+	}
+}
