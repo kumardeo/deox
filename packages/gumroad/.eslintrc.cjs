@@ -7,7 +7,9 @@ module.exports = defineConfig({
 	ignorePatterns: [],
 	extends: [path.resolve(__dirname, "../../.eslintrc.cjs")],
 	rules: {
+		camelcase: "off",
 		"import/no-extraneous-dependencies": ["error", { packageDir: [__dirname] }],
+		"import/prefer-default-export": "off",
 		"no-underscore-dangle": "off",
 		"@typescript-eslint/no-explicit-any": "off"
 	},

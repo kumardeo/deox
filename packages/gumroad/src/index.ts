@@ -1,4 +1,14 @@
-export { GumroadError, GumroadRequestError, GumroadTypeError } from "./errors";
+export {
+	SDKError,
+	SDKBadRequestError,
+	SDKInputNotFoundError,
+	SDKInternalServerError,
+	SDKNotFoundError,
+	SDKRequestError,
+	SDKRequestFailedError,
+	SDKTypeError,
+	SDKUnauthorizedError
+} from "./errors";
 
 export {
 	Gumroad,
@@ -7,6 +17,8 @@ export {
 	type Handler,
 	type ErrorHandler
 } from "./gumroad";
+
+export { API, type APIOptions } from "./api";
 
 export type {
 	Card,

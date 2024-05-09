@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 import { Hono } from "hono";
 import { Gumroad } from "../src";
 
@@ -24,7 +26,7 @@ app.use(async (c, next) => {
 	gumroad.on(
 		"ping",
 		async (ctx, n) => {
-			const sale = await gumroad.getSale(ctx.data.sale_id);
+			const sale = await gumroad.sales.get(ctx.data.sale_id);
 
 			console.log(sale);
 
@@ -42,28 +44,48 @@ app.use(async (c, next) => {
 	await next();
 });
 
-app.get("/listProducts", async (c) => {
+app.get("/products/list", async (c) => {
 	const gumroad = c.get("gumroad");
 
-	return c.json(await gumroad.listProducts());
+	return c.json(await gumroad.products.list());
 });
 
-app.get("/listSales", async (c) => {
+app.get("/products/get", async (c) => {
 	const gumroad = c.get("gumroad");
+	const product_id = (await gumroad.products.list())[0].id;
 
-	return c.json(await gumroad.listSales());
+	return c.json(await gumroad.products.get(product_id));
 });
 
-app.get("/listResources/sales", async (c) => {
+app.get("/sales/list", async (c) => {
 	const gumroad = c.get("gumroad");
 
-	return c.json(await gumroad.listResourceSubscriptions("sale"));
+	return c.json(await gumroad.sales.list());
 });
 
-app.get("/getUser", async (c) => {
+app.get("/sales/list/next", async (c) => {
 	const gumroad = c.get("gumroad");
 
-	return c.json(await gumroad.getUser());
+	return c.json(await (await gumroad.sales.list()).next());
+});
+
+app.get("/variant_categories/list", async (c) => {
+	const gumroad = c.get("gumroad");
+	const product_id = (await gumroad.products.list())[0].id;
+
+	return c.json(await gumroad.variant_categories.list(product_id));
+});
+
+app.get("/resource_subscriptions/list", async (c) => {
+	const gumroad = c.get("gumroad");
+
+	return c.json(await gumroad.resource_subscriptions.list("sale"));
+});
+
+app.get("/user/get", async (c) => {
+	const gumroad = c.get("gumroad");
+
+	return c.json(await gumroad.user.get());
 });
 
 app.post("/ping", async (c) => c.get("gumroad").handle(c.req.raw, "ping"));

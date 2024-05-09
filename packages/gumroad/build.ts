@@ -1,16 +1,15 @@
 /* eslint-disable no-console */
 
-/*
-  This script is heavily inspired by `built.ts` used in @kaze-style/react.
-  https://github.com/taishinaritomi/kaze-style/blob/main/scripts/build.ts
-  MIT License
-  Copyright (c) 2022 Taishi Naritomi
-*/
+/**
+ * This script is heavily inspired by `built.ts` used in @kaze-style/react.
+ * https://github.com/taishinaritomi/kaze-style/blob/main/scripts/build.ts
+ * MIT License
+ * Copyright (c) 2022 Taishi Naritomi
+ */
 
-import cp from "child_process";
-import path from "path";
-import fs from "fs";
-import fse from "fs-extra";
+import cp from "node:child_process";
+import path from "node:path";
+import fs from "fs-extra";
 import {
 	build as esbuild,
 	type Plugin,
@@ -18,23 +17,14 @@ import {
 	type BuildOptions
 } from "esbuild";
 import * as glob from "glob";
+import clc from "console-log-colors";
 
-const entryPoints = glob.sync("./src/**/*.{ts,js}", {
-	ignore: [
-		"./src/**/*.test.ts",
-		"./src/mod.ts",
-		"./src/middleware.ts",
-		"./src/deno/**/*.ts"
-	]
-});
-
-/*
-  This plugin is inspired by the following.
-  https://github.com/evanw/esbuild/issues/622#issuecomment-769462611
-*/
+/**
+ * This plugin is inspired by the following.
+ * https://github.com/evanw/esbuild/issues/622#issuecomment-769462611
+ */
 const addExtension = (
-	extension: string = ".js",
-	fileExtension: string = ".ts"
+	fileMap: { from: string; to: string }[] = [{ from: ".ts", to: ".js" }]
 ): Plugin => ({
 	name: "add-extension",
 	setup(build: PluginBuild) {
@@ -42,61 +32,133 @@ const addExtension = (
 		build.onResolve({ filter: /.*/ }, (args) => {
 			if (args.importer) {
 				const p = path.join(args.resolveDir, args.path);
-				let tsPath = `${p}${fileExtension}`;
 
 				let importPath = "";
-				if (fs.existsSync(tsPath)) {
-					importPath = args.path + extension;
-				} else {
-					tsPath = path.join(
-						args.resolveDir,
-						args.path,
-						`index${fileExtension}`
-					);
-					if (fs.existsSync(tsPath)) {
-						importPath = `${args.path}/index${extension}`;
+
+				fileMap.forEach((config) => {
+					let formPath = `${p}${config.from}`;
+					if (fs.existsSync(formPath)) {
+						importPath = args.path + config.to;
+					} else {
+						formPath = path.join(
+							args.resolveDir,
+							args.path,
+							`index${config.from}`
+						);
+						if (fs.existsSync(formPath)) {
+							importPath = `${args.path}/index${config.to}`;
+						}
 					}
-				}
+				});
+
 				return { path: importPath, external: true };
 			}
 		});
 	}
 });
 
+// Build config
+const config = {
+	target: "es2017"
+};
+
+// Entrypoints for ESM
+const esmEntryPoints = glob.sync("./src/**/*.{ts,js}", {
+	ignore: ["**/*.d.ts", "./src/**/*.test.ts"]
+});
+
+// Entrypoints for CJS
+const cjsEntryPoints = esmEntryPoints;
+
+// Common build options for both CJS and ESM
 const commonOptions: BuildOptions = {
-	entryPoints,
 	logLevel: "info",
-	platform: "node"
+	platform: "node",
+	target: config.target
 };
 
-const cjsOptions: BuildOptions = {
-	...commonOptions,
-	outbase: "./src",
-	outdir: "./dist/cjs",
-	format: "cjs"
-};
-
+// Build options for ESM
 const esmOptions: BuildOptions = {
 	...commonOptions,
+	entryPoints: esmEntryPoints,
 	bundle: true,
 	outbase: "./src",
 	outdir: "./dist/esm",
 	format: "esm",
-	plugins: [addExtension(".js")]
+	plugins: [
+		addExtension([
+			{ from: ".ts", to: ".js" },
+			{ from: ".js", to: ".js" }
+		])
+	],
+	define: {
+		// ensure `__filename` and `__dirname` is not available in ESM module
+		__filename: JSON.stringify(null),
+		__dirname: JSON.stringify(null)
+	}
 };
 
-Promise.all([esbuild(esmOptions), esbuild(cjsOptions)]).catch((error) => {
-	console.error(error);
+// Build options for CJS
+const cjsOptions: BuildOptions = {
+	...commonOptions,
+	entryPoints: cjsEntryPoints,
+	outbase: "src",
+	outdir: "dist/cjs",
+	format: "cjs",
+	define: {
+		// ensure `import.meta` is not available in CJS module
+		"import.meta": JSON.stringify({ url: "" })
+	}
+};
+
+const startedOn = Date.now();
+
+// Clean out dir
+console.log("⚡ Cleaning dist directory...");
+fs.rmSync("dist", { recursive: true, force: true });
+
+// Build ESM
+console.log("⚡ Building ESM version...");
+await esbuild(esmOptions).catch(console.error);
+
+// Build CJS
+console.log("⚡ Building CJS version...");
+await esbuild(cjsOptions).catch(console.error);
+
+// Build typings
+console.log("⚡ Building Types...");
+cp.execSync(`tsc --project tsconfig.dts.json --outDir dist/dts`, {
+	stdio: "inherit"
 });
 
-cp.execSync(`tsc --project tsconfig.dts.json`, { stdio: "inherit" });
+// Copy assets
+// console.log("⚡ Copying Assets...");
+// glob.sync("./src/**/*.{wasm,bin}").forEach((filepath) => {
+// 	const destinations = ["./dist/esm", "./dist/cjs"].map((directory) =>
+// 		path.join(directory, filepath.replace(/^src\//, ""))
+// 	);
+// 	console.log("");
+// 	destinations.forEach((destination) => {
+// 		console.log(`  ${clc.white(filepath)} => ${clc.white(destination)}`);
+// 		fs.copyFileSync(filepath, destination);
+// 	});
+// 	console.log("");
+// });
 
+// Write package.json for CJS
+console.log("⚡ Writing package.json files...");
 const cjsPackageJson = { type: "commonjs" };
 
-fse.writeJSONSync("./dist/cjs/package.json", cjsPackageJson, {
-	encoding: "utf8"
-});
+["./dist/cjs/package.json", "./dist/dts/package.json"].forEach(
+	(destination) => {
+		fs.writeJSONSync(destination, cjsPackageJson, {
+			encoding: "utf8"
+		});
+	}
+);
 
-fse.writeJSONSync("./dist/dts/package.json", cjsPackageJson, {
-	encoding: "utf8"
-});
+// Print time taken
+const finishedOn = Date.now();
+console.log(
+	clc.green(`⚡ Took ${((finishedOn - startedOn) / 1000).toFixed(2)} s`)
+);

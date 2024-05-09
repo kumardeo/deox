@@ -1,4 +1,5 @@
-import { GumroadRequestError, GumroadTypeError } from "./errors";
+import { isArray, isPlainObject, isNumber } from "@deox/check-types";
+import { SDKRequestError, SDKTypeError } from "./errors";
 
 const getConfigurations = <M extends Record<string | number, any>>(
 	properties: M
@@ -33,7 +34,7 @@ export const addProperties = <
 export const validators = {
 	string(data: unknown, name: string) {
 		if (typeof data !== "string") {
-			throw new GumroadTypeError(
+			throw new SDKTypeError(
 				`${name} must be of type string, current type is ${typeof data}`
 			);
 		}
@@ -43,7 +44,7 @@ export const validators = {
 		this.string(data, name);
 
 		if ((data as string).length === 0) {
-			throw new GumroadTypeError(`${name} cannot be an empty string`);
+			throw new SDKTypeError(`${name} cannot be an empty string`);
 		}
 	},
 
@@ -51,14 +52,14 @@ export const validators = {
 		this.string(data, name);
 
 		if ((data as string).trim().length === 0) {
-			throw new GumroadTypeError(`${name} cannot be a blank string`);
+			throw new SDKTypeError(`${name} cannot be a blank string`);
 		}
 	}
 };
 
 export const error = {
 	inGumroadRequest(e: unknown, message: string) {
-		if (e instanceof GumroadRequestError) {
+		if (e instanceof SDKRequestError) {
 			if (e.message.toLowerCase().includes(message.toLowerCase())) {
 				return true;
 			}
@@ -68,106 +69,89 @@ export const error = {
 	},
 
 	isProductNotFound(e: unknown) {
-		const message = "The product was not found.";
-		return this.inGumroadRequest(e, message);
+		const result = {
+			error: "The product was not found.",
+			code: "product_not_found" as const
+		};
+		return this.inGumroadRequest(e, result.error) ? result : false;
 	},
 
 	isOfferCodeNotFound(e: unknown) {
-		const message = "The offer_code was not found.";
-		return this.inGumroadRequest(e, message);
+		const result = {
+			error: "The offer_code was not found.",
+			code: "offer_code_not_found" as const
+		};
+		return this.inGumroadRequest(e, result.error) ? result : false;
 	},
 
 	isVariantCategoryNotFound(e: unknown) {
-		const message = "The variant_category was not found.";
-		return this.inGumroadRequest(e, message);
+		const result = {
+			error: "The variant_category was not found.",
+			code: "variant_category_not_found" as const
+		};
+		return this.inGumroadRequest(e, result.error) ? result : false;
 	},
 
 	isLicenseNotFound(e: unknown) {
-		const message = "That license does not exist for the provided product.";
-		return this.inGumroadRequest(e, message);
+		const result = {
+			error: "That license does not exist for the provided product.",
+			code: "license_not_found" as const
+		};
+		return this.inGumroadRequest(e, result.error) ? result : false;
 	},
 
 	isSubscriberNotFound(e: unknown) {
-		const message = "The subscriber was not found.";
-		return this.inGumroadRequest(e, message);
+		const result = {
+			error: "The subscriber was not found.",
+			code: "subscriber_not_found" as const
+		};
+		return this.inGumroadRequest(e, result.error) ? result : false;
 	},
 
 	isResourceSubscriptionNotFound(e: unknown) {
-		const message = "The resource_subscription was not found.";
-		return this.inGumroadRequest(e, message);
+		const result = {
+			error: "The resource_subscription was not found.",
+			code: "resource_subscription_not_found" as const
+		};
+		return this.inGumroadRequest(e, result.code) ? result : false;
 	},
 
 	isSaleNotFound(e: unknown) {
-		const message = "The sale was not found.";
-		return this.inGumroadRequest(e, message);
+		const result = {
+			error: "The sale was not found.",
+			code: "sale_not_found" as const
+		};
+		return this.inGumroadRequest(e, result.error) ? result : false;
 	},
 
 	isAnyNotFound(e: unknown) {
-		if (
-			this.isLicenseNotFound(e) ||
-			this.isOfferCodeNotFound(e) ||
+		return (
 			this.isProductNotFound(e) ||
+			this.isOfferCodeNotFound(e) ||
 			this.isVariantCategoryNotFound(e) ||
+			this.isLicenseNotFound(e) ||
 			this.isSubscriberNotFound(e) ||
-			this.isResourceSubscriptionNotFound(e)
-		) {
-			return true;
-		}
-
-		return false;
+			this.isResourceSubscriptionNotFound(e) ||
+			this.isSaleNotFound(e)
+		);
 	}
 };
 
-export const getType = (input: unknown) =>
-	Object.prototype.toString
-		.call(input)
-		.replace(/(?:^\[object\s(.*?)\]$)/, "$1");
-
-export const isObject = (input: unknown): boolean =>
-	getType(input) === "Object";
-
-export const isPlainObject = (data: any): boolean => {
-	if (!isObject(data)) return false;
-
-	// If it has modified constructor
-	const { constructor } = data as object;
-	if (constructor === undefined) return true;
-
-	// If it has modified prototype
-	if (!isObject(constructor.prototype)) return false;
-
-	// If constructor does not have an Object-specific method
-	if (
-		!Object.prototype.hasOwnProperty.call(
-			constructor.prototype,
-			"isPrototypeOf"
-		)
-	) {
-		return false;
-	}
-
-	// Most likely a plain Object
-	return true;
-};
-
-export const isNumberValid = (input: unknown) => {
-	if (typeof input === "number") {
-		const numIsFinite = Number.isFinite ? Number.isFinite : globalThis.isFinite;
-		const numIsNan = Number.isNaN ? Number.isNaN : globalThis.isNaN;
-		if (numIsFinite(input) && !numIsNan(input)) {
-			return true;
-		}
-	}
-	return false;
-};
-
+/**
+ * Convert input string or number to number if possible
+ *
+ * @param input The string number or number
+ *
+ * @returns The converted number otherwise undefined
+ */
 export const convertToNumber = (input: unknown) => {
 	if (typeof input === "string") {
 		const numbered = Number(input);
-		return isNumberValid(numbered) ? numbered : undefined;
-	}
-	if (isNumberValid(input)) {
-		return input as number;
+		if (isNumber(numbered)) {
+			return numbered;
+		}
+	} else if (isNumber(input)) {
+		return input;
 	}
 	return undefined;
 };
@@ -178,6 +162,14 @@ export type ParseValueOptions = {
 	parseNull?: boolean;
 };
 
+/**
+ * Parse input string to valid data type otherwise return the same input
+ *
+ * @param input The input
+ * @param options Options
+ *
+ * @returns The parsed value
+ */
 export const parseValue = <T = unknown>(
 	input: T,
 	options: ParseValueOptions = {}
@@ -218,7 +210,7 @@ export const parseFormData = <T extends ParsedFormData = ParsedFormData>(
 
 		if (!shouldParseAllValues) {
 			result[key] = value;
-		} else if (currentValue && Array.isArray(currentValue)) {
+		} else if (currentValue && isArray(currentValue)) {
 			currentValue.push(value);
 		} else if (currentValue) {
 			result[key] = [currentValue, value];
@@ -258,7 +250,7 @@ export const parseDeepFormData = <
 			keys.reduce(
 				(accumulator, key, i) => {
 					if (isPlainObject(accumulator)) {
-						const acc = accumulator as ParsedDeepFormData;
+						const acc = accumulator;
 						let value;
 						if (i !== keys.length - 1) {
 							if (!Object.hasOwnProperty.call(acc, key)) {
@@ -287,7 +279,7 @@ export const parseDeepFormData = <
 export const formatCustomField = <T extends { custom_fields: unknown }>(
 	input: T
 ) => {
-	if (Array.isArray(input.custom_fields)) {
+	if (isArray(input.custom_fields)) {
 		input.custom_fields = (input.custom_fields as string[]).reduce(
 			(acc, field) => {
 				if (typeof field === "string") {

@@ -49,6 +49,7 @@
 		}
 	},
 	"dependencies": {
+		"@deox/check-types": "workspace:^",
 		"console-log-colors": "^0.4.0"
 	},
 	"devDependencies": {

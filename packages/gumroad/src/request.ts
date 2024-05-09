@@ -1,5 +1,15 @@
 import clc from "console-log-colors";
-import { GumroadRequestError } from "./errors";
+import { isObject } from "@deox/check-types";
+import { error } from "./utils";
+import {
+	SDKBadRequestError,
+	SDKInputNotFoundError,
+	SDKInternalServerError,
+	SDKNotFoundError,
+	SDKRequestError,
+	SDKRequestFailedError,
+	SDKUnauthorizedError
+} from "./errors";
 
 /**
  * An interface representing options for {@link RequestURL}
@@ -89,6 +99,51 @@ export interface RequestOptions {
 	baseUrl?: string | RequestURL;
 }
 
+const getResponseError = (
+	response: Response,
+	message?: string,
+	defaultMessage?: string
+) => {
+	switch (response.status) {
+		case 400:
+			return new SDKBadRequestError(
+				message || `Server responded with '${response.statusText}' status text`,
+				response
+			);
+		case 401:
+			return new SDKUnauthorizedError(
+				message ||
+					`Server responded with '${response.statusText}' status text, please make sure you have passed a valid Access Token!`,
+				response
+			);
+		case 402:
+			return new SDKRequestFailedError(
+				message ||
+					`Server responded with '${response.statusText}' status text, looks like the parameters were valid but request failed.`,
+				response
+			);
+		case 404:
+			return new SDKNotFoundError(
+				message || `Server responded with '${response.statusText}' status text`,
+				response
+			);
+		case 500:
+		case 502:
+		case 503:
+		case 504:
+			return new SDKInternalServerError(
+				message ||
+					`Server responded with '${response.statusText}' status text, looks like something else went wrong on endpoint.`,
+				response
+			);
+		default:
+			return new SDKRequestError(
+				defaultMessage || message || `Response error`,
+				response
+			);
+	}
+};
+
 /**
  * Requests to Gumroad API
  *
@@ -111,98 +166,94 @@ export const request = async <
 		baseUrl = "https://api.gumroad.com/v2/"
 	}: RequestOptions = {}
 ): Promise<{ data: T & { success: true }; response: Response }> => {
-	const endpoint = new RequestURL(path, baseUrl, {
-		params: {
-			...params,
-			...(accessToken ? { access_token: accessToken } : undefined)
-		}
-	});
-
-	const shouldSendBody =
-		method.toUpperCase() === "POST" && typeof body !== "undefined";
-	const config: RequestInit = {
-		method,
-		body: shouldSendBody ? JSON.stringify(body) : undefined,
-		headers: {
-			Accept: "application/json",
-			...(shouldSendBody ? { "Content-Type": "application/json" } : undefined)
-		}
-	};
-
-	const started = debug ? Date.now() : null;
-
-	const response = await fetch(endpoint, config).catch((error) => {
-		throw new GumroadRequestError("Fetch to Gumroad API failed", {
-			cause: error
+	try {
+		const endpoint = new RequestURL(path, baseUrl, {
+			params: {
+				...params,
+				...(accessToken ? { access_token: accessToken } : undefined)
+			}
 		});
-	});
 
-	if (started !== null) {
-		let coloredStatus = `${clc.bold(response.status)} ${response.statusText}`;
-		if (response.status >= 200 && response.status <= 299) {
-			coloredStatus = clc.green(coloredStatus);
-		} else if (response.status >= 300 && response.status <= 399) {
-			coloredStatus = clc.yellow(coloredStatus);
-		} else if (response.status >= 400) {
-			coloredStatus = clc.red(coloredStatus);
+		const shouldSendBody =
+			method.toUpperCase() === "POST" && typeof body !== "undefined";
+		const config: RequestInit = {
+			method,
+			body: shouldSendBody ? JSON.stringify(body) : undefined,
+			headers: {
+				Accept: "application/json",
+				...(shouldSendBody ? { "Content-Type": "application/json" } : undefined)
+			}
+		};
+
+		const started = debug ? Date.now() : null;
+
+		const response = await fetch(endpoint, config).catch((e) => {
+			throw new SDKRequestError(
+				"Fetch to Gumroad API failed",
+				String(endpoint),
+				{
+					cause: e
+				}
+			);
+		});
+
+		if (started !== null) {
+			let coloredStatus = `${clc.bold(response.status)} ${response.statusText}`;
+			if (response.status >= 200 && response.status <= 299) {
+				coloredStatus = clc.green(coloredStatus);
+			} else if (response.status >= 300 && response.status <= 399) {
+				coloredStatus = clc.yellow(coloredStatus);
+			} else if (response.status >= 400) {
+				coloredStatus = clc.red(coloredStatus);
+			}
+			// eslint-disable-next-line no-console
+			console.log(
+				`${clc.green("[@deox/gumroad:info]")} ${clc.bold(method)} ${endpoint.pathname} ${coloredStatus} ${clc.dim(`(${Date.now() - started}ms)`)}`
+			);
 		}
-		// eslint-disable-next-line no-console
-		console.log(
-			`${clc.green("[gumroad:info]")} ${clc.bold(method)} ${endpoint.pathname} ${coloredStatus} ${clc.dim(`(${Date.now() - started}ms)`)}`
-		);
-	}
 
-	if (response.headers.get("Content-Type")?.includes("application/json")) {
-		const data: unknown = await response.json();
-		if (typeof data === "object" && data) {
-			if ("success" in data) {
-				if (data.success === true && response.status === 200) {
-					return { data: data as T & { success: true }, response };
+		if (response.headers.get("Content-Type")?.includes("application/json")) {
+			const data: unknown = await response.json();
+			if (isObject(data)) {
+				if ("success" in data) {
+					if (data.success === true && response.status === 200) {
+						return { data: data as T & { success: true }, response };
+					}
+
+					if (
+						data.success === false &&
+						"message" in data &&
+						typeof data.message === "string"
+					) {
+						throw getResponseError(response, data.message);
+					}
 				}
 
-				if (
-					data.success === false &&
-					"message" in data &&
-					typeof data.message === "string"
-				) {
-					throw new GumroadRequestError(data.message, { response });
+				if ("error" in data && typeof data.error === "string") {
+					throw getResponseError(response, data.error);
 				}
 			}
 
-			if ("error" in data && typeof data.error === "string") {
-				throw new GumroadRequestError(data.error, { response });
-			}
+			throw getResponseError(
+				response,
+				`Invalid Server Response body: ${JSON.stringify(data)}`
+			);
 		}
 
-		throw new GumroadRequestError(
-			`Invalid Gumroad Response body: ${JSON.stringify(data)}`,
-			{ response }
+		throw getResponseError(
+			response,
+			undefined,
+			`Response content type is not 'application/json'`
 		);
-	}
+	} catch (e) {
+		const notFoundError = error.isAnyNotFound(e);
 
-	if (response.status === 401) {
-		throw new GumroadRequestError(
-			`Gumroad responded with '${response.statusText}' status text, please make sure you have passed a valid Access Token!`,
-			{ response }
-		);
-	}
+		if (notFoundError) {
+			throw new SDKInputNotFoundError(notFoundError, {
+				cause: e
+			});
+		}
 
-	if (response.status === 402) {
-		throw new GumroadRequestError(
-			`Gumroad responded with '${response.statusText}' status text, looks like the parameters were valid but request failed.`,
-			{ response }
-		);
+		throw e;
 	}
-
-	if ([500, 502, 503, 504].includes(response.status)) {
-		throw new GumroadRequestError(
-			`Gumroad responded with '${response.statusText}' status text, looks like something else went wrong on endpoint.`,
-			{ response }
-		);
-	}
-
-	throw new GumroadRequestError(
-		`Response content type is not 'application/json'`,
-		{ response }
-	);
 };

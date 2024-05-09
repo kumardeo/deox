@@ -46,9 +46,9 @@ import { Gumroad } from "@deox/gumroad";
 
 const gumroad = new Gumroad(process.env.GUMROAD_ACCESS_TOKEN);
 
-const products = await gumroad.listProducts(); // type: Product[]
+const products = await gumroad.products.list(); // type: Product[]
 
-const sales = await gumroad.listSales(); // type: Sale[]
+const sales = await gumroad.sales.list(); // type: Sale[]
 
 // ...
 ```
@@ -77,7 +77,7 @@ const handleWebhook = async (request: Request, env: Env) => {
     `Good news! A new sale was made using an email address ${ctx.data.email}`
    );
 
-   const sale = await gumroad.getSale(ctx.data.sale_id);
+   const sale = await ctx.api.sales.get(ctx.data.sale_id);
 
    console.log(sale);
 
