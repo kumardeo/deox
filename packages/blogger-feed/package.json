@@ -1,6 +1,6 @@
 {
 	"name": "@deox/blogger-feed",
-	"version": "0.0.0",
+	"version": "0.0.1",
 	"private": false,
 	"description": "A blogger feed API client.",
 	"keywords": [
