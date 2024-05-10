@@ -1,5 +1,15 @@
 # @deox/gumroad
 
+## 0.0.5
+
+### Patch Changes
+
+- [`234104a`](https://github.com/kumardeo/deox/commit/234104a152c0eda42a574ce079fc816e716e30e1) Thanks [@kumardeo](https://github.com/kumardeo)! - refactor: Use classes for different endpoints.
+  feat: Introduce a class `API` which has only API methods while `Gumroad` class extends `API` and has methods for handling webhooks.
+  build: set build target to ES2018
+- Updated dependencies [[`d697400`](https://github.com/kumardeo/deox/commit/d6974000a60343cb097d59f39e7fb35e4709d3b3)]:
+  - @deox/check-types@0.0.2
+
 ## 0.0.4
 
 ### Patch Changes
