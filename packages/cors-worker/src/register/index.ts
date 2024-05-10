@@ -9,7 +9,7 @@ import {
 	handle,
 	messageHandler,
 	respond,
-	deferredPromise,
+	DeferredPromise,
 	eventIsRequest
 } from "./utils";
 
@@ -32,7 +32,7 @@ export const register = <
 		throw new TypeError("Argument 1 must be of type Function");
 	}
 
-	const contextPromise = deferredPromise<HandlerType<F>>();
+	const contextPromise = new DeferredPromise<HandlerType<F>>();
 
 	eventHandler.set((event) => {
 		// Check if valid request

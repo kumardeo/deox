@@ -1,3 +1,5 @@
+/* eslint-disable no-bitwise */
+
 /**
  * Helper function to generate unique id
  *
@@ -19,16 +21,13 @@ export const generateId = (format = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx") => {
 		let r = Math.random() * 16;
 		if (d1 > 0) {
 			// Use timestamp until depleted
-			// eslint-disable-next-line no-bitwise
 			r = (d1 + r) % 16 | 0;
 			d1 = Math.floor(d1 / 16);
 		} else {
 			// Use microseconds since page-load if supported
-			// eslint-disable-next-line no-bitwise
 			r = (d2 + r) % 16 | 0;
 			d2 = Math.floor(d2 / 16);
 		}
-		// eslint-disable-next-line no-bitwise
 		return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
 	});
 };
@@ -40,5 +39,7 @@ export const generateId = (format = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx") => {
  *
  * @returns Javascript content for worker
  */
-export const getBlobContent = (entry: string) =>
-	`Object.defineProperties((typeof globalThis!== "undefined"?globalThis:self).location,{__entry__:{value:"${encodeURI(entry)}"},toString:{value:function toString(){return this.__entry__;}}});\nimportScripts(self.location.toString());`;
+export const getBlobContent = (entry: string, type?: "module" | "classic") => {
+	const scriptUrl = encodeURI(entry);
+	return `Object.defineProperties((typeof globalThis!== "undefined"?globalThis:self).location,{__entry__:{value:"${scriptUrl}"},toString:{value:function toString(){return this.__entry__;}}});\n${type === "module" ? `import "${scriptUrl}";` : "importScripts(self.location.toString());"}`;
+};

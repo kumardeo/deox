@@ -122,55 +122,54 @@ export const respond = {
 	}
 };
 
-export type DeferredPromiseProps<T> = {
-	// eslint-disable-next-line no-use-before-define
-	resolve(data: T | PromiseLike<T>): DeferredPromise<T>;
-	// eslint-disable-next-line no-use-before-define
-	reject(reason?: any): DeferredPromise<T>;
-};
+export class DeferredPromise<T> extends Promise<T> {
+	readonly resolve: (value: T | PromiseLike<T>) => void;
 
-export type DeferredPromise<T> = Promise<T> & DeferredPromiseProps<T>;
+	readonly reject: (reason?: any) => void;
 
-export type DeferredPromiseExecutor<T> = (
-	resolve: (value: T | PromiseLike<T>) => void,
-	reject: (reason?: any) => void
-) => void;
+	/**
+	 * Creates a new Promise.
+	 *
+	 * @param executor A callback used to initialize the promise. This callback is passed two arguments: a resolve callback used to resolve the promise with a value or the result of another promise, and a reject callback used to reject the promise with a provided reason or error.
+	 */
+	constructor(
+		executor?: (
+			resolve: (value: T | PromiseLike<T>) => void,
+			reject: (reason?: any) => void
+		) => void
+	) {
+		const nothingFunction = () => {};
+		let resolveFunction: this["resolve"] | null = null;
+		let rejectFunction: this["reject"] | null = null;
 
-/**
- * Creates a new Promise.
- *
- * @param executor A callback used to initialize the promise. This callback is passed two arguments: a resolve callback used to resolve the promise with a value or the result of another promise, and a reject callback used to reject the promise with a provided reason or error.
- *
- * @returns An object having methods to resolve and reject the promise
- */
-export const deferredPromise = <T>(executor?: DeferredPromiseExecutor<T>) => {
-	let deferred = {
-		resolve() {},
-		reject() {}
-	} as unknown as DeferredPromiseProps<T>;
-
-	const promise = new Promise<T>((resolve, reject) => {
-		deferred = {
-			resolve(data) {
-				resolve(data);
-				return promise;
-			},
-			reject(reason) {
-				reject(reason);
-				return promise;
+		super((resolve, reject) => {
+			resolveFunction = resolve;
+			rejectFunction = reject;
+			if (typeof executor !== "undefined") {
+				executor(resolve, reject);
 			}
-		};
+		});
 
-		if (executor !== undefined) {
-			executor(resolve, reject);
-		}
-	}) as DeferredPromise<T>;
+		this.resolve = resolveFunction || nothingFunction;
+		this.reject = rejectFunction || nothingFunction;
 
-	// eslint-disable-next-line @typescript-eslint/no-floating-promises
-	Object.assign(promise, deferred);
-
-	return promise;
-};
+		// eslint-disable-next-line @typescript-eslint/no-floating-promises
+		Object.defineProperties(this, {
+			resolve: {
+				value: this.resolve,
+				writable: false,
+				configurable: false,
+				enumerable: false
+			},
+			reject: {
+				value: this.reject,
+				writable: false,
+				configurable: false,
+				enumerable: false
+			}
+		});
+	}
+}
 
 export const makeAsync = <T = any>(data: T): Promise<Await<T>> => {
 	if (data instanceof Promise) {

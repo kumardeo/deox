@@ -1,4 +1,4 @@
-/* Utils type */
+/* utils types */
 export type Return<T extends (...args: any) => any> = ReturnType<T>;
 
 export type Params<T extends (...args: any) => any> = Parameters<T>;

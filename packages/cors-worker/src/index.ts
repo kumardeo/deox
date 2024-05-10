@@ -90,7 +90,7 @@ export class Worker<
 		if (workerUrl.host === window.location.host) {
 			super(scriptURL, workerOptions);
 		} else {
-			const blob = new Blob([getBlobContent(workerUrl.href)], {
+			const blob = new Blob([getBlobContent(workerUrl.href, options?.type)], {
 				type: "text/javascript"
 			});
 			super(URL.createObjectURL(blob), workerOptions);
