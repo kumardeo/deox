@@ -13,7 +13,7 @@ export interface OfferCodeProps {
 	 *
 	 * @returns On success, a {@link OfferCode}
 	 */
-	readonly update: (
+	update(
 		options:
 			| {
 					offer_code: string;
@@ -25,14 +25,14 @@ export interface OfferCodeProps {
 					offer_code: string;
 					max_purchase_count: number;
 			  }
-	) => Promise<OfferCode & OfferCodeProps>;
+	): Promise<OfferCode & OfferCodeProps>;
 
 	/**
 	 * Deletes the offer code
 	 *
 	 * @returns On success, `true`
 	 */
-	readonly delete: () => Promise<true>;
+	delete(): Promise<true>;
 }
 
 /**

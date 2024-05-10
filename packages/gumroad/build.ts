@@ -59,7 +59,9 @@ const addExtension = (
 
 // Build config
 const config = {
-	target: "es2017"
+	target: (
+		(await import("./tsconfig.json")).compilerOptions.target || "es2017"
+	).toLowerCase()
 };
 
 // Entrypoints for ESM

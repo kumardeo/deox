@@ -9,39 +9,37 @@ export interface PurchaseProps {
 	/**
 	 * The number of license uses
 	 */
-	license_uses: number;
+	readonly license_uses: number;
 
 	/**
 	 * Verifies the license of the purchase
 	 *
 	 * @param increment_uses_count If `true`, increment the uses count of a license. Default: `true`
 	 *
-	 * @returns On success, a {@link Purchase} | can also be `null`
+	 * @returns On success, a {@link Purchase}
 	 */
-	readonly verify: (
-		increment_uses_count?: boolean
-	) => Promise<(Purchase & PurchaseProps) | null>;
+	verify(increment_uses_count?: boolean): Promise<Purchase & PurchaseProps>;
 
 	/**
 	 * Enables the license of the purchase
 	 *
-	 * @returns On success, a {@link Purchase} | can also be `null`
+	 * @returns On success, a {@link Purchase}
 	 */
-	readonly enable: () => Promise<(Purchase & PurchaseProps) | null>;
+	enable(): Promise<Purchase & PurchaseProps>;
 
 	/**
 	 * Disables the license of the purchase
 	 *
-	 * @returns On success, a {@link Purchase} | can also be `null`
+	 * @returns On success, a {@link Purchase}
 	 */
-	readonly disable: () => Promise<(Purchase & PurchaseProps) | null>;
+	disable(): Promise<Purchase & PurchaseProps>;
 
 	/**
 	 * Decrement the uses count of the license of the product
 	 *
-	 * @returns On success, a {@link Purchase} | can also be `null`
+	 * @returns On success, a {@link Purchase}
 	 */
-	readonly decrementUsesCount: () => Promise<(Purchase & PurchaseProps) | null>;
+	decrementUsesCount(): Promise<Purchase & PurchaseProps>;
 }
 
 /**

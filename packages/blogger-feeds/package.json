@@ -1,22 +1,22 @@
 {
-	"name": "@deox/cors-worker",
-	"version": "0.0.4",
+	"name": "@deox/blogger-feed",
+	"version": "0.0.1",
 	"private": false,
-	"description": "Cors Web Worker",
+	"description": "A blogger feed API client.",
 	"keywords": [
-		"web-worker",
-		"webpack"
+		"blogger",
+		"blogger-feed"
 	],
 	"license": "MIT",
 	"author": {
 		"name": "Deo Kumar",
 		"url": "https://github.com/kumardeo"
 	},
-	"homepage": "https://github.com/kumardeo/deox/tree/main/packages/cors-worker#readme",
+	"homepage": "https://github.com/kumardeo/deox/tree/main/packages/blogger-feed#readme",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/kumardeo/deox",
-		"directory": "packages/cors-worker"
+		"directory": "packages/blogger-feed"
 	},
 	"bugs": {
 		"url": "https://github.com/kumardeo/deox/issues"
@@ -39,18 +39,10 @@
 			"types": "./dist/dts/index.d.ts",
 			"import": "./dist/esm/index.js",
 			"require": "./dist/cjs/index.js"
-		},
-		"./register": {
-			"types": "./dist/dts/register/index.d.ts",
-			"import": "./dist/esm/register/index.js",
-			"require": "./dist/cjs/register/index.js"
 		}
 	},
 	"typesVersions": {
 		"*": {
-			"register": [
-				"./dist/dts/register/index.d.ts"
-			],
 			"*": [
 				"./dist/dts/index.d.ts"
 			]

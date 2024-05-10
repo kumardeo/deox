@@ -13,17 +13,17 @@ export interface VariantProps {
 	 *
 	 * @returns On success, a {@link Variant}
 	 */
-	readonly update: (options: {
+	update(options: {
 		name?: string | undefined;
 		price_difference_cents?: number | undefined;
 		max_purchase_count?: number | undefined;
-	}) => Promise<Variant & VariantProps>;
+	}): Promise<Variant & VariantProps>;
 
 	/**
 	 *
 	 * @returns On success, `true`
 	 */
-	readonly delete: () => Promise<true>;
+	delete(): Promise<true>;
 }
 
 /**

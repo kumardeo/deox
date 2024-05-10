@@ -13,7 +13,7 @@ export interface ResourceSubscriptionProps {
 	 *
 	 * @returns On success, `true`
 	 */
-	readonly delete: () => Promise<true>;
+	delete(): Promise<true>;
 }
 
 /**

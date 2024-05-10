@@ -1,10 +1,11 @@
 {
 	"compilerOptions": {
-		"target": "ES2022",
+		"target": "ES2018",
 		"lib": ["ES2022", "DOM", "WebWorker"],
 		"declaration": true,
 		"moduleResolution": "Bundler",
 		"esModuleInterop": true,
+		"isolatedModules": true,
 		"forceConsistentCasingInFileNames": true,
 		"strict": true,
 		"allowJs": true,

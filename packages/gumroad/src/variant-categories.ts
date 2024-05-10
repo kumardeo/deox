@@ -13,16 +13,14 @@ export interface VariantCategoryProps {
 	 *
 	 * @returns On success, a {@link VariantCategory}
 	 */
-	readonly update: (
-		title: string
-	) => Promise<VariantCategory & VariantCategoryProps>;
+	update(title: string): Promise<VariantCategory & VariantCategoryProps>;
 
 	/**
 	 * Deletes the variant category
 	 *
 	 * @returns On success, `true`
 	 */
-	readonly delete: () => Promise<true>;
+	delete(): Promise<true>;
 }
 
 /**

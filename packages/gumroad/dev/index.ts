@@ -26,7 +26,7 @@ app.use(async (c, next) => {
 	gumroad.on(
 		"ping",
 		async (ctx, n) => {
-			const sale = await gumroad.sales.get(ctx.data.sale_id);
+			const sale = await ctx.api.sales.get(ctx.data.sale_id);
 
 			console.log(sale);
 

@@ -1,5 +1,7 @@
 ---
-"@deox/gumroad": minor
+"@deox/gumroad": patch
 ---
 
-style(gumroad): Use classes for different endpoints. Introduce a class `API` which has only API methods while `Gumroad` class extends `API` and has methods for handing webhooks.
+refactor: Use classes for different endpoints.  
+feat: Introduce a class `API` which has only API methods while `Gumroad` class extends `API` and has methods for handling webhooks.
+build: set build target to ES2018

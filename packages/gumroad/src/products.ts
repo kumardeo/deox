@@ -11,21 +11,21 @@ export interface ProductProps {
 	 *
 	 * @returns On success, `true`
 	 */
-	readonly delete: () => Promise<true>;
+	delete(): Promise<true>;
 
 	/**
 	 * Enables the product
 	 *
 	 * @returns On success, a {@link Product}
 	 */
-	readonly enable: () => Promise<Product & ProductProps>;
+	enable(): Promise<Product & ProductProps>;
 
 	/**
 	 * Disables the product
 	 *
 	 * @returns On success, a {@link Product}
 	 */
-	readonly disable: () => Promise<Product & ProductProps>;
+	disable(): Promise<Product & ProductProps>;
 }
 
 /**

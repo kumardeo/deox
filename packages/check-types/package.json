@@ -46,5 +46,8 @@
 				"./dist/dts/index.d.ts"
 			]
 		}
+	},
+	"devDependencies": {
+		"console-log-colors": "^0.4.0"
 	}
 }

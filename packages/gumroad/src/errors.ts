@@ -113,7 +113,7 @@ export class SDKInternalServerError extends SDKRequestError {
 
 /**
  * Represents a error thrown when client is requesting for some resources which does not exists.
- * For example requesting for a product with specific `product_id` but that does't exists.
+ * For example requesting for a product with specific `product_id` but that doesn't exists.
  */
 export class SDKInputNotFoundError<
 	T extends Exclude<ReturnType<typeof error.isAnyNotFound>, false>

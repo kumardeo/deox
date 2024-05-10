@@ -13,19 +13,19 @@ export interface CustomFieldProps {
 	 *
 	 * @returns On success, a {@link CustomField}
 	 */
-	readonly update: (options: {
+	update(options: {
 		name?: string | undefined;
 		required?: boolean | undefined;
 		type?: "text" | "checkbox" | "terms" | undefined;
 		variant?: string | undefined;
-	}) => Promise<CustomField & CustomFieldProps>;
+	}): Promise<CustomField & CustomFieldProps>;
 
 	/**
 	 * Deletes the custom field
 	 *
 	 * @returns On success `true`
 	 */
-	readonly delete: () => Promise<true>;
+	delete(): Promise<true>;
 }
 
 /**

@@ -49,8 +49,8 @@ Following functions are available:
 * `isNaN(arg)`: Check whether `arg` is `NaN`
 * `isFinite(arg)`: Check whether `arg` is `Number` and isFinite
 * `isNumber(arg)`: Check whether `arg` is a `Number` excluding `NaN` and `Infinity`
-* `isObjectAny(arg)`: Check whether `arg` is an `Object` or `null`
-* `isObject(arg)`: Check whether `arg`'s constructor is `Object`
+* `isObjectAny(arg)`: Check whether `arg` is an `Object` including `null`
+* `isObject(arg)`: Check whether `arg`is an `Object` excluding `null`
 * `isPlainObject(arg)`: Check whether `arg` is a plain object
 * `isRegExp(arg)`: Check whether `arg` is a `RegExp`
 * `isDate(arg)`: Check whether `arg` is a `Date`

@@ -21,7 +21,7 @@ export interface SalesProps {
 	 *
 	 * @returns On success, an Array of {@link Sale} | `null` if next page does not exists
 	 */
-	readonly next: () => Promise<(Sale[] & SalesProps) | null>;
+	next(): Promise<(Sale[] & SalesProps) | null>;
 }
 
 /**
@@ -35,9 +35,7 @@ export interface SaleProps {
 	 *
 	 * @returns On success, a {@link Sale}
 	 */
-	readonly markAsShipped: (
-		tracking_url?: string | undefined
-	) => Promise<Sale & SaleProps>;
+	markAsShipped(tracking_url?: string | undefined): Promise<Sale & SaleProps>;
 
 	/**
 	 * Refunds the sale
@@ -46,9 +44,7 @@ export interface SaleProps {
 	 *
 	 * @returns On success, a {@link Sale}
 	 */
-	readonly refund: (
-		amount_cents?: number | undefined
-	) => Promise<Sale & SaleProps>;
+	refund(amount_cents?: number | undefined): Promise<Sale & SaleProps>;
 }
 
 /**
@@ -74,7 +70,10 @@ export class Sales extends Methods {
 			}
 		};
 
-		return addProperties(object.sales, properties);
+		return addProperties(
+			object.sales.map((sale) => this._bind_sale(sale)),
+			properties
+		);
 	}
 
 	protected _bind_sale(sale: Sale) {

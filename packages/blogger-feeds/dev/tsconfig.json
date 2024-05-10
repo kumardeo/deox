@@ -1,0 +1,21 @@
+{
+	"compilerOptions": {
+		"target": "ES2015",
+		"module": "ESNext",
+		"lib": ["ESNext", "ES2018", "DOM", "WebWorker"],
+		"moduleResolution": "Bundler",
+		"esModuleInterop": true,
+		"strict": true,
+		"resolveJsonModule": true,
+		"allowJs": true,
+		"checkJs": false,
+		"noEmit": false,
+		"isolatedModules": true,
+		"allowSyntheticDefaultImports": true,
+		"forceConsistentCasingInFileNames": true,
+		"skipLibCheck": true,
+		"baseUrl": "."
+	},
+	"include": [".", "../src"],
+	"exclude": ["node_modules", "webpack.dev.cjs"]
+}
