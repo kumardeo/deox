@@ -1,5 +1,11 @@
 # @deox/cors-worker
 
+## 0.0.6
+
+### Patch Changes
+
+- [`59c1aeb`](https://github.com/kumardeo/deox/commit/59c1aeb737d9bef8c678e264e03c164a5bf13c74) Thanks [@kumardeo](https://github.com/kumardeo)! - fix: use `import` instead of `importScripts` when worker type is set to `module`
+
 ## 0.0.5
 
 ### Patch Changes
