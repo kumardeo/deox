@@ -6,6 +6,18 @@ Crafting handy libraries for hobbies, simplifying tasks with ease.
 
 This monorepo contains the following packages:
 
+### [@deox/blogger-feed](https://www.npmjs.com/package/@deox/blogger-feed)
+
+A blogger feed API client.
+
+[Read more..](./packages/blogger-feed/README.md)
+
+### [@deox/check-types](https://www.npmjs.com/package/@deox/check-types)
+
+Utilities for checking types.
+
+[Read more..](./packages/check-types/README.md)
+
 ### [@deox/cors-worker](https://www.npmjs.com/package/@deox/cors-worker)
 
 A cors web worker (supports creating a `Worker` instance for scripts from different hosts). Can be used with webpack or other bundlers.

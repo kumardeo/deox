@@ -93,7 +93,7 @@ importers:
         specifier: ^1.5.0
         version: 1.5.2(@types/node@20.12.7)
 
-  packages/blogger-feeds:
+  packages/blogger-feed:
     devDependencies:
       babel-loader:
         specifier: ^9.1.3

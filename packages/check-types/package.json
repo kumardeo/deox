@@ -2,7 +2,7 @@
 	"name": "@deox/check-types",
 	"version": "0.0.1",
 	"private": false,
-	"description": "Utilities for checking types",
+	"description": "Utilities for checking types.",
 	"keywords": [
 		"types",
 		"check-types"
