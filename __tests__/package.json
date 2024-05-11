@@ -1,0 +1,20 @@
+{
+	"name": "@deox-tests/base",
+	"version": "1.0.0",
+	"description": "deox tests",
+	"private": true,
+	"author": "Deo Kumar",
+	"license": "MIT",
+	"homepage": "https://github.com/kumardeo/deox",
+	"scripts": {
+		"lint": "cross-env DEBUG=eslint:cli-engine eslint --fix --ignore-path ../.eslintignore .",
+		"format": "prettier --write --ignore-path ../../.prettierignore .",
+		"test": "vitest run"
+	},
+	"dependencies": {
+		"@deox/oson": "workspace:^"
+	},
+	"devDependencies": {
+		"vitest": "^1.5.0"
+	}
+}

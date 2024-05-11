@@ -1,12 +1,41 @@
-# oson structured object notation
+# @deox/oson
 
-json has a bunch of problems.
+Oson Structured Object Notation - JSON has a bunch of problems, OSON fixes them.  
+Powered by [@KnorpelSenf/oson](https://github.com/KnorpelSenf/oson).
 
-oson fixes them.
+## Installation
 
-## features
+Install the package by running the following command in terminal:
 
-oson can encode **circular references**:
+```shell
+npm install @deox/oson
+```
+
+## Usage
+
+The module can be imported using `import` in ES Modules and `require` in Common JS as shown below:
+
+ES Modules:
+
+```js
+// index.js
+import * as oson from "@deox/oson";
+
+// ...
+```
+
+Common JS:
+
+```cjs
+// index.cjs
+const oson = require("@deox/oson");
+
+// ...
+```
+
+## Features
+
+OSON can encode **circular references**:
 
 ```js
 const obj = {};
@@ -15,7 +44,7 @@ JSON.stringify(obj); // error
 oson.stringify(obj); // works!
 ```
 
-oson can encode **repeated references**:
+OSON can encode **repeated references**:
 
 ```js
 const obj = {};
@@ -26,14 +55,14 @@ const [l, r] = oson.parse(oson.stringify(arr));
 assertStrictEquals(l, r); // works!
 ```
 
-oson can encode **undefined**:
+OSON can encode **undefined**:
 
 ```js
 const undef = oson.parse(oson.stringify(undefined));
 assertStrictEquals(undef, undefined);
 ```
 
-oson can encode **sparse arrays**:
+OSON can encode **sparse arrays**:
 
 ```js
 const arr = [5, , , , 6, , , 7];
@@ -41,7 +70,7 @@ console.log(oson.parse(oson.stringify(arr)));
 // [ 5, <3 empty items>, 6, <2 empty items>, 7 ]
 ```
 
-oson can encode **bigint**:
+OSON can encode **bigint**:
 
 ```js
 const num = 10n ** 1000n;
@@ -49,7 +78,7 @@ JSON.stringify(num); // error
 oson.stringify(num); // works!
 ```
 
-oson can encode **class instances** of the following built-in types:
+OSON can encode **class instances** of the following built-in types:
 
 - `Map`
 - `Set`
@@ -59,29 +88,33 @@ oson can encode **class instances** of the following built-in types:
 - `Uint8Array`
 - `URL`
 
-oson can encode **class instances** of your custom classes:
+OSON can encode **class instances** of your custom classes:
 
 ```ts
-class A {
-  constructor(public prop: string) {}
+class CustomClass {
+  constructor(
+    public prop1: string,
+    public prop2: { a: boolean; b: string[] }
+  ) {
+    this.prop1 = prop1;
+    this.prop2 = prop2;
+  }
 }
-const serializer: ValueConstructor<A, string> = {
-  instance: A,
-  from: (a) => [a.prop],
-  create: ([prop]) => new A(prop),
-};
 
-GLOBAL_CONSTRUCTOR_MAP.set(A.name, serializer);
+GLOBAL_CONSTRUCTOR_MAP.set(CustomClass, {
+  from: (a) => [a.prop1, a.prop2] as const,
+  create: ([prop1, prop2]) => new CustomClass(prop1, prop2)
+});
 
-const a = new A("str");
+const c = new CustomClass("str_1", "str_2");
 
-assertInstanceOf(JSON.parse(JSON.stringify(a)), A); // error
-assertInstanceOf(oson.parse(oson.stringify(a)), A); // works!
+assertInstanceOf(JSON.parse(JSON.stringify(c)), CustomClass); // error
+assertInstanceOf(oson.parse(oson.stringify(c)), CustomClass); // works!
 ```
 
-see also [this type definition](https://deno.land/x/oson/mod.ts?s=BucketContructor) for classes that are containers for object values (which may lead to circular references).
+See also [this type definition](https://deno.land/x/oson/mod.ts?s=BucketContructor) for classes that are containers for object values (which may lead to circular references).
 
-oson provides `listify` and `delistify` which can be used to convert objects to a representation that `JSON` accepts.
+OSON provides `listify` and `delistify` which can be used to convert objects to a representation that `JSON` accepts.
 
 ```ts
 const num = 10n;
@@ -89,13 +122,13 @@ JSON.stringify(num); // error
 JSON.stringify(oson.listify(num)); // works!
 ```
 
-this lets you avoid repeated serialization.
+This lets you avoid repeated serialization.
 
-## non-goals
+## Non-goals
 
-the following things are explicitly not supported.
+The following things are explicitly not supported.
 
-and they never will be, because they can never work well.
+And they never will be, because they can never work well.
 
 - symbols (would not preserve equality)
 - functions (would not behave identically)
@@ -103,8 +136,8 @@ and they never will be, because they can never work well.
 
 ## name
 
-the _oson_ in the name stands for _oson structured object notation_.
+The _OSON_ in the name stands for _Oson Structured Object Notation_.
 
 ---
 
-written from scratch, based on ideas in [ARSON](https://github.com/benjamn/arson).
+Written from scratch, based on ideas in [ARSON](https://github.com/benjamn/arson).

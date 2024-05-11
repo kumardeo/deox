@@ -53,6 +53,10 @@ module.exports = defineConfig({
 				tsx: "never"
 			}
 		],
+		"@typescript-eslint/no-unused-vars": [
+			"error",
+			{ destructuredArrayIgnorePattern: "^_" }
+		],
 		"@typescript-eslint/no-use-before-define": [
 			"error",
 			{

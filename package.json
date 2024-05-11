@@ -2,7 +2,9 @@
 	"name": "deox",
 	"private": true,
 	"workspaces": [
-		"packages/*"
+		"packages/*",
+		"__tests__",
+		"__tests__/*"
 	],
 	"scripts": {
 		"upgrade": "pnpm ncu",

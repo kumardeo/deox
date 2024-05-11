@@ -93,6 +93,16 @@ importers:
         specifier: ^1.5.0
         version: 1.5.2(@types/node@20.12.7)
 
+  __tests__:
+    dependencies:
+      '@deox/oson':
+        specifier: workspace:^
+        version: link:../packages/oson
+    devDependencies:
+      vitest:
+        specifier: ^1.5.0
+        version: 1.5.2(@types/node@20.12.7)
+
   packages/blogger-feed:
     devDependencies:
       babel-loader:
