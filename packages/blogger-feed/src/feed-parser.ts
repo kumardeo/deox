@@ -188,8 +188,8 @@ const getAuthors = (authorArray: unknown) => {
 		for (let i = 0; i < authorArray.length; i += 1) {
 			const author: unknown = authorArray[0];
 			const authorNameLike = getNested(author, "name", "$t");
-			const authorImageLike = getNested(author, "gd$image", "$t");
 			const authorUriLike = getNested(author, "uri", "$t");
+			const authorImageLike = getNested(author, "gd$image", "src");
 
 			const name = isString(authorNameLike) ? authorNameLike : "Unknown";
 			const image =
