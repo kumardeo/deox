@@ -1,5 +1,11 @@
 # @deox/blogger-feed
 
+## 0.0.3
+
+### Patch Changes
+
+- [`a58892f`](https://github.com/kumardeo/deox/commit/a58892fa1ee55c47cf781fbb841c9aeb5ce4c084) Thanks [@kumardeo](https://github.com/kumardeo)! - fix: `author.image` of entry was always null
+
 ## 0.0.2
 
 ### Patch Changes
