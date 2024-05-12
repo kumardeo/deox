@@ -20,14 +20,14 @@ const eventHandler = messageHandler<MessageWorker>();
  *
  * @param handler A handler function which should return all the methods in an object
  *
- * @returns An object which has a call method
+ * @returns An object which has a `call` method
  */
 export const register = <
 	F extends (ctx?: any) => MayBePromise<NonNullable<object>>
 >(
 	input: F
 ): RegisterOutput<F> => {
-	// Check if handler is a function
+	// throw an error if input argument is not a function
 	if (typeof input !== "function") {
 		throw new TypeError("Argument 1 must be of type Function");
 	}
