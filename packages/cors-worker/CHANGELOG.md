@@ -1,5 +1,12 @@
 # @deox/cors-worker
 
+## 0.0.7
+
+### Patch Changes
+
+- [`3bf54f8`](https://github.com/kumardeo/deox/commit/3bf54f8bc792794b38161cd996206841b7309b3b) Thanks [@kumardeo](https://github.com/kumardeo)! - fix: check for same origin instead of same host in `Worker` constructor.
+  fix: use `location.href` as base url instead of `location.host`.
+
 ## 0.0.6
 
 ### Patch Changes
