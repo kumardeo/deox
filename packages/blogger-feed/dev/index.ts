@@ -8,57 +8,55 @@ const feed = new BloggerFeed("https://www.fineshopdesign.com", {
 
 (async () => {
 	// Blog.get
-	await feed.blog.get().then((blog) => {
-		console.info(".blog.get():", blog);
-	});
+	const _blog_get = await feed.blog.get();
+	console.info(".blog.get():", _blog_get);
 
 	// Posts.list
-	const _posts = await feed.posts
-		.list({
-			maxResults: 4,
-			startIndex: 2,
-			summary: true
-		})
-		.then((posts) => {
-			console.info(".posts.list():", posts);
-			return posts;
-		});
+	const _posts_list = await feed.posts.list({
+		maxResults: 4,
+		startIndex: 2,
+		orderBy: "updated",
+		summary: true
+	});
+	console.info(".posts.list():", _posts_list);
+
+	// Posts.list => .previous()
+	const _posts_list_previous = await _posts_list.previous();
+	console.info(".posts.list() => .previous():", _posts_list_previous);
+
+	// Posts.list => .next()
+	const _posts_list_next = await _posts_list.next();
+	console.info(".posts.list() => .next():", _posts_list_next);
 
 	// Posts.get
-	await feed.posts.get(_posts[0].id).then((post) => {
-		console.info(".posts.get():", post);
-	});
+	const _posts_get = await feed.posts.get(_posts_list[0].id);
+	console.info(".posts.get():", _posts_get);
 
 	// Posts.query
-	await feed.posts.query("Adsense").then((posts) => {
-		console.info(".posts.query():", posts);
-	});
+	const _posts_query = await feed.posts.query("Adsense");
+	console.info(".posts.query():", _posts_query);
 
 	// Pages.list
-	const _pages = await feed.pages.list().then((pages) => {
-		console.info(".pages.list():", pages);
-		return pages;
-	});
+	const _pages_list = await feed.pages.list();
+	console.info(".pages.list():", _pages_list);
 
 	// Pages.get
-	await feed.pages.get(_pages[0].id).then((page) => {
-		console.info(".pages.get():", page);
-	});
+	const _pages_get = await feed.pages.get(_pages_list[0].id);
+	console.info(".pages.get():", _pages_get);
 
 	// Comments.list
-	const _comments = await feed.comments
-		.list({ maxResults: 50, post_id: "4990960623216260259" })
-		.then((comments) => {
-			console.info(".comments.list():", comments);
-			return comments;
-		});
+	const _comments_list = await feed.comments.list({
+		maxResults: 50,
+		post_id: "4990960623216260259"
+	});
+	console.info(".comments.list():", _comments_list);
 
 	// Comments.get
-	await feed.comments
-		.get(_comments[0].post.id, _comments[0].id)
-		.then((comment) => {
-			console.info(".comments.get():", comment);
-		});
+	const _comments_get = await feed.comments.get(
+		_comments_list[0].post.id,
+		_comments_list[0].id
+	);
+	console.info(".comments.get():", _comments_get);
 })().catch(console.error);
 
 // Expose to window

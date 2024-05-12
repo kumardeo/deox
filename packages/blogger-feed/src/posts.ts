@@ -3,52 +3,74 @@ import { SDKInputNotFoundError } from "./errors";
 import { Methods } from "./methods";
 import { validators } from "./utils";
 
+/** Options for {@link Posts.list} */
 export type PostsListOptions = {
 	maxResults?: number;
 	startIndex?: number;
-	orderBy?: "lastmodified" | "starttime" | "published" | "updated";
+	orderBy?: "published" | "updated";
 	publishedMin?: Date | string;
 	publishedMax?: Date | string;
 	updatedMin?: Date | string;
 	updatedMax?: Date | string;
+	label?: string;
 	summary?: boolean;
 };
 
-export type PostsQueryOptions = PostsListOptions;
+/** Options for {@link Posts.get} */
+export type PostsGetOptions = { summary?: boolean };
+
+/** Options for {@link Posts.query} */
+export type PostsQueryOptions = Omit<PostsListOptions, "label">;
 
 export class Posts extends Methods {
+	/**
+	 * Retrieves all the posts of the blog
+	 *
+	 * @param options Options for filters
+	 *
+	 * @returns On success, an Array of Post
+	 */
 	async list(options: PostsListOptions = {}) {
-		const result = await this.client.request(
-			`./posts/${options.summary === true ? "summary" : "default"}`,
+		const { label } = options;
+
+		// validate label if provided
+		if (typeof label !== "undefined") {
+			validators.notBlank(label, "options.label");
+		}
+
+		const { posts, pagination } = await this.client.request(
+			`./posts/${options.summary === true ? "summary" : "default"}${label ? `/-/${encodeURI(label)}` : ""}`,
 			{
 				params: options,
 				exclude: ["query"]
 			}
 		);
 
-		if (!result.posts) {
-			throw new SDKInputNotFoundError(NOT_FOUND_ERRORS.posts);
-		}
-
-		return this._bind_pagination(result.posts, "posts", result.pagination);
+		// Use an empty array if entries were not found
+		return this._bind_pagination("posts", posts || [], pagination);
 	}
 
-	async get(post_id: string, options: { summary?: boolean } = {}) {
+	/**
+	 * Retrieves a post
+	 *
+	 * @param post_id The id of the post
+	 * @param options Options
+	 *
+	 * @returns On success, a Post
+	 */
+	async get(post_id: string, options: PostsGetOptions = {}) {
 		validators.notBlank(post_id, "Argument 'post_id'");
 
-		const result = await this.client.request(
+		const { posts } = await this.client.request(
 			`./posts/${options.summary === true ? "summary" : "default"}/${encodeURIComponent(post_id)}`,
 			{
 				exclude: ["query"]
 			}
 		);
 
-		if (!result.posts) {
-			throw new SDKInputNotFoundError(NOT_FOUND_ERRORS.posts);
-		}
+		const post = posts?.find((p) => p.id === post_id);
 
-		const post = result.posts.find((p) => p.id === post_id);
-
+		// Throw an error if the post was not found
 		if (!post) {
 			throw new SDKInputNotFoundError(NOT_FOUND_ERRORS.post);
 		}
@@ -56,10 +78,18 @@ export class Posts extends Methods {
 		return post;
 	}
 
+	/**
+	 * Retrieves all the posts with query
+	 *
+	 * @param query The query
+	 * @param options Options for filters
+	 *
+	 * @returns On success, an Array of Post
+	 */
 	async query(query: string, options: PostsQueryOptions = {}) {
 		validators.notBlank(query, "Argument 'query'");
 
-		const result = await this.client.request(
+		const { posts, pagination } = await this.client.request(
 			`./posts/${options.summary === true ? "summary" : "default"}`,
 			{
 				params: {
@@ -69,10 +99,7 @@ export class Posts extends Methods {
 			}
 		);
 
-		if (!result.posts) {
-			throw new SDKInputNotFoundError(NOT_FOUND_ERRORS.posts);
-		}
-
-		return this._bind_pagination(result.posts, "posts", result.pagination);
+		// Use an empty array if entries were not found
+		return this._bind_pagination("posts", posts || [], pagination);
 	}
 }

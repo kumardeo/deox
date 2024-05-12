@@ -1,5 +1,7 @@
 /* eslint-disable max-classes-per-file */
 
+import { type NOT_FOUND_ERRORS } from "./constants";
+
 /**
  * Represents a SDK error
  */
@@ -52,14 +54,7 @@ export class SDKRequestError extends SDKError {
 export class SDKInputNotFoundError<
 	T extends {
 		error: string;
-		code:
-			| "post_not_found"
-			| "posts_not_found"
-			| "page_not_found"
-			| "pages_not_found"
-			| "comment_not_found"
-			| "comments_not_found"
-			| "blog_not_found";
+		code: (typeof NOT_FOUND_ERRORS)[keyof typeof NOT_FOUND_ERRORS]["code"];
 	}
 > extends SDKError {
 	readonly error: T["error"];

@@ -3,16 +3,29 @@ import { SDKInputNotFoundError } from "./errors";
 import { FetchFeedOptions, fetchFeed } from "./request";
 import { getOrigin } from "./utils";
 
+/**
+ * An interface representing options for {@link Client} constructor
+ */
 export interface ClientOptions {
+	/** When set to `true`, enables jsonp callbacks */
 	jsonp?: boolean;
 }
 
+/**
+ * A class for fetching Blogger feed
+ */
 export class Client {
 	protected options: {
 		jsonp: boolean;
 		input: { type: "url" | "id"; value: string };
 	};
 
+	/**
+	 * Creates an instance of {@link Client}
+	 *
+	 * @param urlOrId The url or id of the blog
+	 * @param options Options
+	 */
 	constructor(urlOrId: string | URL, options: ClientOptions = {}) {
 		let input: { type: "url" | "id"; value: string };
 
@@ -40,6 +53,7 @@ export class Client {
 			jsonp: options?.jsonp === true
 		};
 
+		// Throw an error if jsonp is enabled but current environment is not browser
 		if (
 			this.options.jsonp &&
 			(typeof window !== "object" ||

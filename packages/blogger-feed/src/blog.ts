@@ -3,7 +3,7 @@ import { SDKInputNotFoundError } from "./errors";
 import { Methods } from "./methods";
 
 /**
- * A class having methods related for Blog
+ * A class having methods related to Blog
  */
 export class Blog extends Methods {
 	/**
@@ -14,10 +14,12 @@ export class Blog extends Methods {
 	async get() {
 		const { blog } = await this.client.request("./posts/summary", {
 			params: {
+				// Do not load entries since we only need blog info
 				maxResults: 0
 			}
 		});
 
+		// Throw an error if feed doesn't contain blog info
 		if (!blog) {
 			throw new SDKInputNotFoundError(NOT_FOUND_ERRORS.blog);
 		}

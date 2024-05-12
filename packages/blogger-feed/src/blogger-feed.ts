@@ -8,6 +8,14 @@ import { Posts } from "./posts";
  * An interface representing options for {@link BloggerFeed}
  */
 export interface BloggerFeedOptions {
+	/**
+	 * When set to `true`, enables jsonp callbacks, useful when running in browser environments to prevent cors issues.
+	 *
+	 * **Warning**: Set it to `true` if and only if you are running it in browser
+	 * because it loads javascript by appending script element to document.
+	 *
+	 * @default false
+	 */
 	jsonp?: boolean;
 }
 
@@ -17,6 +25,12 @@ export class BloggerFeed {
 		jsonp: boolean;
 	};
 
+	/**
+	 * Creates an instance of {@link BloggerFeed}
+	 *
+	 * @param urlOrId The url or id of the blog
+	 * @param options Options
+	 */
 	constructor(urlOrId: string | URL, options: BloggerFeedOptions = {}) {
 		this.options = {
 			urlOrId,

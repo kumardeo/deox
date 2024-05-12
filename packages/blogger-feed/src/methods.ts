@@ -2,12 +2,18 @@ import { Client } from "./client";
 import { Comment, Pagination, Post } from "./types";
 import { addProperties } from "./utils";
 
-export interface PaginationProps<T extends (Post | Comment)[]> {
+type PaginationMap = {
+	posts: Post[];
+	comments: Comment[];
+};
+
+/** Pagination props */
+export interface PaginationProps<T extends keyof PaginationMap> {
 	readonly self_url: string;
 	readonly previous_url: string | null;
 	readonly next_url: string | null;
-	readonly next: () => Promise<(T & PaginationProps<T>) | null>;
-	readonly previous: () => Promise<(T & PaginationProps<T>) | null>;
+	next(): Promise<(PaginationMap[T] & PaginationProps<T>) | null>;
+	previous(): Promise<(PaginationMap[T] & PaginationProps<T>) | null>;
 }
 
 export class Methods {
@@ -21,9 +27,9 @@ export class Methods {
 		return this._client;
 	}
 
-	protected _bind_pagination<T extends (Post | Comment)[]>(
-		array: T,
-		type: T extends Post[] ? "posts" : "comments",
+	protected _bind_pagination<T extends keyof PaginationMap>(
+		type: T,
+		array: PaginationMap[T],
 		pagination: Pagination
 	) {
 		const properties: PaginationProps<T> = {
@@ -34,10 +40,10 @@ export class Methods {
 				if (pagination.previous) {
 					const result = await this.client.request(pagination.previous);
 					const to = (type === "comments" ? result.comments : result.posts) as
-						| T
-						| undefined;
+						| PaginationMap[T]
+						| null;
 					if (to) {
-						return this._bind_pagination(to, type, result.pagination);
+						return this._bind_pagination(type, to, result.pagination);
 					}
 				}
 				return null;
@@ -46,10 +52,10 @@ export class Methods {
 				if (pagination.next) {
 					const result = await this.client.request(pagination.next);
 					const to = (type === "comments" ? result.comments : result.posts) as
-						| T
-						| undefined;
+						| PaginationMap[T]
+						| null;
 					if (to) {
-						return this._bind_pagination(to, type, result.pagination);
+						return this._bind_pagination(type, to, result.pagination);
 					}
 				}
 				return null;

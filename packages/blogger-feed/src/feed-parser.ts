@@ -8,7 +8,8 @@ import type {
 	Extended,
 	Blog,
 	Comment,
-	Feed
+	Feed,
+	Link
 } from "./types";
 
 /**
@@ -18,8 +19,9 @@ import type {
  *
  * @returns An object containing link and links
  */
-const getLink = (linkArray: unknown) => {
-	const links: Links = {};
+const getLinks = (linkArray: unknown) => {
+	const record: Links = {};
+	const array: Link[] = [];
 	let href: string | null = null;
 
 	if (isArray(linkArray) && linkArray.length > 0) {
@@ -32,15 +34,18 @@ const getLink = (linkArray: unknown) => {
 			const linkTitleLike = getNested(link, "title");
 
 			if (isString(linkRelLike) && isString(linkHrefLike)) {
-				if (!isArray(links[linkRelLike])) {
-					links[linkRelLike] = [];
+				if (!isArray(record[linkRelLike])) {
+					record[linkRelLike] = [];
 				}
-				links[linkRelLike]!.push({
+				const result = {
 					rel: linkRelLike,
 					href: linkHrefLike,
 					type: isString(linkTypeLike) ? linkTypeLike : null,
 					title: isString(linkTitleLike) ? linkTitleLike : null
-				});
+				};
+
+				record[linkRelLike]!.push(result);
+				array.push(result);
 
 				if (linkRelLike === "alternate" && linkTypeLike === "text/html") {
 					href = linkHrefLike;
@@ -49,7 +54,7 @@ const getLink = (linkArray: unknown) => {
 		}
 	}
 
-	return { link: href, links };
+	return { link: href, links: record, array };
 };
 
 /**
@@ -69,19 +74,19 @@ const getPagination = (feed: unknown) => {
 		previous: null,
 		next: null
 	};
+	const keys = Object.keys(result) as (keyof typeof result)[];
 
-	const { links } = getLink(getNested(feed, "link"));
+	const { array } = getLinks(getNested(feed, "link"));
 
-	if (links) {
-		links.self?.forEach((link) => {
-			if (link.type !== "text/html") result.self = link.href;
-		});
-		links.previous?.forEach((link) => {
-			if (link.type !== "text/html") result.previous = link.href;
-		});
-		links.next?.forEach((link) => {
-			if (link.type !== "text/html") result.next = link.href;
-		});
+	for (let i = 0; i < array.length; i += 1) {
+		const { rel, href, type } = array[i];
+		if (type !== "text/html") {
+			keys.forEach((key) => {
+				if (rel === key) {
+					result[key] = href;
+				}
+			});
+		}
 	}
 
 	return result;
@@ -150,7 +155,7 @@ const getPostComments = (linkArray: unknown): PostCommentInfo => {
 
 	const {
 		links: { replies }
-	} = getLink(linkArray);
+	} = getLinks(linkArray);
 	if (replies) {
 		replies.forEach(({ title, type, href }) => {
 			if (type === "text/html" && isString(title)) {
@@ -170,7 +175,7 @@ const getPostComments = (linkArray: unknown): PostCommentInfo => {
 };
 
 /**
- * Gets author information from author array
+ * Gets authors from author array
  *
  * @param authorArray The author array
  *
@@ -354,7 +359,7 @@ const getBlog = (feedObject: unknown): Blog | null => {
 	const feedSubtitleLike = getNested(feedObject, "subtitle", "$t");
 	const feedUpdatedLike = getNested(feedObject, "updated", "$t");
 	const feedLinkLike = getNested(feedObject, "link");
-	const { link, links } = getLink(feedLinkLike);
+	const { link, links } = getLinks(feedLinkLike);
 
 	if (
 		isObject(feedObject) &&
@@ -397,7 +402,7 @@ const getPost = (postEntry: unknown): Post | null => {
 	const postSummaryLike = getNested(postEntry, "summary", "$t");
 	const postContentLike = getNested(postEntry, "content", "$t");
 	const postLinkLike = getNested(postEntry, "link");
-	const { link, links } = getLink(postLinkLike);
+	const { link, links } = getLinks(postLinkLike);
 
 	if (
 		isObject(postEntry) &&
@@ -450,7 +455,7 @@ const getComment = (commentEntry: unknown): Comment | null => {
 	const commentSummaryLike = getNested(commentEntry, "summary", "$t");
 	const commentContentLike = getNested(commentEntry, "content", "$t");
 	const commentLinkLike = getNested(commentEntry, "link");
-	const { link, links } = getLink(commentLinkLike);
+	const { link, links } = getLinks(commentLinkLike);
 
 	if (
 		isObject(commentEntry) &&
@@ -542,7 +547,7 @@ const getFeedFromEntry = (entryArray: unknown, feedObject?: unknown) => {
 
 	const feed: Feed = {
 		blog: getBlog(feedObject),
-		links: getLink(getNested(feedObject, "link")).links,
+		links: getLinks(getNested(feedObject, "link")).links,
 		posts,
 		comments,
 		itemsPerPage: getItemsPerPage(feedObject),

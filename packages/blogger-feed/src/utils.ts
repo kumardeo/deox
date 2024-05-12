@@ -1,13 +1,19 @@
+/* eslint-disable no-bitwise */
+
 import { SDKTypeError } from "./errors";
 
+/** Checks whether arg is an array */
 export const isArray = (arg: unknown): arg is any[] => Array.isArray(arg);
 
+/** Checks whether arg is a non-nullish object */
 export const isObject = (arg: unknown): arg is NonNullable<object> =>
 	typeof arg === "object" && arg !== null;
 
+/** Checks whether arg is a string */
 export const isString = (arg: unknown): arg is string =>
 	typeof arg === "string";
 
+/** Checks whether the deep nested property in an object exists and gets its value */
 export const nestedData = (obj: unknown, ...levels: string[]) => {
 	let current = obj;
 
@@ -21,9 +27,11 @@ export const nestedData = (obj: unknown, ...levels: string[]) => {
 	return { exists: true, value: current };
 };
 
+/** Gets the deep nested property value in an object */
 export const getNested = (obj: any, ...args: string[]): unknown =>
 	nestedData(obj, ...args).value;
 
+/** Converts object to property descriptor map */
 const getConfigurations = <M extends Record<string | number, any>>(
 	properties: M
 ) =>
@@ -37,6 +45,7 @@ const getConfigurations = <M extends Record<string | number, any>>(
 		return acc;
 	}, {} as PropertyDescriptorMap);
 
+/** Adds properties to existing object */
 export const addProperties = <
 	O extends NonNullable<unknown>,
 	I extends NonNullable<unknown>,
@@ -54,6 +63,7 @@ export const addProperties = <
 	return object as O & M & I;
 };
 
+/** Input validators */
 export const validators = {
 	string(data: unknown, name: string) {
 		if (typeof data !== "string") {
@@ -101,16 +111,13 @@ export const generateId = (format = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx") => {
 		let r = Math.random() * 16;
 		if (d1 > 0) {
 			// Use timestamp until depleted
-			// eslint-disable-next-line no-bitwise
 			r = (d1 + r) % 16 | 0;
 			d1 = Math.floor(d1 / 16);
 		} else {
 			// Use microseconds since page-load if supported
-			// eslint-disable-next-line no-bitwise
 			r = (d2 + r) % 16 | 0;
 			d2 = Math.floor(d2 / 16);
 		}
-		// eslint-disable-next-line no-bitwise
 		return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
 	});
 };

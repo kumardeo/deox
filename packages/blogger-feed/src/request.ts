@@ -3,9 +3,7 @@ import { SDKError, SDKRequestError } from "./errors";
 import { parseFeed } from "./feed-parser";
 import { generateId } from "./utils";
 
-/**
- * An interface representing options for {@link RequestURL}
- */
+/** An interface representing options for {@link RequestURL} */
 export interface RequestURLOptions {
 	/**
 	 * Indicates whether to clear existing search queries
@@ -25,9 +23,7 @@ export interface RequestURLOptions {
 	>;
 }
 
-/**
- * Constructs an `URL` object for endpoints
- */
+/** Constructs an `URL` object for endpoints */
 export class RequestURL extends URL {
 	constructor(
 		url: string | URL,
@@ -61,6 +57,9 @@ export class RequestURL extends URL {
 	}
 }
 
+/**
+ * An interface of parameters which can be used for blogger feed api
+ */
 export interface Params {
 	maxResults?: number;
 	startIndex?: number;
@@ -83,14 +82,10 @@ export interface FetchFeedOptions {
 	jsonp?: boolean;
 }
 
-/**
- * A callback function for constructing jsonp url with given callback param
- */
+/** A callback function for constructing jsonp url with given callback param */
 type JSONPGetUrl = (data: { callback: string; id: string }) => string | URL;
 
-/**
- * Pending jsonp requests
- */
+/** Pending jsonp requests */
 const queueJSONP: Record<string, (data: unknown) => void> = {};
 
 /**
@@ -220,7 +215,7 @@ export const fetchFeed = async (
 	// Set alt to json in order to load the json data instead of xml
 	queries.alt = "json";
 
-	// set redirect to false
+	// Set redirect to false
 	queries.redirect = false;
 
 	const endpoint = new RequestURL(path, baseUrl, { params: queries });
