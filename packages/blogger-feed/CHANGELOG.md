@@ -1,5 +1,11 @@
 # @deox/blogger-feed
 
+## 0.0.2
+
+### Patch Changes
+
+- [`3cce609`](https://github.com/kumardeo/deox/commit/3cce6095fd5573a31ee1743e79dcbb7d3636a165) Thanks [@kumardeo](https://github.com/kumardeo)! - fix: remove unnecessary exception throws
+
 ## 0.0.1
 
 ### Patch Changes
