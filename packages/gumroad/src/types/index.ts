@@ -1,2 +1,2 @@
-export type * from "./gumroad";
-export type * from "./utils";
+export type * from './gumroad';
+export type * from './utils';

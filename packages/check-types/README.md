@@ -50,7 +50,7 @@ Following functions are available:
 * `isFinite(arg)`: Check whether `arg` is `Number` and isFinite
 * `isNumber(arg)`: Check whether `arg` is a `Number` excluding `NaN` and `Infinity`
 * `isObjectAny(arg)`: Check whether `arg` is an `Object` including `null`
-* `isObject(arg)`: Check whether `arg`is an `Object` excluding `null`
+* `isObject(arg)`: Check whether `arg`is an `Object` excluding `null` and `Array`
 * `isPlainObject(arg)`: Check whether `arg` is a plain object
 * `isRegExp(arg)`: Check whether `arg` is a `RegExp`
 * `isDate(arg)`: Check whether `arg` is a `Date`

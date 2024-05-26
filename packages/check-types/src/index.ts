@@ -10,10 +10,7 @@
  * Object.prototype.toString.call(input).replace(/(?:^\[object\s(.*?)\]$)/, "$1")
  * ```
  */
-export const getClass = (input: any): string =>
-	Object.prototype.toString
-		.call(input)
-		.replace(/(?:^\[object\s(.*?)\]$)/, "$1");
+export const getClass = (input: any): string => Object.prototype.toString.call(input).replace(/(?:^\[object\s(.*?)\]$)/, '$1');
 
 /**
  * Check whether `arg` is `null`
@@ -41,8 +38,7 @@ export const isNull = (arg: any): arg is null => arg === null;
  * Array.isArray ? Array.isArray(arg) : getClass(arg) === "Array"
  * ```
  */
-export const isArray = (arg: any): arg is any[] =>
-	Array.isArray ? Array.isArray(arg) : getClass(arg) === "Array";
+export const isArray = (arg: any): arg is any[] => (Array.isArray ? Array.isArray(arg) : getClass(arg) === 'Array');
 
 /**
  * Check whether `arg` is a `String`
@@ -56,7 +52,7 @@ export const isArray = (arg: any): arg is any[] =>
  * typeof arg === "string"
  * ```
  */
-export const isString = (arg: any): arg is string => typeof arg === "string";
+export const isString = (arg: any): arg is string => typeof arg === 'string';
 
 /**
  * Check whether `arg` is a `Function`
@@ -70,8 +66,7 @@ export const isString = (arg: any): arg is string => typeof arg === "string";
  * typeof arg === "function"
  * ```
  */
-export const isFunction = (arg: any): arg is (..._: any[]) => any =>
-	typeof arg === "function";
+export const isFunction = (arg: any): arg is (..._: any[]) => any => typeof arg === 'function';
 
 /**
  * Check whether `arg` is a `BigInt`
@@ -85,7 +80,7 @@ export const isFunction = (arg: any): arg is (..._: any[]) => any =>
  * typeof arg === "bigint"
  * ```
  */
-export const isBigInt = (arg: any): arg is bigint => typeof arg === "bigint";
+export const isBigInt = (arg: any): arg is bigint => typeof arg === 'bigint';
 
 /**
  * Check whether `arg` is a `Symbol`
@@ -99,7 +94,7 @@ export const isBigInt = (arg: any): arg is bigint => typeof arg === "bigint";
  * typeof arg === "symbol"
  * ```
  */
-export const isSymbol = (arg: any): arg is symbol => typeof arg === "symbol";
+export const isSymbol = (arg: any): arg is symbol => typeof arg === 'symbol';
 
 /**
  * Check whether `arg` is a `Boolean`
@@ -113,7 +108,7 @@ export const isSymbol = (arg: any): arg is symbol => typeof arg === "symbol";
  * typeof arg === "boolean"
  * ```
  */
-export const isBoolean = (arg: any): arg is boolean => typeof arg === "boolean";
+export const isBoolean = (arg: any): arg is boolean => typeof arg === 'boolean';
 
 /**
  * Check whether `arg` is `undefined`
@@ -127,8 +122,7 @@ export const isBoolean = (arg: any): arg is boolean => typeof arg === "boolean";
  * typeof arg === "undefined"
  * ```
  */
-export const isUndefined = (arg: any): arg is undefined =>
-	typeof arg === "undefined";
+export const isUndefined = (arg: any): arg is undefined => typeof arg === 'undefined';
 
 /**
  * Check whether `arg` is a `Number` (including `NaN` and `Infinity`)
@@ -142,7 +136,7 @@ export const isUndefined = (arg: any): arg is undefined =>
  * typeof arg === "number"
  * ```
  */
-export const isNumberAny = (arg: any): arg is number => typeof arg === "number";
+export const isNumberAny = (arg: any): arg is number => typeof arg === 'number';
 
 /**
  * Check whether `arg` is `NaN`
@@ -156,10 +150,8 @@ export const isNumberAny = (arg: any): arg is number => typeof arg === "number";
  * Number.isNaN(arg)
  * ```
  */
-export const isNaN = (arg: unknown) =>
-	(Number.isNaN
-		? Number.isNaN
-		: (typeof window === "object" ? window : globalThis).isNaN)(arg);
+// biome-ignore lint/suspicious/noShadowRestrictedNames: we need to shadow
+export const isNaN = (arg: unknown) => (Number.isNaN ? Number.isNaN : (typeof window === 'object' ? window : globalThis).isNaN)(arg);
 
 /**
  * Check whether `arg` number is not `Infinity`
@@ -173,10 +165,8 @@ export const isNaN = (arg: unknown) =>
  * Number.isFinite(arg)
  * ```
  */
-export const isFinite = (arg: number) =>
-	(Number.isFinite
-		? Number.isFinite
-		: (typeof window === "object" ? window : globalThis).isFinite)(arg);
+// biome-ignore lint/suspicious/noShadowRestrictedNames: we need to shadow
+export const isFinite = (arg: number) => (Number.isFinite ? Number.isFinite : (typeof window === 'object' ? window : globalThis).isFinite)(arg);
 
 /**
  * Check whether `arg` is a `Number` (excluding `NaN` and `Infinity`)
@@ -190,8 +180,7 @@ export const isFinite = (arg: number) =>
  * typeof arg === "number" && !Number.isNaN(arg) && Number.isFinite(arg)
  * ```
  */
-export const isNumber = (arg: any): arg is number =>
-	isNumberAny(arg) && !isNaN(arg) && isFinite(arg);
+export const isNumber = (arg: any): arg is number => isNumberAny(arg) && !isNaN(arg) && isFinite(arg);
 
 /**
  * Check whether `arg` is a `object` (including `null`)
@@ -205,23 +194,21 @@ export const isNumber = (arg: any): arg is number =>
  * typeof arg === "object"
  * ```
  */
-export const isObjectAny = (arg: any): arg is object | null =>
-	typeof arg === "object";
+export const isObjectAny = (arg: any): arg is object | null => typeof arg === 'object';
 
 /**
- * Check whether `arg` is a `object` (excluding `null`)
+ * Check whether `arg` is a `object` (excluding `null` and `Array`)
  *
  * @param arg Any data
  *
- * @returns `true` if `arg` is a `object` (excluding `null`) otherwise `false`
+ * @returns `true` if `arg` is a `object` (excluding `null` and `Array`) otherwise `false`
  *
  * Equivalent to:
  * ```
- * typeof arg === "object" && arg !== null
+ * arg && typeof arg === "object" && !Array.isArray(arg)
  * ```
  */
-export const isObject = (arg: any): arg is NonNullable<object> =>
-	isObjectAny(arg) && !isNull(arg);
+export const isObject = (arg: any): arg is NonNullable<object> => arg && isObjectAny(arg) && !isArray(arg);
 
 /**
  * Check whether `arg`'s constructor is `Object`
@@ -230,8 +217,7 @@ export const isObject = (arg: any): arg is NonNullable<object> =>
  *
  * @returns `true` if `arg`'s constructor is `Object` otherwise `false`
  */
-const isFromObject = (arg: any): arg is NonNullable<object> =>
-	getClass(arg) === "Object";
+const isFromObject = (arg: any): arg is NonNullable<object> => getClass(arg) === 'Object';
 
 /**
  * Check whether `arg` is a plain object
@@ -240,27 +226,25 @@ const isFromObject = (arg: any): arg is NonNullable<object> =>
  *
  * @returns `true` if `arg` is a plain object otherwise `false`
  */
-export const isPlainObject = (
-	arg: any
-): arg is object & Record<string, unknown> => {
-	if (!isFromObject(arg)) return false;
+export const isPlainObject = (arg: any): arg is object & Record<string, unknown> => {
+  if (!isFromObject(arg)) return false;
 
-	// If it has modified constructor
-	const ctor = arg.constructor;
-	if (isUndefined(ctor)) return true;
+  // If it has modified constructor
+  const ctor = arg.constructor;
+  if (isUndefined(ctor)) return true;
 
-	const prot: unknown = ctor.prototype;
+  const prot: unknown = ctor.prototype;
 
-	// If it has modified prototype
-	if (!isFromObject(prot)) return false;
+  // If it has modified prototype
+  if (!isFromObject(prot)) return false;
 
-	// If constructor does not have an Object-specific method
-	if (!Object.prototype.hasOwnProperty.call(prot, "isPrototypeOf")) {
-		return false;
-	}
+  // If constructor does not have an Object-specific method
+  if (!Object.prototype.hasOwnProperty.call(prot, 'isPrototypeOf')) {
+    return false;
+  }
 
-	// Most likely a plain Object
-	return true;
+  // Most likely a plain Object
+  return true;
 };
 
 /**
@@ -303,8 +287,7 @@ export const isDate = (arg: any): arg is Date => arg instanceof Date;
  * typeof URL !== "undefined" && arg instanceof URL
  * ```
  */
-export const isURL = (arg: any): arg is URL =>
-	typeof URL !== "undefined" && arg instanceof URL;
+export const isURL = (arg: any): arg is URL => typeof URL !== 'undefined' && arg instanceof URL;
 
 /**
  * Check whether `arg` is a `Error`
@@ -318,5 +301,4 @@ export const isURL = (arg: any): arg is URL =>
  * typeof Error !== "undefined" && arg instanceof Error
  * ```
  */
-export const isError = (arg: any): arg is Error =>
-	typeof Error !== "undefined" && arg instanceof Error;
+export const isError = (arg: any): arg is Error => typeof Error !== 'undefined' && arg instanceof Error;

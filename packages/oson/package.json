@@ -21,8 +21,6 @@
 		"url": "https://github.com/kumardeo/deox/issues"
 	},
 	"scripts": {
-		"lint": "cross-env DEBUG=eslint:cli-engine eslint --fix --ignore-path ../../.eslintignore .",
-		"format": "prettier --write --ignore-path ../../.prettierignore .",
 		"dev": "wrangler dev",
 		"build": "rimraf dist && tsx ./build.ts",
 		"clean": "rimraf dist"
@@ -38,13 +36,6 @@
 			"types": "./dist/dts/index.d.ts",
 			"import": "./dist/esm/index.js",
 			"require": "./dist/cjs/index.js"
-		}
-	},
-	"typesVersions": {
-		"*": {
-			"*": [
-				"./dist/dts/index.d.ts"
-			]
 		}
 	},
 	"devDependencies": {

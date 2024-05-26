@@ -22,8 +22,6 @@
 		"url": "https://github.com/kumardeo/deox/issues"
 	},
 	"scripts": {
-		"lint": "cross-env DEBUG=eslint:cli-engine eslint --fix --ignore-path ../../.eslintignore .",
-		"format": "prettier --write --ignore-path ../../.prettierignore .",
 		"dev": "webpack server --config dev/webpack.dev.cjs",
 		"build": "rimraf dist && tsx ./build.ts",
 		"clean": "rimraf dist"
@@ -50,9 +48,6 @@
 		"*": {
 			"register": [
 				"./dist/dts/register/index.d.ts"
-			],
-			"*": [
-				"./dist/dts/index.d.ts"
 			]
 		}
 	},
