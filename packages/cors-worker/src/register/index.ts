@@ -13,7 +13,7 @@ const eventHandler = messageHandler<MessageWorker>();
 export const register = <F extends (ctx?: any) => MayBePromise<NonNullable<object>>>(input: F): RegisterOutput<F> => {
   // throw an error if input argument is not a function
   if (typeof input !== 'function') {
-    throw new TypeError('Argument 1 must be of type Function');
+    throw new TypeError('Argument 1 must be of type function');
   }
 
   const contextPromise = new DeferredPromise<HandlerType<F>>();

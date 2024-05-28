@@ -13,15 +13,17 @@ import type {
 } from './types';
 import { eventIsResponse, generateId, getBlobContent } from './utils';
 
+/** Worker constructor from global object */
 let MayBeWorker: (typeof globalThis)['Worker'];
 if (typeof globalThis !== 'undefined' && globalThis.Worker) {
   MayBeWorker = globalThis.Worker;
 } else if (typeof window !== 'undefined' && window.Worker) {
-  MayBeWorker = globalThis.Worker;
+  MayBeWorker = window.Worker;
 } else if (typeof self !== 'undefined' && self.Worker) {
-  MayBeWorker = globalThis.Worker;
+  MayBeWorker = self.Worker;
 }
 
+/** This is dummy constructor to extend if `Worker` constructor is not available */
 class DummyWorker {
   constructor() {
     throw new Error(
@@ -30,12 +32,13 @@ class DummyWorker {
   }
 }
 
-// @ts-expect-error we do checks
-const ToExtend = MayBeWorker ?? DummyWorker;
-
 /** The global `Worker` constructor */
-// @ts-expect-error any global object should be defined
+// @ts-expect-error it should only be used if global `Worker` constructor is available
 export const GlobalWorker = MayBeWorker;
+
+// Use dummy constructor if global `Worker` constructor is not available
+// to make sure we can extend on ssr
+const ExtendWorker = GlobalWorker ?? DummyWorker;
 
 /**
  * A subclass of Worker with more features.
@@ -93,7 +96,7 @@ export const GlobalWorker = MayBeWorker;
  */
 export class Worker<
   R extends RegisterOutput<(ctx: any) => MayBePromise<NonNullable<object>>> = RegisterOutput<(ctx: undefined) => never>,
-> extends ToExtend {
+> extends ExtendWorker {
   /** Indicates whether Proxy is supported */
   static get isProxySupported() {
     return typeof Proxy !== 'undefined';
@@ -112,7 +115,7 @@ export class Worker<
   private _generate: (message: MessageWorkerInput) => string;
 
   /** The context provided through options (to be sent to worker) */
-  readonly context: InferContext<R>;
+  private _context: InferContext<R>;
 
   /**
    * A method to request to worker
@@ -182,12 +185,12 @@ export class Worker<
       }
     });
 
-    this.context = workerOptions.context;
+    this._context = workerOptions.context;
 
     this._setup = new Promise((resolve, reject) => {
       this._request({
         type: 'context',
-        context: this.context,
+        context: this._context,
       })
         .then((data) => {
           if (data.type === 'context') {
@@ -197,7 +200,7 @@ export class Worker<
               reject(data.error);
             }
           } else {
-            reject(new Error(`Requested context type but got ${String(data.type)}`));
+            reject(new Error(`Requested \`context\` type but got \`${String(data.type)}\``));
           }
         })
         .catch(reject);
@@ -213,6 +216,11 @@ export class Worker<
    * @returns A Promise which resolves with the return value of the handler
    */
   async call<N extends keyof InferMethodsMap<R>>(name: N, ...args: InferMethodsMap<R>[N][0]): Promise<Await<InferMethodsMap<R>[N][1]>> {
+    // throw an error if name is neither string nor number
+    if (!['string', 'number'].includes(typeof name)) {
+      throw new TypeError('Argument 1 must be of type string or number');
+    }
+
     // make sure context is setup
     await this._setup;
 
@@ -223,7 +231,7 @@ export class Worker<
     });
 
     if (response.type !== 'response') {
-      throw new Error(`Requested response type but got ${String(response.type)}`);
+      throw new Error(`Requested \`response\` type but got \`${String(response.type)}\``);
     }
 
     switch (response.status) {
@@ -232,18 +240,16 @@ export class Worker<
       case 'error':
         throw response.error;
       case 'not-found':
-        throw new Error(`Requested handler '${String(response.handler)}' not found`);
+        throw new Error(`Requested handler \`${String(response.handler)}\` not found`);
       default:
-        throw new Error(`Invalid response: ${JSON.stringify(response)}`);
+        throw new Error(`Invalid response \`${JSON.stringify(response)}\``);
     }
   }
 
-  /**
-   * A proxy which can to used as an alternative for `call` method
-   */
+  /** A proxy which can to used as an alternative for `call` method */
   get proxy() {
     if (!Worker.isProxySupported) {
-      throw new Error('Proxy is not supported');
+      throw new Error('`Proxy` is not supported');
     }
     this._proxy ??= {
       __proto__: new Proxy(

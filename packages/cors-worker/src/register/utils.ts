@@ -190,18 +190,19 @@ export const handle = <F extends (ctx?: any) => MayBePromise<NonNullable<object>
       return this.__resolved;
     },
     async call(name, ...args) {
-      const methods = await this.getObject();
-
-      if (typeof args === 'undefined' || !Array.isArray(args)) {
-        throw new TypeError('Argument 2 must be of type Array');
+      // throw an error if name is neither string nor number
+      if (!['string', 'number'].includes(typeof name)) {
+        throw new TypeError('Argument 1 must be of type string or number');
       }
 
+      const methods = await this.getObject();
+
       if (!Object.hasOwnProperty.call(methods, name)) {
-        throw new Error(`Method '${String(name)}' does not exists`);
+        throw new Error(`Method \`${String(name)}\` does not exists`);
       }
 
       if (typeof methods[name] !== 'function') {
-        throw new Error(`Property '${String(name)}' is not a function`);
+        throw new Error(`Property \`${String(name)}\` is not a function`);
       }
 
       // @ts-expect-error we did type checks safe to call the method
