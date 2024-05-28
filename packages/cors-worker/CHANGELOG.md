@@ -1,5 +1,12 @@
 # @deox/cors-worker
 
+## 0.0.9
+
+### Patch Changes
+
+- [`49f373a`](https://github.com/kumardeo/deox/commit/49f373a9f1afb4bf53e0f8089a9573afe32d25e0) Thanks [@kumardeo](https://github.com/kumardeo)! - fix: acessing `Worker` from global object and export as `GlobalWorker`
+  fix: remove unnecessary runtime type checks and add necessary type checks
+
 ## 0.0.8
 
 ### Patch Changes
