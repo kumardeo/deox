@@ -1,3 +1,4 @@
+import { generateId } from '@deox/utils/generate-id';
 import { WORKER_NAMESPACE } from './constants';
 import type {
   Await,
@@ -11,10 +12,10 @@ import type {
   MessageWorkerInput,
   RegisterOutput,
 } from './types';
-import { eventIsResponse, generateId, getBlobContent } from './utils';
+import { eventIsResponse, getBlobContent } from './utils';
 
 /** Worker constructor from global object */
-let MayBeWorker: (typeof globalThis)['Worker'];
+let MayBeWorker: (typeof globalThis)['Worker'] | undefined;
 if (typeof globalThis !== 'undefined' && globalThis.Worker) {
   MayBeWorker = globalThis.Worker;
 } else if (typeof window !== 'undefined' && window.Worker) {
@@ -27,18 +28,13 @@ if (typeof globalThis !== 'undefined' && globalThis.Worker) {
 class DummyWorker {
   constructor() {
     throw new Error(
-      'Cannot create `Worker` instance. Make sure you are using on a Web Worker supported runtime which has a global `Worker` constructor.',
+      "Cannot create 'Worker' instance. Make sure you are using on a Web Worker supported runtime which has a global 'Worker' constructor.",
     );
   }
 }
 
-/** The global `Worker` constructor */
-// @ts-expect-error it should only be used if global `Worker` constructor is available
-export const GlobalWorker = MayBeWorker;
-
-// Use dummy constructor if global `Worker` constructor is not available
-// to make sure we can extend on ssr
-const ExtendWorker = GlobalWorker ?? DummyWorker;
+/** Use dummy constructor if global `Worker` constructor is not available to make sure we can extend on ssr */
+const ExtendWorker = (MayBeWorker as (typeof globalThis)['Worker']) ?? DummyWorker;
 
 /**
  * A subclass of Worker with more features.
@@ -97,11 +93,6 @@ const ExtendWorker = GlobalWorker ?? DummyWorker;
 export class Worker<
   R extends RegisterOutput<(ctx: any) => MayBePromise<NonNullable<object>>> = RegisterOutput<(ctx: undefined) => never>,
 > extends ExtendWorker {
-  /** Indicates whether Proxy is supported */
-  static get isProxySupported() {
-    return typeof Proxy !== 'undefined';
-  }
-
   /** A promise which resolves when context is sent to worker */
   private _setup: Promise<void>;
 
@@ -200,7 +191,7 @@ export class Worker<
               reject(data.error);
             }
           } else {
-            reject(new Error(`Requested \`context\` type but got \`${String(data.type)}\``));
+            reject(new Error(`Requested 'context' type but got '${String(data.type)}'`));
           }
         })
         .catch(reject);
@@ -231,7 +222,7 @@ export class Worker<
     });
 
     if (response.type !== 'response') {
-      throw new Error(`Requested \`response\` type but got \`${String(response.type)}\``);
+      throw new Error(`Requested 'response' type but got '${String(response.type)}'`);
     }
 
     switch (response.status) {
@@ -240,16 +231,16 @@ export class Worker<
       case 'error':
         throw response.error;
       case 'not-found':
-        throw new Error(`Requested handler \`${String(response.handler)}\` not found`);
+        throw new Error(`Requested handler '${String(response.handler)}' not found`);
       default:
-        throw new Error(`Invalid response \`${JSON.stringify(response)}\``);
+        throw new Error(`Invalid response '${JSON.stringify(response)}'`);
     }
   }
 
   /** A proxy which can to used as an alternative for `call` method */
   get proxy() {
-    if (!Worker.isProxySupported) {
-      throw new Error('`Proxy` is not supported');
+    if (typeof Proxy === 'undefined') {
+      throw new Error("'Proxy' is not supported.");
     }
     this._proxy ??= {
       __proto__: new Proxy(

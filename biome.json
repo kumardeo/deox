@@ -1,7 +1,7 @@
 {
-  "$schema": "https://biomejs.dev/schemas/1.7.2/schema.json",
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
   "files": {
-    "ignore": ["node_modules", "dist", ".ignore", "photon/src/lib", "png/src/lib"]
+    "ignore": ["node_modules", "dist", ".ignore", ".turbo"]
   },
   "organizeImports": {
     "enabled": true
@@ -41,7 +41,7 @@
       }
     },
     {
-      "include": ["packages/oson", "packages/check-types", "packages/cors-worker"],
+      "include": ["packages/oson", "packages/cors-worker", "packages/check-types", "packages/utils/src/predicate.ts"],
       "linter": {
         "rules": {
           "suspicious": {

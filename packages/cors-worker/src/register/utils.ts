@@ -1,5 +1,5 @@
 import { WORKER_NAMESPACE } from '../constants';
-import type { Await, AwaitFunc, MayBePromise, MessageMain, MessageMainInput, MethodsMap } from '../types';
+import type { Await, AwaitReturn, MayBePromise, MessageMain, MessageMainInput, MethodsMap } from '../types';
 
 /// <reference lib="WebWorker" />
 declare const self: DedicatedWorkerGlobalScope;
@@ -22,16 +22,17 @@ export const respond = {
    *
    * @param id The id of the request
    *
-   * @param keyValue The object to be sent
+   * @param data The object to be sent
    */
-  post(id: string, keyValue: MessageMainInput) {
-    const response: MessageMain = {
-      ...keyValue,
-      id,
-      timestamp: new Date().getTime(),
-    };
-
-    Object.assign(response, { [WORKER_NAMESPACE]: true });
+  post(id: string, data: MessageMainInput) {
+    const response: MessageMain = Object.assign(
+      {
+        ...data,
+        id,
+        timestamp: new Date().getTime(),
+      },
+      { [WORKER_NAMESPACE]: true },
+    );
 
     self.postMessage(response);
   },
@@ -58,7 +59,7 @@ export const respond = {
     this.post(id, {
       type: 'context',
       status: 'error',
-      error: toError(error || 'An unexpected error occurred while setting context in worker'),
+      error: toError(error || 'An unexpected error occurred while setting context in worker.'),
     });
   },
 
@@ -91,7 +92,7 @@ export const respond = {
     this.post(id, {
       type: 'response',
       status: 'error',
-      error: toError(error || 'An unexpected error occurred in worker'),
+      error: toError(error || 'An unexpected error occurred in worker.'),
       handler,
     });
   },
@@ -112,80 +113,36 @@ export const respond = {
   },
 };
 
-export class DeferredPromise<T> extends Promise<T> {
-  readonly resolve: (value: T | PromiseLike<T>) => void;
-
-  readonly reject: (reason?: any) => void;
-
-  /**
-   * Creates a new Promise.
-   *
-   * @param executor A callback used to initialize the promise. This callback is passed two arguments: a resolve callback used to resolve the promise with a value or the result of another promise, and a reject callback used to reject the promise with a provided reason or error.
-   */
-  constructor(executor?: (resolve: (value: T | PromiseLike<T>) => void, reject: (reason?: any) => void) => void) {
-    const nothingFunction = () => {};
-    let resolveFunction: this['resolve'] | null = null;
-    let rejectFunction: this['reject'] | null = null;
-
-    super((resolve, reject) => {
-      resolveFunction = resolve;
-      rejectFunction = reject;
-      if (typeof executor !== 'undefined') {
-        executor(resolve, reject);
-      }
-    });
-
-    this.resolve = resolveFunction || nothingFunction;
-    this.reject = rejectFunction || nothingFunction;
-
-    Object.defineProperties(this, {
-      resolve: {
-        value: this.resolve,
-        writable: false,
-        configurable: false,
-        enumerable: false,
-      },
-      reject: {
-        value: this.reject,
-        writable: false,
-        configurable: false,
-        enumerable: false,
-      },
-    });
-  }
-}
-
-export const makeAsync = <T = any>(data: T): Promise<Await<T>> => {
+/** utility to convert data to promise */
+export const toPromise = <T = any>(data: T): Promise<Await<T>> => {
   if (data instanceof Promise) {
     return data as Promise<Await<T>>;
   }
   return Promise.resolve(data);
 };
 
-export const eventIsRequest = (event: MessageEvent<unknown>) => {
+/** checks if message event is request */
+export const isRequestEvent = (event: MessageEvent<unknown>) => {
   const request = event.data;
 
-  if (typeof request === 'object' && request && Object.hasOwnProperty.call(request, WORKER_NAMESPACE)) {
-    return true;
-  }
-  return false;
+  return !!request && typeof request === 'object' && Object.hasOwnProperty.call(request, WORKER_NAMESPACE);
 };
 
 export type HandlerType<F extends (ctx?: any) => MayBePromise<NonNullable<object>>> = {
-  __resolved: AwaitFunc<F> | undefined;
-  getObject: () => Promise<AwaitFunc<F>>;
-  call: <N extends keyof MethodsMap<AwaitFunc<F>>>(
+  __resolved: AwaitReturn<F> | undefined;
+  getObject: () => Promise<AwaitReturn<F>>;
+  call: <N extends keyof MethodsMap<AwaitReturn<F>>>(
     name: N,
-    ...args: MethodsMap<AwaitFunc<F>>[N][0]
-  ) => Promise<Await<MethodsMap<AwaitFunc<F>>[N][1]>>;
+    ...args: MethodsMap<AwaitReturn<F>>[N][0]
+  ) => Promise<Await<MethodsMap<AwaitReturn<F>>[N][1]>>;
 };
 
 export const handle = <F extends (ctx?: any) => MayBePromise<NonNullable<object>>>(input: F, context: Parameters<F>[0]): HandlerType<F> => {
   const result: HandlerType<F> = {
     __resolved: undefined,
-    async getObject(): Promise<AwaitFunc<F>> {
+    async getObject(): Promise<AwaitReturn<F>> {
       if (!this.__resolved) {
-        this.__resolved = (await makeAsync(input(context))) as AwaitFunc<F>;
+        this.__resolved = (await toPromise(input(context))) as AwaitReturn<F>;
       }
       return this.__resolved;
     },
@@ -198,14 +155,14 @@ export const handle = <F extends (ctx?: any) => MayBePromise<NonNullable<object>
       const methods = await this.getObject();
 
       if (!Object.hasOwnProperty.call(methods, name)) {
-        throw new Error(`Method \`${String(name)}\` does not exists`);
+        throw new Error(`Method '${String(name)}' does not exists.`);
       }
 
       if (typeof methods[name] !== 'function') {
-        throw new Error(`Property \`${String(name)}\` is not a function`);
+        throw new Error(`Property '${String(name)}' is not a function.`);
       }
 
-      // @ts-expect-error we did type checks safe to call the method
+      // @ts-expect-error: we did type checks, safe to call the method
       return methods[name](...args);
     },
   };
@@ -215,6 +172,7 @@ export const handle = <F extends (ctx?: any) => MayBePromise<NonNullable<object>
 
 export type MessageHandler<T = any> = (event: MessageEvent<T>) => void;
 
+/** utility function for attaching or detaching message handler */
 export const messageHandler = <T = any>() => ({
   current: undefined as MessageHandler<T> | undefined,
   remove() {

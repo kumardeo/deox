@@ -1,3 +1,4 @@
+import { isString } from '@deox/utils/predicate';
 import type { NOT_FOUND_ERRORS } from './constants';
 
 /**
@@ -32,7 +33,7 @@ export class SDKRequestError extends SDKError {
     super(message, options);
     this.name = 'SDKRequestError';
 
-    if (url instanceof URL || typeof url === 'string') {
+    if (url instanceof URL || isString(url)) {
       this.url = String(url);
     } else {
       this.url = url.url;

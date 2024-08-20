@@ -1,7 +1,8 @@
+import { generateId } from '@deox/utils/generate-id';
+import { isObject } from '@deox/utils/predicate';
 import { JSONP_NAMESPACE } from './constants';
 import { SDKError, SDKRequestError } from './errors';
 import { parseFeed } from './feed-parser';
-import { generateId } from './utils';
 
 /** An interface representing options for {@link RequestURL} */
 export interface RequestURLOptions {
@@ -29,7 +30,7 @@ export class RequestURL extends URL {
         searchParams.append(key, String(value));
       }
     };
-    if (typeof options.params === 'object' && options.params) {
+    if (isObject(options.params)) {
       const queries = options.params;
       for (const key in queries) {
         const value = queries[key];
@@ -93,9 +94,7 @@ const fetchJSONP = async <T = unknown>(getUrl: JSONPGetUrl, scriptOptions?: Reco
 
   const script = document.createElement('script');
   script.async = true;
-  if (scriptOptions) {
-    Object.assign(script, scriptOptions);
-  }
+  if (scriptOptions) Object.assign(script, scriptOptions);
   script.src = String(url);
 
   return new Promise<T>((resolve, reject) => {

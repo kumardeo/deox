@@ -48,7 +48,8 @@ Following functions are available:
 * `isNumberAny(arg)`: Check whether `arg` is a `Number` including `NaN` and `Infinity`
 * `isNaN(arg)`: Check whether `arg` is `NaN`
 * `isFinite(arg)`: Check whether `arg` is `Number` and isFinite
-* `isNumber(arg)`: Check whether `arg` is a `Number` excluding `NaN` and `Infinity`
+* `isNumber(arg)`: Check whether `arg` is a `Number` excluding `NaN`
+* `isSafeNumber(arg)`: Check whether `arg` is a `Number` excluding `NaN` and `Infinity`
 * `isObjectAny(arg)`: Check whether `arg` is an `Object` including `null`
 * `isObject(arg)`: Check whether `arg`is an `Object` excluding `null` and `Array`
 * `isPlainObject(arg)`: Check whether `arg` is a plain object

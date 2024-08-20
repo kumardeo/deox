@@ -1,4 +1,4 @@
-import { isObject } from '@deox/check-types';
+import { isObject } from '@deox/utils/predicate';
 import clc from 'console-log-colors';
 import {
   SDKBadRequestError,

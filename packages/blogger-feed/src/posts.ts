@@ -1,3 +1,4 @@
+import { isUndefined } from '@deox/utils/predicate';
 import { NOT_FOUND_ERRORS } from './constants';
 import { SDKInputNotFoundError } from './errors';
 import { Methods } from './methods';
@@ -34,11 +35,9 @@ export class Posts extends Methods {
     const { label } = options;
 
     // validate label if provided
-    if (typeof label !== 'undefined') {
-      validators.notBlank(label, 'options.label');
-    }
+    if (!isUndefined(label)) validators.nB(label, 'options.label');
 
-    const { posts, pagination } = await this.client.request(
+    const { posts, pagination } = await this.c.req(
       `./posts/${options.summary === true ? 'summary' : 'default'}${label ? `/-/${encodeURI(label)}` : ''}`,
       {
         params: options,
@@ -47,7 +46,7 @@ export class Posts extends Methods {
     );
 
     // Use an empty array if entries were not found
-    return this._bind_pagination('posts', posts || [], pagination);
+    return this._p('posts', posts || [], pagination);
   }
 
   /**
@@ -59,18 +58,16 @@ export class Posts extends Methods {
    * @returns On success, a Post
    */
   async get(post_id: string, options: PostsGetOptions = {}) {
-    validators.notBlank(post_id, "Argument 'post_id'");
+    validators.nB(post_id, "Argument 'post_id'");
 
-    const { posts } = await this.client.request(`./posts/${options.summary === true ? 'summary' : 'default'}/${encodeURIComponent(post_id)}`, {
+    const { posts } = await this.c.req(`./posts/${options.summary === true ? 'summary' : 'default'}/${encodeURIComponent(post_id)}`, {
       exclude: ['query'],
     });
 
     const post = posts?.find((p) => p.id === post_id);
 
     // Throw an error if the post was not found
-    if (!post) {
-      throw new SDKInputNotFoundError(NOT_FOUND_ERRORS.post);
-    }
+    if (!post) throw new SDKInputNotFoundError(NOT_FOUND_ERRORS.post);
 
     return post;
   }
@@ -84,9 +81,9 @@ export class Posts extends Methods {
    * @returns On success, an Array of Post
    */
   async query(query: string, options: PostsQueryOptions = {}) {
-    validators.notBlank(query, "Argument 'query'");
+    validators.nB(query, "Argument 'query'");
 
-    const { posts, pagination } = await this.client.request(`./posts/${options.summary === true ? 'summary' : 'default'}`, {
+    const { posts, pagination } = await this.c.req(`./posts/${options.summary === true ? 'summary' : 'default'}`, {
       params: {
         ...options,
         query,
@@ -94,6 +91,6 @@ export class Posts extends Methods {
     });
 
     // Use an empty array if entries were not found
-    return this._bind_pagination('posts', posts || [], pagination);
+    return this._p('posts', posts || [], pagination);
   }
 }

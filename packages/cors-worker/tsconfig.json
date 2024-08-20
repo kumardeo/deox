@@ -9,9 +9,9 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "allowJs": true,
-    "skipLibCheck": false,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
+    "skipLibCheck": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "outDir": "./dist",
     "types": []
   },

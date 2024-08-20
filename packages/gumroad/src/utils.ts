@@ -1,4 +1,4 @@
-import { isArray, isNumber, isPlainObject } from '@deox/check-types';
+import { isArray, isNumber, isPlainObject } from '@deox/utils/predicate';
 import { SDKRequestError, SDKTypeError } from './errors';
 
 const getConfigurations = <M extends Record<string | number, unknown>>(properties: M) =>
@@ -137,7 +137,7 @@ export const error = {
  * @returns The converted number otherwise undefined
  */
 export const convertToNumber = (input: unknown) => {
-  if (typeof input === 'string') {
+  if (typeof input === 'string' && /^-?\d+$/.test(input)) {
     const numbered = Number(input);
     if (isNumber(numbered)) {
       return numbered;

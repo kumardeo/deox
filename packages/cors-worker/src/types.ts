@@ -7,7 +7,7 @@ export type Await<T> = Awaited<T>;
 
 export type Async<T> = Promise<Await<T>>;
 
-export type AwaitFunc<T extends (...args: any[]) => any> = Await<Return<T>>;
+export type AwaitReturn<T extends (...args: any[]) => any> = Await<Return<T>>;
 
 export type MayBePromise<T> = T extends Promise<infer C> ? C | Promise<C> : T | Promise<T>;
 
@@ -33,14 +33,17 @@ export type MethodsMap<T, I extends string | number | symbol = string | number, 
 export type RegisterInput = (ctx?: any) => MayBePromise<NonNullable<object>>;
 
 export type RegisterOutput<F extends RegisterInput> = (context: Params<F>[0]) => {
-  call<N extends keyof MethodsMap<AwaitFunc<F>>>(name: N, ...args: MethodsMap<AwaitFunc<F>>[N][0]): Promise<Await<MethodsMap<AwaitFunc<F>>[N][1]>>;
+  call<N extends keyof MethodsMap<AwaitReturn<F>>>(
+    name: N,
+    ...args: MethodsMap<AwaitReturn<F>>[N][0]
+  ): Promise<Await<MethodsMap<AwaitReturn<F>>[N][1]>>;
 };
 
 export type InferFunction<R extends RegisterInput> = R extends RegisterOutput<infer F> ? F : never;
 
 export type InferContext<R extends RegisterInput> = Params<InferFunction<R>>[0];
 
-export type InferMethodsMap<R extends RegisterInput> = Omit<MethodsMap<AwaitFunc<InferFunction<R>>>, symbol>;
+export type InferMethodsMap<R extends RegisterInput> = Omit<MethodsMap<AwaitReturn<InferFunction<R>>>, symbol>;
 
 export type InferProxyType<R extends RegisterInput> = {
   readonly [K in keyof InferMethodsMap<R>]: (...args: InferMethodsMap<R>[K][0]) => Promise<Await<InferMethodsMap<R>[K][1]>>;

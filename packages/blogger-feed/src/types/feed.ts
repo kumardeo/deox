@@ -67,12 +67,12 @@ export interface Blog {
    * An array of string
    * representing all the available labels in the blog
    */
-  category: string[];
+  labels: string[];
 
   /**
    * The url of the blog
    */
-  link: string;
+  url: string;
 
   links: Links;
 
@@ -118,12 +118,12 @@ export interface Post {
    * An Array of string
    * representing labels of the post
    */
-  category: string[];
+  labels: string[];
 
   /**
    * The url of the post
    */
-  link: string;
+  url: string;
 
   links: Links;
 
@@ -189,7 +189,7 @@ export interface Comment {
   /**
    * The url of the comment
    */
-  link: string;
+  url: string;
 
   links: Links;
 
@@ -228,7 +228,7 @@ export interface Comment {
     /**
      * The url of the post
      */
-    link: string;
+    url: string;
   };
 
   /**

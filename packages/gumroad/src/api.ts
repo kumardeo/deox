@@ -1,6 +1,17 @@
 import { Client } from './client';
 import { DEFAULT_API_BASE_URL } from './constants';
 import { CustomFields } from './custom-fields';
+import {
+  SDKBadRequestError,
+  SDKError,
+  SDKInputNotFoundError,
+  SDKInternalServerError,
+  SDKNotFoundError,
+  SDKRequestError,
+  SDKRequestFailedError,
+  SDKTypeError,
+  SDKUnauthorizedError,
+} from './errors';
 import { Licenses } from './licenses';
 import { Logger } from './logger';
 import { OfferCodes } from './offer-codes';
@@ -31,6 +42,16 @@ export interface APIOptions {
  * A class for making API requests to Gumroad API endpoints
  */
 export class API {
+  static readonly SDKBadRequestError = SDKBadRequestError;
+  static readonly SDKError = SDKError;
+  static readonly SDKInputNotFoundError = SDKInputNotFoundError;
+  static readonly SDKInternalServerError = SDKInternalServerError;
+  static readonly SDKNotFoundError = SDKNotFoundError;
+  static readonly SDKRequestError = SDKRequestError;
+  static readonly SDKRequestFailedError = SDKRequestFailedError;
+  static readonly SDKTypeError = SDKTypeError;
+  static readonly SDKUnauthorizedError = SDKUnauthorizedError;
+
   /**
    * Verify a license
    *
@@ -62,10 +83,18 @@ export class API {
     );
   }
 
-  protected options: {
-    accessToken: string;
-    debug: boolean;
-  };
+  readonly client: Client;
+  readonly logger: Logger;
+  readonly products: Products;
+  readonly variant_categories: VariantCategories;
+  readonly variants: Variants;
+  readonly offer_codes: OfferCodes;
+  readonly custom_fields: CustomFields;
+  readonly user: User;
+  readonly sales: Sales;
+  readonly resource_subscriptions: ResourceSubscriptions;
+  readonly subscribers: Subscribers;
+  readonly licenses: Licenses;
 
   /**
    * Creates an instance of {@link API}
@@ -76,96 +105,19 @@ export class API {
   constructor(accessToken: string, options: APIOptions = {}) {
     validators.notBlank(accessToken, "Argument 'accessToken'");
 
-    this.options = {
-      accessToken,
-      debug: options.debug === true,
-    };
-  }
-
-  private _client?: Client;
-
-  protected get client() {
-    this._client ??= new Client({
-      accessToken: this.options.accessToken,
-      debug: this.options.debug,
+    this.client = new Client(accessToken, {
+      debug: options.debug,
     });
-    return this._client;
-  }
-
-  private _logger?: Logger;
-
-  protected get logger() {
-    this._logger ??= new Logger(this.options.debug);
-    return this._logger;
-  }
-
-  private _products?: Products;
-
-  get products() {
-    this._products ??= new Products(this.client, this.logger);
-    return this._products;
-  }
-
-  private _variant_categories?: VariantCategories;
-
-  get variant_categories() {
-    this._variant_categories ??= new VariantCategories(this.client, this.logger);
-    return this._variant_categories;
-  }
-
-  private _variants?: Variants;
-
-  get variants() {
-    this._variants ??= new Variants(this.client, this.logger);
-    return this._variants;
-  }
-
-  private _offer_codes?: OfferCodes;
-
-  get offer_codes() {
-    this._offer_codes ??= new OfferCodes(this.client, this.logger);
-    return this._offer_codes;
-  }
-
-  private _custom_fields?: CustomFields;
-
-  get custom_fields() {
-    this._custom_fields ??= new CustomFields(this.client, this.logger);
-    return this._custom_fields;
-  }
-
-  private _user?: User;
-
-  get user() {
-    this._user ??= new User(this.client, this.logger);
-    return this._user;
-  }
-
-  private _resource_subscriptions?: ResourceSubscriptions;
-
-  get resource_subscriptions() {
-    this._resource_subscriptions ??= new ResourceSubscriptions(this.client, this.logger);
-    return this._resource_subscriptions;
-  }
-
-  private _sales?: Sales;
-
-  get sales() {
-    this._sales ??= new Sales(this.client, this.logger);
-    return this._sales;
-  }
-
-  private _subscribers?: Subscribers;
-
-  get subscribers() {
-    this._subscribers ??= new Subscribers(this.client, this.logger);
-    return this._subscribers;
-  }
-
-  private _licenses?: Licenses;
-
-  get licenses() {
-    this._licenses ??= new Licenses(this.client, this.logger);
-    return this._licenses;
+    this.logger = new Logger(options.debug);
+    this.products = new Products(this.client, this.logger);
+    this.variant_categories = new VariantCategories(this.client, this.logger);
+    this.variants = new Variants(this.client, this.logger);
+    this.offer_codes = new OfferCodes(this.client, this.logger);
+    this.custom_fields = new CustomFields(this.client, this.logger);
+    this.user = new User(this.client, this.logger);
+    this.resource_subscriptions = new ResourceSubscriptions(this.client, this.logger);
+    this.sales = new Sales(this.client, this.logger);
+    this.subscribers = new Subscribers(this.client, this.logger);
+    this.licenses = new Licenses(this.client, this.logger);
   }
 }

@@ -81,17 +81,6 @@ await build({
   tsconfig: fs.existsSync('tsconfig.cjs.json') ? 'tsconfig.cjs.json' : 'tsconfig.json',
 });
 
-// Build IIFE
-await build({
-  entry: { 'blogger-feed': './src/iife.ts' },
-  format: 'iife',
-  minify: true,
-  outExtension: () => ({ js: '.min.js' }),
-  clean: false,
-  outDir: OUT_DIR,
-  tsconfig: 'tsconfig.json',
-});
-
 // Build DTS
 const dtsLog = clc.yellow('DTS');
 console.log(`${dtsLog} Build start`);

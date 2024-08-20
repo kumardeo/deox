@@ -4,7 +4,7 @@ export class Logger {
   enabled = true;
 
   constructor(enable = true) {
-    this.enabled = enable;
+    this.enabled = enable === true;
   }
 
   log(...data: unknown[]) {

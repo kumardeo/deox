@@ -1,3 +1,4 @@
+import { isUndefined } from '@deox/utils/predicate';
 import { NOT_FOUND_ERRORS } from './constants';
 import { SDKInputNotFoundError } from './errors';
 import { Methods } from './methods';
@@ -36,11 +37,9 @@ export class Comments extends Methods {
     const { post_id } = options;
 
     // validate post_id if provided
-    if (typeof post_id !== 'undefined') {
-      validators.notBlank(post_id, 'options.post_id');
-    }
+    if (!isUndefined(post_id)) validators.nB(post_id, 'options.post_id');
 
-    const { comments, pagination } = await this.client.request(
+    const { comments, pagination } = await this.c.req(
       `./${post_id ? `${encodeURI(post_id)}/` : ''}comments/${options.summary === true ? 'summary' : 'default'}`,
       {
         params: options,
@@ -52,7 +51,7 @@ export class Comments extends Methods {
     // Use an empty array if entries were not found
     const filtered = (post_id ? comments?.filter((c) => c.post.id === post_id) : comments) || [];
 
-    return this._bind_pagination('comments', filtered, pagination);
+    return this._p('comments', filtered, pagination);
   }
 
   /**
@@ -65,23 +64,21 @@ export class Comments extends Methods {
    * @returns On success, a Comment
    */
   async get(post_id: string, comment_id: string, options: CommentsGetOptions = {}) {
-    validators.notBlank(post_id, "Argument 'post_id'");
-    validators.notBlank(comment_id, "Argument 'comment_id'");
+    validators.nB(post_id, "Argument 'post_id'");
+    validators.nB(comment_id, "Argument 'comment_id'");
 
-    const { comments } = await this.client.request(
+    const { comments } = await this.c.req(
       `./${encodeURI(post_id)}/comments/${options.summary === true ? 'summary' : 'default'}/${encodeURI(comment_id)}`,
       {
-        // We need to use blogger base url since comments by id through domain is not available
-        baseUrl: await this.client.bloggerBaseUrl,
+        // We need to use blogger service base url since comments by id through domain is not available
+        baseUrl: await this.c.serviceBase,
         exclude: ['query'],
       },
     );
 
     const comment = comments?.find((c) => c.id === comment_id);
 
-    if (!comment) {
-      throw new SDKInputNotFoundError(NOT_FOUND_ERRORS.comment);
-    }
+    if (!comment) throw new SDKInputNotFoundError(NOT_FOUND_ERRORS.comment);
 
     return comment;
   }

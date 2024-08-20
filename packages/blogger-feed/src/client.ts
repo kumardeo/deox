@@ -1,7 +1,14 @@
+import { isString } from '@deox/utils/predicate';
 import { NOT_FOUND_ERRORS } from './constants';
 import { SDKInputNotFoundError } from './errors';
 import { type FetchFeedOptions, fetchFeed } from './request';
 import { getOrigin } from './utils';
+
+const addSlash = (url: string) => (url.endsWith('/') ? url : `${url}/`);
+
+const getServiceBase = (id: string) => `https://www.blogger.com/feeds/${id}/`;
+
+const getDomainBase = (origin: string) => `${addSlash(origin)}feeds/`;
 
 /**
  * An interface representing options for {@link Client} constructor
@@ -15,10 +22,11 @@ export interface ClientOptions {
  * A class for fetching Blogger feed
  */
 export class Client {
-  protected options: {
-    jsonp: boolean;
-    input: { type: 'url' | 'id'; value: string };
-  };
+  private jsonp: boolean;
+  private base: string;
+
+  private _bU: string | undefined;
+  private _bI: string | undefined;
 
   /**
    * Creates an instance of {@link Client}
@@ -27,96 +35,73 @@ export class Client {
    * @param options Options
    */
   constructor(urlOrId: string | URL, options: ClientOptions = {}) {
-    let input: { type: 'url' | 'id'; value: string };
-
-    if (typeof urlOrId === 'string' && /^\d+$/.test(urlOrId) && urlOrId.length >= 12 && urlOrId.length <= 24) {
-      input = { type: 'id', value: urlOrId };
+    if (isString(urlOrId) && /^\d+$/.test(urlOrId) && urlOrId.length >= 12 && urlOrId.length <= 24) {
+      this._bI = urlOrId;
+      this.base = getServiceBase(urlOrId);
     } else {
       const origin = urlOrId instanceof URL ? urlOrId.origin : getOrigin(urlOrId);
       if (origin) {
-        input = { type: 'url', value: `${origin}/` };
+        this._bU = addSlash(origin);
+        this.base = getDomainBase(origin);
       } else {
         throw new Error("Argument 'urlOrId' is not a valid blogger blog url or blog id");
       }
     }
-
-    this.options = {
-      input,
-      jsonp: options?.jsonp === true,
-    };
+    this.jsonp = options.jsonp === true;
 
     // Throw an error if jsonp is enabled but current environment is not browser
-    if (this.options.jsonp && (typeof window !== 'object' || typeof document !== 'object' || typeof document.createElement !== 'function')) {
+    if (this.jsonp && (typeof window !== 'object' || typeof document !== 'object')) {
       throw new Error("options.jsonp is set to true but current environment does't support it, please set it to false to use json");
     }
   }
 
-  get baseUrl() {
-    const { input } = this.options;
-    return input.type === 'id' ? `https://www.blogger.com/feeds/${input.value}/` : `${input.value}feeds/`;
-  }
-
-  private _info?: {
-    blog_id: string;
-    blog_url: string;
-    blogger_base_url: string;
-    domain_base_url: string;
+  private _?: {
+    id: string;
+    url: string;
+    serviceBase: string;
+    domainBase: string;
   };
 
-  get info() {
+  get blog() {
     return (async () => {
-      const { blog } = await this.request('./posts/summary', {
-        params: { maxResults: 0 },
-      });
-      if (!blog) {
-        throw new SDKInputNotFoundError(NOT_FOUND_ERRORS.blog);
-      }
-      const blog_url = blog.link.endsWith('/') ? blog.link : `${blog.link}/`;
-      this._info ??= {
-        blog_id: blog.id,
-        blog_url,
-        blogger_base_url: `https://www.blogger.com/feeds/${blog.id}/`,
-        domain_base_url: `${blog_url}feeds/`,
+      const { blog } = await this.req('./posts/summary', { params: { maxResults: 0 } });
+
+      if (!blog) throw new SDKInputNotFoundError(NOT_FOUND_ERRORS.blog);
+
+      this._ ??= {
+        id: blog.id,
+        url: blog.url,
+        serviceBase: getServiceBase(blog.id),
+        domainBase: getDomainBase(blog.url),
       };
-      this._blogId = this._info.blog_id;
-      this._blogUrl = this._info.blog_url;
-      return this._info;
+
+      return this._;
     })();
   }
 
-  private _blogId?: string;
-
-  get blogId() {
+  get id() {
     return (async () => {
-      const { input } = this.options;
-      this._blogId ??= input.type === 'id' ? input.value : (await this.info).blog_id;
-      return this._blogId;
+      this._bI ??= (await this.blog).id;
+      return this._bI;
     })();
   }
 
-  private _blogUrl?: string;
-
-  get blogUrl() {
+  get url() {
     return (async () => {
-      const { input } = this.options;
-      this._blogUrl ??= input.type === 'url' ? input.value : (await this.info).blog_url;
-      return this._blogUrl;
+      this._bU ??= (await this.blog).url;
+      return this._bU;
     })();
   }
 
-  get domainBaseUrl() {
-    return (async () => `${await this.blogUrl}feeds/`)();
+  get domainBase() {
+    return (async () => getDomainBase(await this.url))();
   }
 
-  get bloggerBaseUrl() {
-    return (async () => `https://www.blogger.com/feeds/${await this.blogId}/`)();
+  get serviceBase() {
+    return (async () => getServiceBase(await this.id))();
   }
 
-  async request(path: string, options?: FetchFeedOptions) {
-    return fetchFeed(path, {
-      baseUrl: this.baseUrl,
-      jsonp: this.options.jsonp,
-      ...options,
-    });
+  async req(path: string, options?: FetchFeedOptions) {
+    return fetchFeed(path, { baseUrl: this.base, jsonp: this.jsonp, ...options });
   }
 }

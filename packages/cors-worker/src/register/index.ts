@@ -1,5 +1,6 @@
+import { DeferredPromise } from '@deox/utils/deferred-promise';
 import type { MayBePromise, MessageWorker, Params, RegisterOutput } from '../types';
-import { DeferredPromise, type HandlerType, eventIsRequest, handle, messageHandler, respond } from './utils';
+import { type HandlerType, handle, isRequestEvent, messageHandler, respond } from './utils';
 
 const eventHandler = messageHandler<MessageWorker>();
 
@@ -13,14 +14,14 @@ const eventHandler = messageHandler<MessageWorker>();
 export const register = <F extends (ctx?: any) => MayBePromise<NonNullable<object>>>(input: F): RegisterOutput<F> => {
   // throw an error if input argument is not a function
   if (typeof input !== 'function') {
-    throw new TypeError('Argument 1 must be of type function');
+    throw new TypeError('Argument 1 must be of type function.');
   }
 
   const contextPromise = new DeferredPromise<HandlerType<F>>();
 
   eventHandler.set((event) => {
     // Check if valid request
-    if (eventIsRequest(event)) {
+    if (isRequestEvent(event)) {
       // Stop propagation
       event.stopImmediatePropagation();
 

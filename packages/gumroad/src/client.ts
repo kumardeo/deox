@@ -5,8 +5,6 @@ import { type RequestOptions, request } from './request';
  * An interface representing options for {@link Client} constructor
  */
 export interface ClientOptions {
-  accessToken?: string;
-
   /**
    * Indicates whether to enable debug mode or not
    *
@@ -21,21 +19,14 @@ export interface ClientOptions {
  * A class containing methods for making HTTPS requests to Gumroad API endpoints
  */
 export class Client {
-  accessToken?: string;
+  protected accessToken: string;
+  protected debug: boolean;
+  protected baseUrl: string;
 
-  options = {
-    debug: false,
-    baseUrl: DEFAULT_API_BASE_URL,
-  };
-
-  constructor(options: ClientOptions = {}) {
-    this.accessToken = options.accessToken;
-
-    this.options.debug = typeof options.debug === 'boolean' ? options.debug : false;
-
-    if (options.baseUrl instanceof URL || typeof options.baseUrl === 'string') {
-      this.options.baseUrl = String(options.baseUrl);
-    }
+  constructor(accessToken: string, options: ClientOptions = {}) {
+    this.accessToken = accessToken;
+    this.debug = options.debug === true;
+    this.baseUrl = options.baseUrl instanceof URL || typeof options.baseUrl === 'string' ? String(options.baseUrl) : DEFAULT_API_BASE_URL;
   }
 
   /**
@@ -50,8 +41,8 @@ export class Client {
     return (
       await request<T>(path, this.accessToken, {
         ...options,
-        baseUrl: this.options.baseUrl,
-        debug: this.options.debug,
+        baseUrl: this.baseUrl,
+        debug: this.debug,
       })
     ).data;
   }

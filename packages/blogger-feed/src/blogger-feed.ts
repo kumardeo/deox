@@ -1,6 +1,8 @@
 import { Blog } from './blog';
 import { Client } from './client';
 import { Comments } from './comments';
+import { SDKError, SDKInputNotFoundError, SDKRequestError, SDKTypeError } from './errors';
+import { parseFeed } from './feed-parser';
 import { Pages } from './pages';
 import { Posts } from './posts';
 
@@ -20,10 +22,16 @@ export interface BloggerFeedOptions {
 }
 
 export class BloggerFeed {
-  protected options: {
-    urlOrId: string | URL;
-    jsonp: boolean;
-  };
+  static readonly SDKError = SDKError;
+  static readonly SDKInputNotFoundError = SDKInputNotFoundError;
+  static readonly SDKRequestError = SDKRequestError;
+  static readonly SDKTypeError = SDKTypeError;
+  static readonly parseFeed = parseFeed;
+
+  readonly posts: Posts;
+  readonly pages: Pages;
+  readonly comments: Comments;
+  readonly blog: Blog;
 
   /**
    * Creates an instance of {@link BloggerFeed}
@@ -32,46 +40,10 @@ export class BloggerFeed {
    * @param options Options
    */
   constructor(urlOrId: string | URL, options: BloggerFeedOptions = {}) {
-    this.options = {
-      urlOrId,
-      jsonp: options.jsonp === true,
-    };
-  }
-
-  private _client?: Client;
-
-  protected get client() {
-    this._client ??= new Client(this.options.urlOrId, {
-      jsonp: this.options.jsonp,
-    });
-    return this._client;
-  }
-
-  private _posts?: Posts;
-
-  get posts() {
-    this._posts ??= new Posts(this.client);
-    return this._posts;
-  }
-
-  private _pages?: Pages;
-
-  get pages() {
-    this._pages ??= new Pages(this.client);
-    return this._pages;
-  }
-
-  private _comments?: Comments;
-
-  get comments() {
-    this._comments ??= new Comments(this.client);
-    return this._comments;
-  }
-
-  private _blog?: Blog;
-
-  get blog() {
-    this._blog ??= new Blog(this.client);
-    return this._blog;
+    const client = new Client(urlOrId, options);
+    this.posts = new Posts(client);
+    this.pages = new Pages(client);
+    this.comments = new Comments(client);
+    this.blog = new Blog(client);
   }
 }
