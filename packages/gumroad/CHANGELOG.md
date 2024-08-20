@@ -1,5 +1,11 @@
 # @deox/gumroad
 
+## 0.0.7
+
+### Patch Changes
+
+- [`67ee6fc`](https://github.com/kumardeo/deox/commit/67ee6fcb8170757a35b3c26d8c3bd2f29a36024a) Thanks [@kumardeo](https://github.com/kumardeo)! - refactor: codes
+
 ## 0.0.6
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
 	"name": "@deox/blogger-feed",
-	"version": "0.0.4",
+	"version": "0.0.5",
 	"private": false,
 	"description": "A blogger feed API client.",
 	"keywords": [
@@ -22,7 +22,7 @@
 		"url": "https://github.com/kumardeo/deox/issues"
 	},
 	"scripts": {
-    "check:types": "tsc --noEmit",
+		"check:types": "tsc --noEmit",
 		"dev": "webpack server --config dev/webpack.dev.cjs",
 		"build": "rimraf dist && tsx ./build.ts",
 		"clean": "rimraf dist"
@@ -39,15 +39,15 @@
 			"import": "./dist/esm/index.js",
 			"require": "./dist/cjs/index.js"
 		},
-    "./feed-parser": {
+		"./feed-parser": {
 			"types": "./dist/dts/feed-parser.d.ts",
 			"import": "./dist/esm/feed-parser.js",
 			"require": "./dist/cjs/feed-parser.js"
 		}
 	},
-  "dependencies": {
-    "@deox/utils": "workspace:^"
-  },
+	"dependencies": {
+		"@deox/utils": "workspace:^"
+	},
 	"devDependencies": {
 		"babel-loader": "^9.1.3",
 		"console-log-colors": "^0.5.0",
