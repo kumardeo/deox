@@ -1,6 +1,6 @@
 {
 	"name": "@deox/gumroad",
-	"version": "0.0.6",
+	"version": "0.0.7",
 	"private": false,
 	"description": "API client for Gumroad",
 	"keywords": [
@@ -22,7 +22,7 @@
 		"url": "https://github.com/kumardeo/deox/issues"
 	},
 	"scripts": {
-    "check:types": "tsc --noEmit",
+		"check:types": "tsc --noEmit",
 		"dev": "wrangler dev",
 		"build": "rimraf dist && tsx ./build.ts",
 		"clean": "rimraf dist"
