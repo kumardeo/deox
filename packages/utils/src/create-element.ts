@@ -34,76 +34,34 @@ export type CreateStylesheetOptions = Omit<CreateElementOptions<'style'>, 'textC
 
 export type LoadJavascriptOptions = Omit<CreateElementOptions<'script'>, 'src'>;
 
-/** Represents ScriptResult which contains source and element */
-export interface ScriptResult {
-  /** The resource url of the Script */
-  source: string;
-
-  /** The HTMLScriptElement used to load resource */
-  element: HTMLScriptElement;
-}
-
 export type LoadStylesheetOptions = Omit<CreateElementOptions<'link'>, 'href' | 'rel'>;
 
-/** Represents StyleResult which contains source and element */
-export interface StyleResult {
-  /** The resource url of the Stylesheet */
-  source: string;
-
-  /** The HTMLScriptElement used to load resource */
-  element: HTMLLinkElement;
-}
-
 /**
- * A helper function to get the last element
- * of the array like object which returns true for a condition
+ * Appends new element to head after specified tag name if found otherwise append it in head
  *
- * @param array The array like object
- * @param condition The condition function
- *
- * @returns The last element with condition true
+ * @param element The element to append
+ * @param tagName The tag name to target
  */
-const getLast = <T>(array: ArrayLike<T>, condition: (element: T) => unknown) => {
-  for (let i = array.length - 1; i >= 0; i -= 1) {
-    if (condition(array[i])) {
-      return array[i];
+const insertAfterendOrLastInHead = <T extends Element>(element: T, tagName: keyof HTMLElementTagNameMap) => {
+  const elements = document.head.getElementsByTagName(tagName);
+  const lastElement = elements.length ? elements[elements.length - 1] : null;
+  const appendToHead = () => document.head.appendChild(element);
+
+  if (lastElement) {
+    const nextSibling = lastElement.nextElementSibling;
+    const parentElement = lastElement.parentElement;
+    if ('insertAdjacentElement' in lastElement) {
+      lastElement.insertAdjacentElement('afterend', element);
+    } else if (nextSibling && parentElement) {
+      parentElement.insertBefore(element, nextSibling);
+    } else {
+      appendToHead();
     }
-  }
-  return undefined;
-};
-
-/**
- * Appends a given node to the last element in a list of elements, or appends it to a fallback element if no suitable target is found.
- *
- * @param node - The HTMLElement to be appended.
- * @param elements - A collection of HTML elements or an array containing HTMLElements, possibly with undefined or null values.
- * @param fallback - The fallback HTMLElement where the node will be appended if no suitable target is found.
- *
- * @returns The appended node.
- */
-const appendToLast = (
-  node: HTMLElement,
-  elements: HTMLCollection | NodeListOf<HTMLElement> | (HTMLElement | undefined | null)[],
-  fallback: HTMLElement,
-): HTMLElement => {
-  // Retrieve the last element that meets the specified condition
-  const lastElement = getLast(elements, (e) => e && e.parentElement === document.head);
-
-  // Get the next sibling and parent element of the last element
-  const nextSibling = lastElement?.nextElementSibling;
-  const parentElement = lastElement?.parentElement;
-
-  // If a suitable position is found, insert the node before the next sibling
-  // Otherwise, append the node to the fallback element
-  if (lastElement && 'insertAdjacentElement' in lastElement) {
-    lastElement.insertAdjacentElement('afterend', node);
-  } else if (nextSibling && parentElement) {
-    parentElement.insertBefore(node, nextSibling);
   } else {
-    fallback.appendChild(node);
+    appendToHead();
   }
 
-  return node;
+  return element;
 };
 
 /**
@@ -192,9 +150,7 @@ export const createJavascript = (javascript: string, options?: CreateJavaScriptO
     options(script);
   }
 
-  appendToLast(script, document.querySelectorAll('head > script'), document.head);
-
-  return script;
+  return insertAfterendOrLastInHead(script, 'script');
 };
 
 /**
@@ -215,9 +171,7 @@ export const createStylesheet = (css: string, options?: CreateStylesheetOptions 
     options(style);
   }
 
-  appendToLast(style, document.querySelectorAll('head > style'), document.head);
-
-  return style;
+  return insertAfterendOrLastInHead(style, 'style');
 };
 
 /** Represents an error that occurs during loading, associated with an HTML element and a source. */
@@ -254,12 +208,12 @@ export class ResourceLoadingError extends Error {
  * @param source Source of the javascript file, can be a string or URL object
  * @param options Options for the script tag
  *
- * @returns A promise which resolves with {@linkcode ScriptResult} on load
+ * @returns A promise which resolves with `HTMLScriptElement`
  */
 export const loadJavascript = (
   source: URL | string,
   options?: LoadJavascriptOptions | ((element: HTMLScriptElement) => void),
-): Promise<ScriptResult> => {
+): Promise<HTMLScriptElement> => {
   const url = source instanceof URL ? source.href : source;
 
   if (!isString(url)) {
@@ -270,7 +224,7 @@ export const loadJavascript = (
     return Promise.reject(new TypeError('Argument source is not valid'));
   }
 
-  return new Promise<ScriptResult>((resolve, reject) => {
+  return new Promise<HTMLScriptElement>((resolve, reject) => {
     const config = {
       defer: true,
       async: true,
@@ -284,30 +238,26 @@ export const loadJavascript = (
       options(script);
     }
 
-    const result = {
-      source: config.src,
-      element: script,
+    const events = {
+      load: () => {
+        removeEvents();
+        resolve(script);
+      },
+      error: () => {
+        removeEvents();
+        reject(new ResourceLoadingError(script, script.src, `Failed to load Javascript from ${script.src}`));
+      },
     };
-    const events = [] as ['load' | 'error', () => void][];
-    const remove = () => {
-      for (const [e, h] of events) {
-        script.removeEventListener(e, h);
+    const removeEvents = () => {
+      for (const event in events) {
+        script.removeEventListener(event, events[event as keyof typeof events]);
       }
     };
-    const onLoad = () => {
-      remove();
-      resolve(result);
-    };
-    const onError = () => {
-      remove();
-      reject(new ResourceLoadingError(result.element, result.source, `Failed to load Javascript from ${result.source}`));
-    };
-    events.push(['load', onLoad], ['error', onError]);
-    for (const [e, h] of events) {
-      script.addEventListener(e, h);
+    for (const event in events) {
+      script.addEventListener(event, events[event as keyof typeof events]);
     }
 
-    appendToLast(script, document.querySelectorAll('head > script'), document.head);
+    insertAfterendOrLastInHead(script, 'script');
   });
 };
 
@@ -317,12 +267,12 @@ export const loadJavascript = (
  * @param source Source of the stylesheet file, can be a string or URL object
  * @param options Options for the link tag
  *
- * @returns A promise which resolves with {@linkcode StyleResult} on load
+ * @returns A promise which resolves with `HTMLLinkElement`
  */
 export const loadStylesheet = (
   source: URL | string,
   options?: LoadStylesheetOptions | ((element: HTMLLinkElement) => void),
-): Promise<StyleResult> => {
+): Promise<HTMLLinkElement> => {
   const url = source instanceof URL ? source.href : source;
 
   if (!isString(url)) {
@@ -333,7 +283,7 @@ export const loadStylesheet = (
     return Promise.reject(new TypeError('Argument source is not valid'));
   }
 
-  return new Promise<StyleResult>((resolve, reject) => {
+  return new Promise<HTMLLinkElement>((resolve, reject) => {
     const config = {
       ...(!isFunction(options) && options ? options : undefined),
       rel: 'stylesheet',
@@ -346,30 +296,25 @@ export const loadStylesheet = (
       options(link);
     }
 
-    const result = {
-      source: config.href,
-      element: link,
+    const events = {
+      load: () => {
+        removeEvents();
+        resolve(link);
+      },
+      error: () => {
+        removeEvents();
+        reject(new ResourceLoadingError(link, link.href, `Failed to load Stylesheet from ${link.href}`));
+      },
     };
-
-    const events = [] as ['load' | 'error', () => void][];
-    const remove = () => {
-      for (const [e, h] of events) {
-        link.removeEventListener(e, h);
+    const removeEvents = () => {
+      for (const event in events) {
+        link.removeEventListener(event, events[event as keyof typeof events]);
       }
     };
-    const onLoad = () => {
-      remove();
-      resolve(result);
-    };
-    const onError = () => {
-      remove();
-      reject(new ResourceLoadingError(result.element, result.source, `Failed to load Stylesheet from ${result.source}`));
-    };
-    events.push(['load', onLoad], ['error', onError]);
-    for (const [e, h] of events) {
-      link.addEventListener(e, h);
+    for (const event in events) {
+      link.addEventListener(event, events[event as keyof typeof events]);
     }
 
-    appendToLast(link, document.querySelectorAll('head > link'), document.head);
+    insertAfterendOrLastInHead(link, 'link');
   });
 };
