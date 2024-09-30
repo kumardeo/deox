@@ -55,11 +55,11 @@ const getLinks = (linkArray: unknown) => {
  */
 const getPagination = (feed: unknown) => {
   const result: {
-    self: string;
+    self: string | null;
     previous: string | null;
     next: string | null;
   } = {
-    self: '',
+    self: NULL,
     previous: NULL,
     next: NULL,
   };

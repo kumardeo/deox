@@ -246,7 +246,7 @@ export interface Feed {
   itemsPerPage: number | null;
   startIndex: number | null;
   totalResults: number | null;
-  selfUrl: string;
+  selfUrl: string | null;
   previousUrl: string | null;
   nextUrl: string | null;
 }

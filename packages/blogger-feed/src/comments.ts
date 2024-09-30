@@ -14,7 +14,7 @@ export type CommentsListOptions = {
   updatedMin?: Date | string;
   updatedMax?: Date | string;
   summary?: boolean;
-  post_id?: string;
+  postId?: string;
 };
 
 /** Options for {@link Comments.get} */
@@ -34,39 +34,39 @@ export class Comments extends Methods {
    * @returns On success, an Array of Comment
    */
   async list(options: CommentsListOptions = {}) {
-    const { post_id } = options;
+    const { postId } = options;
 
     // validate post_id if provided
-    if (!isUndefined(post_id)) validators.nB(post_id, 'options.post_id');
+    if (!isUndefined(postId)) validators.nB(postId, 'options.postId');
 
-    const result = await this.c.req(`./${post_id ? `${encodeURI(post_id)}/` : ''}comments/${options.summary === true ? 'summary' : 'default'}`, {
+    const result = await this.c.req(`./${postId ? `${encodeURI(postId)}/` : ''}comments/${options.summary === true ? 'summary' : 'default'}`, {
       params: options,
       exclude: ['query'],
     });
 
-    return this._p('comments', {
-      ...result,
-      // If post_id was provided, make sure to filter once again
-      // Use an empty array if entries were not found
-      comments: (post_id ? result.comments?.filter((c) => c.post.id === post_id) : result.comments) || [],
-    });
+    // Make sure to filter once again if post_id is provided,
+    if (postId && result.comments) {
+      result.comments = result.comments.filter((c) => c.post.id === postId);
+    }
+
+    return this._p('comments', result);
   }
 
   /**
    * Retrieves a comment
    *
-   * @param post_id The id of the post
-   * @param comment_id The id of the comment
+   * @param postId The id of the post
+   * @param commentId The id of the comment
    * @param options Options
    *
    * @returns On success, a Comment
    */
-  async get(post_id: string, comment_id: string, options: CommentsGetOptions = {}) {
-    validators.nB(post_id, "Argument 'post_id'");
-    validators.nB(comment_id, "Argument 'comment_id'");
+  async get(postId: string, commentId: string, options: CommentsGetOptions = {}) {
+    validators.nB(postId, "Argument 'postId'");
+    validators.nB(commentId, "Argument 'commentId'");
 
     const { comments } = await this.c.req(
-      `./${encodeURI(post_id)}/comments/${options.summary === true ? 'summary' : 'default'}/${encodeURI(comment_id)}`,
+      `./${encodeURI(postId)}/comments/${options.summary === true ? 'summary' : 'default'}/${encodeURI(commentId)}`,
       {
         // We need to use blogger service base url since comments by id through domain is not available
         baseUrl: await this.c.serviceBase,
@@ -74,7 +74,7 @@ export class Comments extends Methods {
       },
     );
 
-    const comment = comments?.find((c) => c.id === comment_id);
+    const comment = comments?.find((c) => c.id === commentId);
 
     if (!comment) throw new SDKInputNotFoundError(NOT_FOUND_ERRORS.comment);
 

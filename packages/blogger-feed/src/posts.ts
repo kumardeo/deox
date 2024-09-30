@@ -42,26 +42,25 @@ export class Posts extends Methods {
       exclude: ['query'],
     });
 
-    // Use an empty array if entries were not found
     return this._p('posts', result);
   }
 
   /**
    * Retrieves a post
    *
-   * @param post_id The id of the post
+   * @param postId The id of the post
    * @param options Options
    *
    * @returns On success, a Post
    */
-  async get(post_id: string, options: PostsGetOptions = {}) {
-    validators.nB(post_id, "Argument 'post_id'");
+  async get(postId: string, options: PostsGetOptions = {}) {
+    validators.nB(postId, "Argument 'postId'");
 
-    const { posts } = await this.c.req(`./posts/${options.summary === true ? 'summary' : 'default'}/${encodeURIComponent(post_id)}`, {
+    const { posts } = await this.c.req(`./posts/${options.summary === true ? 'summary' : 'default'}/${encodeURIComponent(postId)}`, {
       exclude: ['query'],
     });
 
-    const post = posts?.find((p) => p.id === post_id);
+    const post = posts?.find((p) => p.id === postId);
 
     // Throw an error if the post was not found
     if (!post) throw new SDKInputNotFoundError(NOT_FOUND_ERRORS.post);
@@ -87,7 +86,6 @@ export class Posts extends Methods {
       },
     });
 
-    // Use an empty array if entries were not found
     return this._p('posts', result);
   }
 }

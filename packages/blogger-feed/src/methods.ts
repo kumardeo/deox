@@ -12,7 +12,7 @@ export interface PaginationProps<T extends keyof PaginationMap> {
   readonly itemsPerPage: number | null;
   readonly startIndex: number | null;
   readonly totalResults: number | null;
-  readonly selfUrl: string;
+  readonly selfUrl: string | null;
   readonly previousUrl: string | null;
   readonly nextUrl: string | null;
   next(): Promise<(PaginationMap[T] & PaginationProps<T>) | null>;
@@ -51,6 +51,6 @@ export class Methods {
       },
     };
 
-    return addProperties((type === 'comments' ? feed.comments : feed.posts) as PaginationMap[T], properties);
+    return addProperties(((type === 'comments' ? feed.comments : feed.posts) ?? []) as PaginationMap[T], properties);
   }
 }

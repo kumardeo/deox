@@ -26,6 +26,10 @@ const feed = new BloggerFeed('https://www.fineshopdesign.com', {
   const _posts_list_next = await _posts_list.next();
   console.info('.posts.list() => .next():', _posts_list_next);
 
+  // Posts.list label
+  const _posts_list_label = await feed.posts.list({ label: 'Cloudflare' });
+  console.info('.posts.list({ label })', _posts_list_label);
+
   // Posts.get
   const _posts_get = await feed.posts.get(_posts_list[0].id);
   console.info('.posts.get():', _posts_get);
@@ -45,7 +49,7 @@ const feed = new BloggerFeed('https://www.fineshopdesign.com', {
   // Comments.list
   const _comments_list = await feed.comments.list({
     maxResults: 50,
-    post_id: '4990960623216260259',
+    postId: '4990960623216260259',
   });
   console.info('.comments.list():', _comments_list);
 
