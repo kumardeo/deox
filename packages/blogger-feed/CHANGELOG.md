@@ -1,5 +1,12 @@
 # @deox/blogger-feed
 
+## 0.0.6
+
+### Patch Changes
+
+- [`ca93110`](https://github.com/kumardeo/deox/commit/ca93110ffd7ab7c8a0ec40c2adb0861c160f3996) Thanks [@kumardeo](https://github.com/kumardeo)! - feat: add `itemsPerPage`, `startIndex` and `totalResults` for better pagination
+  chore: rename `prevUrl` to `previousUrl`
+
 ## 0.0.5
 
 ### Patch Changes
