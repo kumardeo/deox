@@ -30,13 +30,13 @@ export class Pages extends Methods {
    * @returns On success, an Array of Post
    */
   async list(options: PagesListOptions = {}) {
-    const { posts, pagination } = await this.c.req(`./pages/${options.summary === true ? 'summary' : 'default'}`, {
+    const result = await this.c.req(`./pages/${options.summary === true ? 'summary' : 'default'}`, {
       params: options,
       exclude: ['query'],
     });
 
     // Use an empty array if entries were not found
-    return this._p('posts', posts || [], pagination);
+    return this._p('posts', result);
   }
 
   /**

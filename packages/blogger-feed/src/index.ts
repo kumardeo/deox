@@ -18,7 +18,6 @@ export type {
   Geo,
   Link,
   Links,
-  Pagination,
   Post,
   PostCommentInfo,
 } from './types';

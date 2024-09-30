@@ -1,5 +1,5 @@
 import type { Client } from './client';
-import type { Comment, Pagination, Post } from './types';
+import type { Comment, Feed, Post } from './types';
 import { addProperties } from './utils';
 
 type PaginationMap = {
@@ -9,8 +9,11 @@ type PaginationMap = {
 
 /** Pagination props */
 export interface PaginationProps<T extends keyof PaginationMap> {
+  readonly itemsPerPage: number | null;
+  readonly startIndex: number | null;
+  readonly totalResults: number | null;
   readonly selfUrl: string;
-  readonly prevUrl: string | null;
+  readonly previousUrl: string | null;
   readonly nextUrl: string | null;
   next(): Promise<(PaginationMap[T] & PaginationProps<T>) | null>;
   previous(): Promise<(PaginationMap[T] & PaginationProps<T>) | null>;
@@ -23,33 +26,31 @@ export class Methods {
     this.c = client;
   }
 
-  protected _p<T extends keyof PaginationMap>(type: T, array: PaginationMap[T], pagination: Pagination) {
+  /** Adds pagination properties and methods to feed entries array */
+  protected _p<T extends keyof PaginationMap>(type: T, feed: Feed) {
     const properties: PaginationProps<T> = {
-      selfUrl: pagination.self,
-      prevUrl: pagination.previous,
-      nextUrl: pagination.next,
+      itemsPerPage: feed.itemsPerPage,
+      startIndex: feed.startIndex,
+      totalResults: feed.totalResults,
+      selfUrl: feed.selfUrl,
+      previousUrl: feed.previousUrl,
+      nextUrl: feed.nextUrl,
       previous: async () => {
-        if (pagination.previous) {
-          const result = await this.c.req(pagination.previous);
-          const to = (type === 'comments' ? result.comments : result.posts) as PaginationMap[T] | null;
-          if (to) {
-            return this._p(type, to, result.pagination);
-          }
+        if (properties.previousUrl) {
+          const result = await this.c.req(properties.previousUrl);
+          return this._p(type, result);
         }
         return null;
       },
       next: async () => {
-        if (pagination.next) {
-          const result = await this.c.req(pagination.next);
-          const to = (type === 'comments' ? result.comments : result.posts) as PaginationMap[T] | null;
-          if (to) {
-            return this._p(type, to, result.pagination);
-          }
+        if (properties.nextUrl) {
+          const result = await this.c.req(properties.nextUrl);
+          return this._p(type, result);
         }
         return null;
       },
     };
 
-    return addProperties(array, properties);
+    return addProperties((type === 'comments' ? feed.comments : feed.posts) as PaginationMap[T], properties);
   }
 }

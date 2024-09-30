@@ -39,19 +39,17 @@ export class Comments extends Methods {
     // validate post_id if provided
     if (!isUndefined(post_id)) validators.nB(post_id, 'options.post_id');
 
-    const { comments, pagination } = await this.c.req(
-      `./${post_id ? `${encodeURI(post_id)}/` : ''}comments/${options.summary === true ? 'summary' : 'default'}`,
-      {
-        params: options,
-        exclude: ['query'],
-      },
-    );
+    const result = await this.c.req(`./${post_id ? `${encodeURI(post_id)}/` : ''}comments/${options.summary === true ? 'summary' : 'default'}`, {
+      params: options,
+      exclude: ['query'],
+    });
 
-    // If post_id was provided, make sure to filter once again
-    // Use an empty array if entries were not found
-    const filtered = (post_id ? comments?.filter((c) => c.post.id === post_id) : comments) || [];
-
-    return this._p('comments', filtered, pagination);
+    return this._p('comments', {
+      ...result,
+      // If post_id was provided, make sure to filter once again
+      // Use an empty array if entries were not found
+      comments: (post_id ? result.comments?.filter((c) => c.post.id === post_id) : result.comments) || [],
+    });
   }
 
   /**

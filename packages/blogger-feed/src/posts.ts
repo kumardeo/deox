@@ -37,16 +37,13 @@ export class Posts extends Methods {
     // validate label if provided
     if (!isUndefined(label)) validators.nB(label, 'options.label');
 
-    const { posts, pagination } = await this.c.req(
-      `./posts/${options.summary === true ? 'summary' : 'default'}${label ? `/-/${encodeURI(label)}` : ''}`,
-      {
-        params: options,
-        exclude: ['query'],
-      },
-    );
+    const result = await this.c.req(`./posts/${options.summary === true ? 'summary' : 'default'}${label ? `/-/${encodeURI(label)}` : ''}`, {
+      params: options,
+      exclude: ['query'],
+    });
 
     // Use an empty array if entries were not found
-    return this._p('posts', posts || [], pagination);
+    return this._p('posts', result);
   }
 
   /**
@@ -83,7 +80,7 @@ export class Posts extends Methods {
   async query(query: string, options: PostsQueryOptions = {}) {
     validators.nB(query, "Argument 'query'");
 
-    const { posts, pagination } = await this.c.req(`./posts/${options.summary === true ? 'summary' : 'default'}`, {
+    const result = await this.c.req(`./posts/${options.summary === true ? 'summary' : 'default'}`, {
       params: {
         ...options,
         query,
@@ -91,6 +88,6 @@ export class Posts extends Methods {
     });
 
     // Use an empty array if entries were not found
-    return this._p('posts', posts || [], pagination);
+    return this._p('posts', result);
   }
 }

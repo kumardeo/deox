@@ -508,6 +508,8 @@ const getEntries = (entryArray: unknown) => {
 const getFeedFromEntry = (entryArray: unknown, feedObject?: unknown) => {
   const { posts, comments } = getEntries(entryArray);
 
+  const pagination = getPagination(feedObject);
+
   const feed: Feed = {
     blog: getBlog(feedObject),
     links: getLinks(getNested(feedObject, 'link')).links,
@@ -516,7 +518,9 @@ const getFeedFromEntry = (entryArray: unknown, feedObject?: unknown) => {
     itemsPerPage: getItemsPerPage(feedObject),
     startIndex: getStartIndex(feedObject),
     totalResults: getTotalResult(feedObject),
-    pagination: getPagination(feedObject),
+    selfUrl: pagination.self,
+    previousUrl: pagination.previous,
+    nextUrl: pagination.next,
   };
 
   return feed;

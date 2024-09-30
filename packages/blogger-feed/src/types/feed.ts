@@ -238,12 +238,6 @@ export interface Comment {
   inReplyTo: string | null;
 }
 
-export interface Pagination {
-  self: string;
-  previous: string | null;
-  next: string | null;
-}
-
 export interface Feed {
   blog: Blog | null;
   links: Links;
@@ -252,5 +246,7 @@ export interface Feed {
   itemsPerPage: number | null;
   startIndex: number | null;
   totalResults: number | null;
-  pagination: Pagination;
+  selfUrl: string;
+  previousUrl: string | null;
+  nextUrl: string | null;
 }
