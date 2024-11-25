@@ -26,10 +26,11 @@
       "url": "https://lzw.me"
     }
   ],
-  "homepage": "https://github.com/lzwme/console-log-colors",
+  "homepage": "https://github.com/lzwme/console-log-colors#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lzwme/console-log-colors.git"
+    "url": "https://github.com/kumardeo/deox",
+    "directory": "packages/clc"
   },
   "bugs": {
     "url": "https://github.com/lzwme/console-log-colors/issues"
