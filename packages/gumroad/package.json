@@ -1,6 +1,6 @@
 {
 	"name": "@deox/gumroad",
-	"version": "0.0.7",
+	"version": "0.0.8",
 	"private": false,
 	"description": "API client for Gumroad",
 	"keywords": [
@@ -41,7 +41,7 @@
 		}
 	},
 	"dependencies": {
-    "@deox/clc": "workspace:^",
+		"@deox/clc": "workspace:^",
 		"@deox/utils": "workspace:^"
 	},
 	"devDependencies": {
