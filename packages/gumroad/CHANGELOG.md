@@ -1,5 +1,11 @@
 # @deox/gumroad
 
+## 0.0.8
+
+### Patch Changes
+
+- [`9e517fd`](https://github.com/kumardeo/deox/commit/9e517fdd624da6abf648384868fcee7bdf024459) Thanks [@kumardeo](https://github.com/kumardeo)! - fix: fix code execution from string (`eval()`) when running on cloudflare workers by replacing `console-log-colors` with its fork `@deox/clc`
+
 ## 0.0.7
 
 ### Patch Changes
