@@ -56,12 +56,12 @@
 		"@deox/utils": "workspace:^"
 	},
 	"devDependencies": {
+    "@deox/clc": "workspace:^",
 		"babel-loader": "^9.2.1",
-		"console-log-colors": "^0.5.0",
-		"html-webpack-plugin": "^5.6.0",
+		"html-webpack-plugin": "^5.6.3",
 		"source-map-loader": "^5.0.0",
 		"ts-loader": "^9.5.1",
-		"webpack": "^5.95.0",
+		"webpack": "^5.96.1",
 		"webpack-cli": "^5.1.4",
 		"webpack-define-config": "^0.0.1",
 		"webpack-dev-server": "^5.1.0"

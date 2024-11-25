@@ -1,4 +1,4 @@
-import clc from 'console-log-colors';
+import clc from '@deox/clc';
 
 export class Logger {
   enabled = true;

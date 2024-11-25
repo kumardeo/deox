@@ -1,6 +1,6 @@
 import cp from 'node:child_process';
 import path from 'node:path';
-import clc from 'console-log-colors';
+import clc from '@deox/clc';
 import type { Plugin } from 'esbuild';
 import fs from 'fs-extra';
 import * as glob from 'glob';

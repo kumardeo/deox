@@ -22,7 +22,6 @@
 	},
 	"scripts": {
     "check:types": "tsc --noEmit",
-		"dev": "wrangler dev",
 		"build": "rimraf dist && tsx ./build.ts",
 		"clean": "rimraf dist"
 	},
@@ -40,6 +39,6 @@
 		}
 	},
 	"devDependencies": {
-		"console-log-colors": "^0.5.0"
+    "@deox/clc": "workspace:^"
 	}
 }

@@ -1,5 +1,5 @@
+import clc from '@deox/clc';
 import { isObject } from '@deox/utils/predicate';
-import clc from 'console-log-colors';
 import {
   SDKBadRequestError,
   SDKInputNotFoundError,

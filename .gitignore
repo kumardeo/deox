@@ -1,14 +1,14 @@
 # dependencies
-node_modules
+node_modules/
 
 # production
-build
-dist
+build/
+dist/
 
 # cloudflare
-.wrangler
-wrangler.toml
+.wrangler/
 .dev.vars
+.dev.vars.*
 
 # turbo
 .turbo

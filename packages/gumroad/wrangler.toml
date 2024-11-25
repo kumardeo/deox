@@ -1,0 +1,6 @@
+#:schema node_modules/wrangler/config-schema.json
+name = "gumroad-api-client-dev"
+main = "./dev/index.ts"
+tsconfig = "./dev/tsconfig.json"
+compatibility_date = "2024-10-22"
+compatibility_flags = ["nodejs_compat"]

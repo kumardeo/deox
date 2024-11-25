@@ -40,6 +40,6 @@
 		}
 	},
 	"devDependencies": {
-		"console-log-colors": "^0.5.0"
+    "@deox/clc": "workspace:^"
 	}
 }

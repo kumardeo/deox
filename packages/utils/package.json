@@ -97,7 +97,7 @@
 		"shade-blend-color": "^1.0.0"
 	},
 	"devDependencies": {
-		"@types/shade-blend-color": "^1.0.3",
-		"console-log-colors": "^0.5.0"
+    "@deox/clc": "workspace:^",
+		"@types/shade-blend-color": "^1.0.3"
 	}
 }

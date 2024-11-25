@@ -41,6 +41,18 @@
       }
     },
     {
+      "include": ["packages/clc"],
+      "linter": {
+        "enabled": false
+      },
+      "formatter": {
+        "enabled": false
+      },
+      "organizeImports": {
+        "enabled": false
+      }
+    },
+    {
       "include": ["packages/oson", "packages/cors-worker", "packages/check-types", "packages/utils/src/predicate.ts"],
       "linter": {
         "rules": {
