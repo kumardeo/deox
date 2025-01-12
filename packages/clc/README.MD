@@ -17,6 +17,7 @@ Please use [chalk](https://github.com/chalk/chalk) for complex requirements.
 
 ```bash
 npm install console-log-colors
+# npm install @deox/clc
 ```
 
 ## USAGE/API
@@ -25,8 +26,11 @@ Examples:
 
 ```js
 const { color, log, red, green, cyan, cyanBright } = require('console-log-colors');
+// const { color, log, red, green, cyan, cyanBright } = require('@deox/clc');
+
 // or use import
 import { color, log, red, green, cyan, cyanBright } from 'console-log-colors';
+// import { color, log, red, green, cyan, cyanBright } from '@deox/clc';
 
 // ansi colors
 console.log(green('This is a green string!'));
@@ -56,6 +60,7 @@ console.log(greenstr, ' ==> [striped]', striped);
 
 ```js
 import { cyan } from 'console-log-colors';
+// import { cyan } from '@deox/clc';
 
 console.log(cyan.bgRed.bold.underline('Hello world!'));
 console.log(bold.cyan.bgRed.underline('Hello world!'));
@@ -64,7 +69,8 @@ console.log(bold.cyan.bgRed.underline('Hello world!'));
 ### Nested
 
 ```js
-import { red, white, gray } from 'console-log-colors'; // import { red, white, gray } from '@deox/clc';
+import { red, white, gray } from 'console-log-colors';
+// import { red, white, gray } from '@deox/clc';
 
 console.log(
   red(`a red ${white('white')} red ${red('red')} red ${gray('gray')} red ${red('red')} red ${red('red')}`)
@@ -76,7 +82,8 @@ console.log(
 Support ansi256 colors. For example:
 
 ```js
-import { c250 } from 'console-log-colors'; // import { c250 } from '@deox/clc';
+import { c250 } from 'console-log-colors';
+// import { c250 } from '@deox/clc';
 
 console.log(c250.bg129(' ANSI256: color 250 and background 129 '));
 ```
@@ -86,7 +93,8 @@ console.log(c250.bg129(' ANSI256: color 250 and background 129 '));
 ### `color[color type](string)`
 
 ```js
-import { color } from 'console-log-colors'; // import { color } from '@deox/clc';
+import { color } from 'console-log-colors';
+// import { color } from '@deox/clc';
 
 console.log(color.red('red'), color.green('green'), color.cyanBright('cyanBright'));
 ```
@@ -94,7 +102,8 @@ console.log(color.red('red'), color.green('green'), color.cyanBright('cyanBright
 ### `log[color type](str)`
 
 ```js
-import { log } from 'console-log-colors'; // import { log } from '@deox/clc';
+import { log } from 'console-log-colors';
+// import { log } from '@deox/clc';
 
 log.red('red text');
 log.green('green text');
