@@ -1,5 +1,11 @@
 # @deox/blogger-feed
 
+## 0.0.7
+
+### Patch Changes
+
+- [`7ff6cca`](https://github.com/kumardeo/deox/commit/7ff6cca913d5fc953f49056d81da80273e734d5c) Thanks [@kumardeo](https://github.com/kumardeo)! - fix: accept urls without subdomain i.e. `example.com`
+
 ## 0.0.6
 
 ### Patch Changes
