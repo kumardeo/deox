@@ -1,4 +1,3 @@
-import { isString } from '@deox/utils/predicate';
 import type { NOT_FOUND_ERRORS } from './constants';
 
 /**
