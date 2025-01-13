@@ -25,20 +25,12 @@ export class SDKTypeError extends SDKError {
  * Represents a error thrown while making an API request
  */
 export class SDKRequestError extends SDKError {
-  readonly response?: Response;
-
   readonly url: string;
 
-  constructor(message: string, url: Response | URL | string, options?: ErrorOptions) {
+  constructor(message: string, url: string | URL, options?: ErrorOptions) {
     super(message, options);
     this.name = 'SDKRequestError';
-
-    if (url instanceof URL || isString(url)) {
-      this.url = String(url);
-    } else {
-      this.url = url.url;
-      this.response = url;
-    }
+    this.url = String(url);
   }
 }
 

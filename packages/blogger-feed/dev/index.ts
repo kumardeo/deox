@@ -1,6 +1,6 @@
 import { BloggerFeed } from '../src';
 
-const feed = new BloggerFeed('https://www.fineshopdesign.com', {
+const feed = new BloggerFeed('fineshopdesign.com', {
   jsonp: true,
 });
 

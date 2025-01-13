@@ -75,7 +75,7 @@ export const validators = {
  */
 export const getOrigin = (input: string) => {
   if (isString(input)) {
-    const matches = input.match(/^(https?:\/\/)?([a-zA-Z0-9-]{0,}[a-zA-Z0-9]\.[a-zA-Z0-9-]{3,}(?:\.[a-zA-Z0-9-]{2,12}){1,2})(?:[/?#](?:.*))?$/i);
+    const matches = input.match(/^(https?:\/\/)?([a-zA-Z0-9-]{1,}[a-zA-Z0-9]\.[a-zA-Z0-9-]{2,}(?:\.[a-zA-Z0-9-]{2,12}){0,1})(?:[/?#](?:.*))?$/i);
 
     if (matches?.[2]) return `${matches[1] ?? 'https://'}${matches[2]}`;
   }

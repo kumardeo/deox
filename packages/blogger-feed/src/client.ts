@@ -35,12 +35,12 @@ export class Client {
    * @param options Options
    */
   constructor(urlOrId: string | URL, options: ClientOptions = {}) {
-    if (isString(urlOrId) && /^\d+$/.test(urlOrId) && urlOrId.length >= 12 && urlOrId.length <= 24) {
+    if (isString(urlOrId) && /^\d{12,24}$/.test(urlOrId)) {
       this._bI = urlOrId;
       this.base = getServiceBase(urlOrId);
     } else {
       const origin = urlOrId instanceof URL ? urlOrId.origin : getOrigin(urlOrId);
-      if (origin) {
+      if (origin && /^https?:\/\//.test(origin)) {
         this._bU = addSlash(origin);
         this.base = getDomainBase(origin);
       } else {

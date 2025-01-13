@@ -125,12 +125,14 @@ const fetchJSON = async <T = unknown>(url: string | URL) => {
   });
 
   if (!response.ok) {
-    throw new SDKRequestError(`Failed to fetch ${response.url} (status: ${response.status})`, response);
+    await response.body?.cancel();
+    throw new SDKRequestError(`Failed to fetch ${response.url} (status: ${response.status})`, response.url);
   }
 
   const contentType = response.headers.get('Content-Type')?.includes('application/json');
   if (!contentType) {
-    throw new SDKRequestError(`Response was success but Content-Type '${contentType}' is not supported`, response);
+    await response.body?.cancel();
+    throw new SDKRequestError(`Response was success but Content-Type '${contentType}' is not supported`, response.url);
   }
 
   return (await response.json()) as T;
