@@ -1,5 +1,11 @@
 # @deox/blogger-feed
 
+## 0.0.8
+
+### Patch Changes
+
+- [`d70d03e`](https://github.com/kumardeo/deox/commit/d70d03ef9826317ba2200689de67c5850a91b423) Thanks [@kumardeo](https://github.com/kumardeo)! - fix: fix `urlOrId` argument validation
+
 ## 0.0.7
 
 ### Patch Changes
