@@ -65,20 +65,3 @@ export const validators = {
     if ((data as string).trim().length === 0) throw new SDKTypeError(`${name} cannot be a blank string`);
   },
 };
-
-/**
- * The the origin of an url
- *
- * @param input The input string
- *
- * @returns The origin of the input
- */
-export const getOrigin = (input: string) => {
-  if (isString(input)) {
-    const matches = input.match(/^(https?:\/\/)?([a-zA-Z0-9-]{1,}[a-zA-Z0-9]\.[a-zA-Z0-9-]{2,}(?:\.[a-zA-Z0-9-]{2,12}){0,1})(?:[/?#](?:.*))?$/i);
-
-    if (matches?.[2]) return `${matches[1] ?? 'https://'}${matches[2]}`;
-  }
-
-  return null;
-};

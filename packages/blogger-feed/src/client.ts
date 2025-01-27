@@ -2,7 +2,6 @@ import { isString } from '@deox/utils/predicate';
 import { NOT_FOUND_ERRORS } from './constants';
 import { SDKInputNotFoundError } from './errors';
 import { type FetchFeedOptions, fetchFeed } from './request';
-import { getOrigin } from './utils';
 
 const addSlash = (url: string) => (url.endsWith('/') ? url : `${url}/`);
 
@@ -39,13 +38,23 @@ export class Client {
       this._bI = urlOrId;
       this.base = getServiceBase(urlOrId);
     } else {
-      const origin = urlOrId instanceof URL ? urlOrId.origin : getOrigin(urlOrId);
-      if (origin && /^https?:\/\//.test(origin)) {
-        this._bU = addSlash(origin);
-        this.base = getDomainBase(origin);
-      } else {
+      let url: URL | null = null;
+      if (urlOrId instanceof URL) {
+        url = urlOrId;
+      } else if (typeof urlOrId === 'string') {
+        try {
+          url = new URL(!/^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//.test(urlOrId) ? `https://${urlOrId}` : urlOrId);
+        } catch (e) {}
+      }
+      if (!url) {
         throw new Error("Argument 'urlOrId' is not a valid blogger blog url or blog id");
       }
+      if (!/^https?:$/i.test(url.protocol)) {
+        throw new Error(`Argument 'urlOrId' has unsupported protocol '${url.protocol}'`);
+      }
+
+      this._bU = addSlash(url.origin);
+      this.base = getDomainBase(url.origin);
     }
     this.jsonp = options.jsonp === true;
 

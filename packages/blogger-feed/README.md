@@ -2,8 +2,6 @@
 
 A blogger feed API client.
 
-> **Warning** This package is under development. Do not use it in production.
-
 ## Installation
 
 Install the package by running the following command in terminal:
