@@ -21,22 +21,13 @@ export interface SetCookieOptions {
 
 export const cookie = {
   /** Cookie string equivalent to `document.cookie` */
-  get cookie() {
+  get value() {
     return document.cookie;
   },
 
   /** Set cookie string equivalent to `document.cookie = value` */
-  set cookie(value: string) {
+  set value(value: string) {
     document.cookie = value;
-  },
-
-  /**
-   * Check whether a cookie with specific key exists.
-   *
-   * @param key The cookie key to check.
-   */
-  has(key: string) {
-    return this.get(key) !== null;
   },
 
   /**
@@ -47,8 +38,9 @@ export const cookie = {
    * @returns The value of the cookie, or null if not found.
    */
   get(key: string) {
-    const matches = this.cookie.match(new RegExp(`(?:^|; )${key.replace(/([.$?*|{}()[\]\\/+^])/g, '$1')}=([^;]*)`));
-    return matches?.[1] ? decodeURIComponent(matches[1]) : null;
+    const regex = new RegExp(`(?:^|; )${encodeURIComponent(key).replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}=([^;]*)`);
+    const matches = this.value.match(regex);
+    return typeof matches?.[1] === 'string' ? decodeURIComponent(matches[1]) : null;
   },
 
   /**
@@ -58,14 +50,23 @@ export const cookie = {
    */
   getAll() {
     const cookies: Record<string, string> = {};
-    const cookieArray = this.cookie.split('; ');
+    const cookieArray = this.value.split('; ');
     for (let i = 0; i < cookieArray.length; i += 1) {
       const [name, value] = cookieArray[i].split('=');
-      if (name) {
-        cookies[name] = decodeURIComponent(value || '');
+      if (typeof name === 'string') {
+        cookies[decodeURIComponent(name)] = value ? decodeURIComponent(value) : '';
       }
     }
     return cookies;
+  },
+
+  /**
+   * Check whether a cookie with specific key exists.
+   *
+   * @param key The cookie key to check.
+   */
+  has(key: string) {
+    return this.get(key) !== null;
   },
 
   /**
@@ -82,30 +83,32 @@ export const cookie = {
 
     let cookieString = `${encodeURIComponent(key)}=${encodeURIComponent(value !== undefined ? value : '')}`;
 
-    for (const optionKey in object) {
-      const optionValue = object[optionKey as keyof typeof object];
-      let flagKey = optionKey;
-      let flagValue = optionValue;
-      switch (optionKey) {
+    for (let flagKey in object) {
+      let flagValue = object[flagKey as keyof typeof object];
+      switch (flagKey) {
         case 'expires':
-          flagValue = optionValue instanceof Date ? optionValue.toUTCString() : optionValue;
+          if (flagValue instanceof Date) {
+            flagValue = flagValue.toUTCString();
+          }
           break;
         case 'maxAge':
           flagKey = 'max-age';
           break;
         case 'sameSite':
           flagKey = 'samesite';
-          flagValue = optionValue === 'none' ? true : optionValue;
+          if (flagValue === 'none') {
+            flagValue = true;
+          }
           break;
       }
       cookieString += `; ${flagKey}`;
-      const shouldAddValue = (typeof flagValue === 'boolean' ? flagValue !== true : true) && optionValue !== undefined;
+      const shouldAddValue = typeof flagValue === 'boolean' ? flagValue !== true : typeof flagValue !== 'undefined';
       if (shouldAddValue) {
         cookieString += `=${flagValue}`;
       }
     }
 
-    this.cookie = cookieString;
+    this.value = cookieString;
     return cookieString;
   },
 
