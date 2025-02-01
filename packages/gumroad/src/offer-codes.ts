@@ -25,6 +25,7 @@ export interface OfferCodeProps {
           offer_code: string;
           max_purchase_count: number;
         },
+    requestOptions?: { signal?: AbortSignal },
   ): Promise<OfferCode & OfferCodeProps>;
 
   /**
@@ -32,7 +33,7 @@ export interface OfferCodeProps {
    *
    * @returns On success, `true`
    */
-  delete(): Promise<true>;
+  delete(requestOptions?: { signal?: AbortSignal }): Promise<true>;
 }
 
 /**
@@ -41,9 +42,9 @@ export interface OfferCodeProps {
 export class OfferCodes extends Methods {
   protected _bind_offer_code(offer_code: OfferCode, product_id: string) {
     const properties: OfferCodeProps = {
-      update: async (update_options) => this.update(product_id, offer_code.id, update_options),
+      update: async (update_options, requestOptions) => this.update(product_id, offer_code.id, update_options, requestOptions),
 
-      delete: async () => this.delete(product_id, offer_code.id),
+      delete: async (requestOptions) => this.delete(product_id, offer_code.id, requestOptions),
     };
 
     return addProperties(offer_code, properties);
@@ -62,13 +63,15 @@ export class OfferCodes extends Methods {
    *
    * @see https://app.gumroad.com/api#get-/products/:product_id/offer_codes
    */
-  async list(product_id: string) {
+  async list(product_id: string, { signal }: { signal?: AbortSignal } = {}) {
     try {
       validators.notBlank(product_id, "Argument 'product_id'");
 
-      return (await this.client.request<{ offer_codes: OfferCode[] }>(`./products/${encodeURI(product_id)}/offer_codes`)).offer_codes.map(
-        (offer_code) => this._bind_offer_code(offer_code, product_id),
-      );
+      return (
+        await this.client.request<{ offer_codes: OfferCode[] }>(`./products/${encodeURI(product_id)}/offer_codes`, {
+          signal,
+        })
+      ).offer_codes.map((offer_code) => this._bind_offer_code(offer_code, product_id));
     } catch (e) {
       this.logger.function(e, 'OfferCodes.list', { product_id });
 
@@ -86,14 +89,17 @@ export class OfferCodes extends Methods {
    *
    * @see https://app.gumroad.com/api#get-/products/:product_id/offer_codes/:id
    */
-  async get(product_id: string, offer_code_id: string): Promise<OfferCode | null> {
+  async get(product_id: string, offer_code_id: string, { signal }: { signal?: AbortSignal } = {}): Promise<OfferCode | null> {
     try {
       validators.notBlank(product_id, "Argument 'product_id'");
       validators.notBlank(offer_code_id, "Argument 'offer_code_id'");
 
       return this._bind_offer_code(
-        (await this.client.request<{ offer_code: OfferCode }>(`./products/${encodeURI(product_id)}/offer_codes/${encodeURI(offer_code_id)}`))
-          .offer_code,
+        (
+          await this.client.request<{ offer_code: OfferCode }>(`./products/${encodeURI(product_id)}/offer_codes/${encodeURI(offer_code_id)}`, {
+            signal,
+          })
+        ).offer_code,
         product_id,
       );
     } catch (e) {
@@ -129,6 +135,7 @@ export class OfferCodes extends Methods {
       max_purchase_count?: number;
       universal?: boolean;
     },
+    { signal }: { signal?: AbortSignal } = {},
   ) {
     try {
       validators.notBlank(product_id, "Argument 'product_id'");
@@ -138,6 +145,7 @@ export class OfferCodes extends Methods {
           await this.client.request<{ offer_code: OfferCode }>(`./products/${encodeURI(product_id)}/offer_codes`, {
             method: 'POST',
             params: { ...options, name, amount_off },
+            signal,
           })
         ).offer_code,
         product_id,
@@ -174,6 +182,7 @@ export class OfferCodes extends Methods {
           max_purchase_count: number;
         }
       | { offer_code: string; max_purchase_count: number },
+    { signal }: { signal?: AbortSignal } = {},
   ) {
     try {
       validators.notBlank(product_id, "Argument 'product_id'");
@@ -184,6 +193,7 @@ export class OfferCodes extends Methods {
           await this.client.request<{ offer_code: OfferCode }>(`./products/${encodeURI(product_id)}/offer_codes/${encodeURI(offer_code_id)}`, {
             method: 'PUT',
             params: options,
+            signal,
           })
         ).offer_code,
         product_id,
@@ -209,12 +219,12 @@ export class OfferCodes extends Methods {
    *
    * @see https://app.gumroad.com/api#delete-/products/:product_id/offer_codes/:id
    */
-  async delete(product_id: string, offer_code_id: string) {
+  async delete(product_id: string, offer_code_id: string, { signal }: { signal?: AbortSignal } = {}) {
     try {
       validators.notBlank(product_id, "Argument 'product_id'");
       validators.notBlank(offer_code_id, "Argument 'offer_code_id'");
 
-      await this.client.request(`./products/${encodeURI(product_id)}/offer_codes/${encodeURI(offer_code_id)}`, { method: 'DELETE' });
+      await this.client.request(`./products/${encodeURI(product_id)}/offer_codes/${encodeURI(offer_code_id)}`, { method: 'DELETE', signal });
 
       return true as const;
     } catch (e) {

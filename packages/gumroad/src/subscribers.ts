@@ -23,12 +23,16 @@ export class Subscribers extends Methods {
    *
    * @see https://app.gumroad.com/api#get-/products/:product_id/subscribers
    */
-  async list(product_id: string, email?: string) {
+  async list(product_id: string, email?: string, { signal }: { signal?: AbortSignal } = {}) {
     try {
       validators.notBlank(product_id, "Argument 'product_id'");
 
-      return (await this.client.request<{ subscribers: Subscriber[] }>(`./products/${encodeURI(product_id)}/subscribers`, { params: { email } }))
-        .subscribers;
+      return (
+        await this.client.request<{ subscribers: Subscriber[] }>(`./products/${encodeURI(product_id)}/subscribers`, {
+          params: { email },
+          signal,
+        })
+      ).subscribers;
     } catch (e) {
       this.logger.function(e, 'Subscribers.list', { product_id, email });
 
@@ -47,11 +51,15 @@ export class Subscribers extends Methods {
    *
    * @see https://app.gumroad.com/api#get-/subscribers/:id
    */
-  async get(subscriber_id: string) {
+  async get(subscriber_id: string, { signal }: { signal?: AbortSignal } = {}) {
     try {
       validators.notBlank(subscriber_id, "Argument 'subscriber_id'");
 
-      return (await this.client.request<{ subscriber: Subscriber }>(`./subscribers/${encodeURI(subscriber_id)}`)).subscriber;
+      return (
+        await this.client.request<{ subscriber: Subscriber }>(`./subscribers/${encodeURI(subscriber_id)}`, {
+          signal,
+        })
+      ).subscriber;
     } catch (e) {
       this.logger.function(e, 'Subscribers.get', { subscriber_id });
 

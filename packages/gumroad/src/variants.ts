@@ -13,17 +13,20 @@ export interface VariantProps {
    *
    * @returns On success, a {@link Variant}
    */
-  update(options: {
-    name?: string | undefined;
-    price_difference_cents?: number | undefined;
-    max_purchase_count?: number | undefined;
-  }): Promise<Variant & VariantProps>;
+  update(
+    options: {
+      name?: string | undefined;
+      price_difference_cents?: number | undefined;
+      max_purchase_count?: number | undefined;
+    },
+    requestOptions?: { signal?: AbortSignal },
+  ): Promise<Variant & VariantProps>;
 
   /**
    *
    * @returns On success, `true`
    */
-  delete(): Promise<true>;
+  delete(requestOptions?: { signal?: AbortSignal }): Promise<true>;
 }
 
 /**
@@ -32,9 +35,9 @@ export interface VariantProps {
 export class Variants extends Methods {
   protected _bind_variant(variant: Variant, product_id: string, variant_category_id: string) {
     const properties: VariantProps = {
-      update: async (update_options) => this.update(product_id, variant_category_id, variant.id, update_options),
+      update: async (update_options, requestOptions) => this.update(product_id, variant_category_id, variant.id, update_options, requestOptions),
 
-      delete: () => this.delete(product_id, variant_category_id, variant.id),
+      delete: (requestOptions) => this.delete(product_id, variant_category_id, variant.id, requestOptions),
     };
 
     return addProperties(variant, properties);
@@ -50,7 +53,7 @@ export class Variants extends Methods {
    *
    * @see https://app.gumroad.com/api#get-/products/:product_id/variant_categories/:variant_category_id/variants
    */
-  async list(product_id: string, variant_category_id: string) {
+  async list(product_id: string, variant_category_id: string, { signal }: { signal?: AbortSignal } = {}) {
     try {
       validators.notBlank(product_id, "Argument 'product_id'");
       validators.notBlank(variant_category_id, "Argument 'variant_category_id'");
@@ -58,6 +61,9 @@ export class Variants extends Methods {
       return (
         await this.client.request<{ variants: Variant[] }>(
           `./products/${encodeURI(product_id)}/variant_categories/${encodeURI(variant_category_id)}/variants`,
+          {
+            signal,
+          },
         )
       ).variants.map((variant) => this._bind_variant(variant, product_id, variant_category_id));
     } catch (e) {
@@ -81,7 +87,7 @@ export class Variants extends Methods {
    *
    * @see https://app.gumroad.com/api#get-/products/:product_id/variant_categories/:variant_category_id/variants/:id
    */
-  async get(product_id: string, variant_category_id: string, variant_id: string) {
+  async get(product_id: string, variant_category_id: string, variant_id: string, { signal }: { signal?: AbortSignal } = {}) {
     try {
       validators.notBlank(product_id, "Argument 'product_id'");
       validators.notBlank(variant_category_id, "Argument 'variant_category_id'");
@@ -91,6 +97,9 @@ export class Variants extends Methods {
         (
           await this.client.request<{ variant: Variant }>(
             `./products/${encodeURI(product_id)}/variant_categories/${encodeURI(variant_category_id)}/variants/${encodeURI(variant_id)}`,
+            {
+              signal,
+            },
           )
         ).variant,
         product_id,
@@ -120,7 +129,14 @@ export class Variants extends Methods {
    *
    * @see https://app.gumroad.com/api#post-/products/:product_id/variant_categories/:variant_category_id/variants
    */
-  async create(product_id: string, variant_category_id: string, name: string, price_difference_cents: number, max_purchase_count?: number) {
+  async create(
+    product_id: string,
+    variant_category_id: string,
+    name: string,
+    price_difference_cents: number,
+    max_purchase_count?: number,
+    { signal }: { signal?: AbortSignal } = {},
+  ) {
     try {
       validators.notBlank(product_id, "Argument 'product_id'");
       validators.notBlank(variant_category_id, "Argument 'variant_category_id'");
@@ -137,6 +153,7 @@ export class Variants extends Methods {
                 price_difference_cents,
                 max_purchase_count,
               },
+              signal,
             },
           )
         ).variant,
@@ -177,6 +194,7 @@ export class Variants extends Methods {
       price_difference_cents?: number;
       max_purchase_count?: number;
     },
+    { signal }: { signal?: AbortSignal } = {},
   ) {
     try {
       validators.notBlank(product_id, "Argument 'product_id'");
@@ -190,6 +208,7 @@ export class Variants extends Methods {
             {
               method: 'PUT',
               params: options,
+              signal,
             },
           )
         ).variant,
@@ -219,7 +238,7 @@ export class Variants extends Methods {
    *
    * @see https://app.gumroad.com/api#delete-/products/:product_id/variant_categories/:variant_category_id/variants/:id
    */
-  async delete(product_id: string, variant_category_id: string, variant_id: string) {
+  async delete(product_id: string, variant_category_id: string, variant_id: string, { signal }: { signal?: AbortSignal } = {}) {
     try {
       validators.notBlank(product_id, "Argument 'product_id'");
       validators.notBlank(variant_category_id, "Argument 'variant_category_id'");
@@ -229,6 +248,7 @@ export class Variants extends Methods {
         `./products/${encodeURI(product_id)}/variant_categories/${encodeURI(variant_category_id)}/variants/${encodeURI(variant_id)}`,
         {
           method: 'DELETE',
+          signal,
         },
       );
 

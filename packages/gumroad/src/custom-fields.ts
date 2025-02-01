@@ -13,19 +13,22 @@ export interface CustomFieldProps {
    *
    * @returns On success, a {@link CustomField}
    */
-  update(options: {
-    name?: string | undefined;
-    required?: boolean | undefined;
-    type?: 'text' | 'checkbox' | 'terms' | undefined;
-    variant?: string | undefined;
-  }): Promise<CustomField & CustomFieldProps>;
+  update(
+    options: {
+      name?: string | undefined;
+      required?: boolean | undefined;
+      type?: 'text' | 'checkbox' | 'terms' | undefined;
+      variant?: string | undefined;
+    },
+    requestOptions: { signal?: AbortSignal },
+  ): Promise<CustomField & CustomFieldProps>;
 
   /**
    * Deletes the custom field
    *
    * @returns On success `true`
    */
-  delete(): Promise<true>;
+  delete(requestOptions?: { signal?: AbortSignal }): Promise<true>;
 }
 
 /**
@@ -34,9 +37,9 @@ export interface CustomFieldProps {
 export class CustomFields extends Methods {
   protected _bind_custom_field(custom_field: CustomField, product_id: string) {
     const methods: CustomFieldProps = {
-      update: async (update_options) => this.update(product_id, custom_field.name, update_options),
+      update: async (update_options, requestOptions) => this.update(product_id, custom_field.name, update_options, requestOptions),
 
-      delete: async () => this.delete(product_id, custom_field.name),
+      delete: async (requestOptions) => this.delete(product_id, custom_field.name, requestOptions),
     };
 
     return addProperties(custom_field, methods);
@@ -51,13 +54,15 @@ export class CustomFields extends Methods {
    *
    * @see https://app.gumroad.com/api#get-/products/:product_id/custom_fields
    */
-  async list(product_id: string) {
+  async list(product_id: string, { signal }: { signal?: AbortSignal } = {}) {
     try {
       validators.notBlank(product_id, "Argument 'product_id'");
 
-      return (await this.client.request<{ custom_fields: CustomField[] }>(`./products/${encodeURI(product_id)}/custom_fields`)).custom_fields.map(
-        (custom_field) => this._bind_custom_field(custom_field, product_id),
-      );
+      return (
+        await this.client.request<{ custom_fields: CustomField[] }>(`./products/${encodeURI(product_id)}/custom_fields`, {
+          signal,
+        })
+      ).custom_fields.map((custom_field) => this._bind_custom_field(custom_field, product_id));
     } catch (e) {
       this.logger.function(e, 'CustomFields.list', { product_id });
 
@@ -84,6 +89,7 @@ export class CustomFields extends Methods {
       type?: 'text' | 'checkbox' | 'terms';
       variant?: string;
     } = {},
+    { signal }: { signal?: AbortSignal } = {},
   ) {
     try {
       validators.notBlank(product_id, "Argument 'product_id'");
@@ -98,6 +104,7 @@ export class CustomFields extends Methods {
               required: typeof options.required === 'boolean' ? options.required : true,
               variant: options.variant,
             },
+            signal,
           })
         ).custom_field,
         product_id,
@@ -133,6 +140,7 @@ export class CustomFields extends Methods {
       type?: 'text' | 'checkbox' | 'terms';
       variant?: string;
     } = {},
+    { signal }: { signal?: AbortSignal } = {},
   ) {
     try {
       validators.notBlank(product_id, "Argument 'product_id'");
@@ -148,6 +156,7 @@ export class CustomFields extends Methods {
               name: options.name,
               variant: options.variant,
             },
+            signal,
           })
         ).custom_field,
         product_id,
@@ -173,13 +182,14 @@ export class CustomFields extends Methods {
    *
    * @see https://app.gumroad.com/api#delete-/products/:product_id/custom_fields/:name
    */
-  async delete(product_id: string, name: string) {
+  async delete(product_id: string, name: string, { signal }: { signal?: AbortSignal } = {}) {
     try {
       validators.notBlank(product_id, "Argument 'product_id'");
       validators.notBlank(name, "Argument 'name'");
 
       await this.client.request(`./products/${encodeURI(product_id)}/custom_fields/${encodeURI(name)}`, {
         method: 'DELETE',
+        signal,
       });
 
       return true as const;

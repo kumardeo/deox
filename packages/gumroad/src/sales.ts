@@ -21,7 +21,7 @@ export interface SalesProps {
    *
    * @returns On success, an Array of {@link Sale} | `null` if next page does not exists
    */
-  next(): Promise<(Sale[] & SalesProps) | null>;
+  next(requestOptions?: { signal?: AbortSignal }): Promise<(Sale[] & SalesProps) | null>;
 }
 
 /**
@@ -35,7 +35,7 @@ export interface SaleProps {
    *
    * @returns On success, a {@link Sale}
    */
-  markAsShipped(tracking_url?: string | undefined): Promise<Sale & SaleProps>;
+  markAsShipped(tracking_url?: string | undefined, requestOptions?: { signal?: AbortSignal }): Promise<Sale & SaleProps>;
 
   /**
    * Refunds the sale
@@ -44,7 +44,7 @@ export interface SaleProps {
    *
    * @returns On success, a {@link Sale}
    */
-  refund(amount_cents?: number | undefined): Promise<Sale & SaleProps>;
+  refund(amount_cents?: number | undefined, requestOptions?: { signal?: AbortSignal }): Promise<Sale & SaleProps>;
 }
 
 /**
@@ -59,9 +59,13 @@ export class Sales extends Methods {
     const properties: SalesProps = {
       next_page_key: object.next_page_key,
       next_page_url: object.next_page_url,
-      next: async () => {
+      next: async ({ signal } = {}) => {
         if (object.next_page_url) {
-          return this._bind_sales(await this.client.request<typeof object>(object.next_page_url));
+          return this._bind_sales(
+            await this.client.request<typeof object>(object.next_page_url, {
+              signal,
+            }),
+          );
         }
 
         return null;
@@ -76,9 +80,9 @@ export class Sales extends Methods {
 
   protected _bind_sale(sale: Sale) {
     const properties: SaleProps = {
-      markAsShipped: async (tracking_url) => this.markAsShipped(sale.id, tracking_url),
+      markAsShipped: async (tracking_url, requestOptions) => this.markAsShipped(sale.id, tracking_url, requestOptions),
 
-      refund: async (amount_cents) => this.refund(sale.id, amount_cents),
+      refund: async (amount_cents, requestOptions) => this.refund(sale.id, amount_cents, requestOptions),
     };
 
     return addProperties(sale, properties);
@@ -95,32 +99,35 @@ export class Sales extends Methods {
    *
    * @see https://app.gumroad.com/api#get-/sales
    */
-  async list(options?: {
-    /**
-     * Date in form `YYYY-MM-DD` - Only return sales after this date
-     */
-    after?: string;
-    /**
-     * Date in form `YYYY-MM-DD` - Only return sales before this date
-     */
-    before?: string;
-    /**
-     * Filter sales by this product
-     */
-    product_id?: string;
-    /**
-     * Filter sales by this email
-     */
-    email?: string;
-    /**
-     * Filter sales by this Order ID
-     */
-    order_id?: string;
-    /**
-     * A key representing a page of results. It is given in the response as `next_page_key`.
-     */
-    page_key?: string;
-  }) {
+  async list(
+    options?: {
+      /**
+       * Date in form `YYYY-MM-DD` - Only return sales after this date
+       */
+      after?: string;
+      /**
+       * Date in form `YYYY-MM-DD` - Only return sales before this date
+       */
+      before?: string;
+      /**
+       * Filter sales by this product
+       */
+      product_id?: string;
+      /**
+       * Filter sales by this email
+       */
+      email?: string;
+      /**
+       * Filter sales by this Order ID
+       */
+      order_id?: string;
+      /**
+       * A key representing a page of results. It is given in the response as `next_page_key`.
+       */
+      page_key?: string;
+    },
+    { signal }: { signal?: AbortSignal } = {},
+  ) {
     try {
       return this._bind_sales(
         await this.client.request<{
@@ -129,6 +136,7 @@ export class Sales extends Methods {
           sales: Sale[];
         }>('./sales', {
           params: options,
+          signal,
         }),
       );
     } catch (e) {
@@ -149,11 +157,17 @@ export class Sales extends Methods {
    *
    * @see https://app.gumroad.com/api#get-/sales/:id
    */
-  async get(sale_id: string) {
+  async get(sale_id: string, { signal }: { signal?: AbortSignal } = {}) {
     try {
       validators.notBlank(sale_id, "Argument 'sale_id'");
 
-      return this._bind_sale((await this.client.request<{ sale: Sale }>(`./sales/${encodeURI(sale_id)}`)).sale);
+      return this._bind_sale(
+        (
+          await this.client.request<{ sale: Sale }>(`./sales/${encodeURI(sale_id)}`, {
+            signal,
+          })
+        ).sale,
+      );
     } catch (e) {
       this.logger.function(e, 'Sales.get', { sale_id });
 
@@ -173,12 +187,17 @@ export class Sales extends Methods {
    *
    * @see https://app.gumroad.com/api#put-/sales/:id/mark_as_shipped
    */
-  async markAsShipped(sale_id: string, tracking_url?: string) {
+  async markAsShipped(sale_id: string, tracking_url?: string, { signal }: { signal?: AbortSignal } = {}) {
     try {
       validators.notBlank(sale_id, "Argument 'sale_id'");
 
       return this._bind_sale(
-        (await this.client.request<{ sale: Sale }>(`./sales/${encodeURI(sale_id)}/mark_as_shipped`, { params: { tracking_url } })).sale,
+        (
+          await this.client.request<{ sale: Sale }>(`./sales/${encodeURI(sale_id)}/mark_as_shipped`, {
+            params: { tracking_url },
+            signal,
+          })
+        ).sale,
       );
     } catch (e) {
       this.logger.function(e, 'Sales.markAsShipped', { sale_id, tracking_url });
@@ -202,11 +221,18 @@ export class Sales extends Methods {
    *
    * @see https://app.gumroad.com/api#put-/sales/:id/refund
    */
-  async refund(sale_id: string, amount_cents?: number) {
+  async refund(sale_id: string, amount_cents?: number, { signal }: { signal?: AbortSignal } = {}) {
     try {
       validators.notBlank(sale_id, "Argument 'sale_id'");
 
-      return this._bind_sale((await this.client.request<{ sale: Sale }>(`./sales/${encodeURI(sale_id)}/refund`, { params: { amount_cents } })).sale);
+      return this._bind_sale(
+        (
+          await this.client.request<{ sale: Sale }>(`./sales/${encodeURI(sale_id)}/refund`, {
+            params: { amount_cents },
+            signal,
+          })
+        ).sale,
+      );
     } catch (e) {
       this.logger.function(e, 'Sales.refund', { sale_id, amount_cents });
 

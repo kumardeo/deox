@@ -13,14 +13,14 @@ export interface VariantCategoryProps {
    *
    * @returns On success, a {@link VariantCategory}
    */
-  update(title: string): Promise<VariantCategory & VariantCategoryProps>;
+  update(title: string, requestOptions?: { signal?: AbortSignal }): Promise<VariantCategory & VariantCategoryProps>;
 
   /**
    * Deletes the variant category
    *
    * @returns On success, `true`
    */
-  delete(): Promise<true>;
+  delete(requestOptions?: { signal?: AbortSignal }): Promise<true>;
 }
 
 /**
@@ -29,9 +29,9 @@ export interface VariantCategoryProps {
 export class VariantCategories extends Methods {
   protected _bind_variant_category(variant_category: VariantCategory, product_id: string) {
     const properties: VariantCategoryProps = {
-      update: async (title) => this.update(product_id, variant_category.id, title),
+      update: async (title, requestOptions) => this.update(product_id, variant_category.id, title, requestOptions),
 
-      delete: async () => this.delete(product_id, variant_category.id),
+      delete: async (requestOptions) => this.delete(product_id, variant_category.id, requestOptions),
     };
 
     return addProperties(variant_category, properties);
@@ -46,14 +46,16 @@ export class VariantCategories extends Methods {
    *
    * @see https://app.gumroad.com/api#get-/products/:product_id/variant_categories
    */
-  async list(product_id: string) {
+  async list(product_id: string, { signal }: { signal?: AbortSignal } = {}) {
     try {
       validators.notBlank(product_id, "Argument 'product_id'");
 
       return (
         await this.client.request<{
           variant_categories: VariantCategory[];
-        }>(`./products/${encodeURI(product_id)}/variant_categories`)
+        }>(`./products/${encodeURI(product_id)}/variant_categories`, {
+          signal,
+        })
       ).variant_categories.map((variant_category) => this._bind_variant_category(variant_category, product_id));
     } catch (e) {
       this.logger.function(e, 'VariantCategories.list', { product_id });
@@ -72,7 +74,7 @@ export class VariantCategories extends Methods {
    *
    * @see https://app.gumroad.com/api#get-/products/:product_id/variant_categories/:id
    */
-  async get(product_id: string, variant_category_id: string) {
+  async get(product_id: string, variant_category_id: string, { signal }: { signal?: AbortSignal } = {}) {
     try {
       validators.notBlank(product_id, "Argument 'product_id'");
       validators.notBlank(variant_category_id, "Argument 'variant_category_id'");
@@ -81,6 +83,9 @@ export class VariantCategories extends Methods {
         (
           await this.client.request<{ variant_category: VariantCategory }>(
             `./products/${encodeURI(product_id)}/variant_categories/${encodeURI(variant_category_id)}`,
+            {
+              signal,
+            },
           )
         ).variant_category,
         product_id,
@@ -105,7 +110,7 @@ export class VariantCategories extends Methods {
    *
    * @see https://app.gumroad.com/api#post-/products/:product_id/variant_categories
    */
-  async create(product_id: string, title: string) {
+  async create(product_id: string, title: string, { signal }: { signal?: AbortSignal } = {}) {
     try {
       validators.notBlank(product_id, "Argument 'product_id'");
       validators.notBlank(title, "Argument 'title'");
@@ -115,6 +120,7 @@ export class VariantCategories extends Methods {
           await this.client.request<{ variant_category: VariantCategory }>(`./products/${encodeURI(product_id)}/variant_categories`, {
             method: 'POST',
             params: { title },
+            signal,
           })
         ).variant_category,
         product_id,
@@ -137,7 +143,7 @@ export class VariantCategories extends Methods {
    *
    * @see https://app.gumroad.com/api#put-/products/:product_id/variant_categories/:id
    */
-  async update(product_id: string, variant_category_id: string, title: string) {
+  async update(product_id: string, variant_category_id: string, title: string, { signal }: { signal?: AbortSignal } = {}) {
     try {
       validators.notBlank(product_id, "Argument 'product_id'");
       validators.notBlank(variant_category_id, "Argument 'variant_category_id'");
@@ -150,6 +156,7 @@ export class VariantCategories extends Methods {
             {
               method: 'PUT',
               params: { title },
+              signal,
             },
           )
         ).variant_category,
@@ -176,13 +183,14 @@ export class VariantCategories extends Methods {
    *
    * @see https://app.gumroad.com/api#delete-/products/:product_id/variant_categories/:id
    */
-  async delete(product_id: string, variant_category_id: string) {
+  async delete(product_id: string, variant_category_id: string, { signal }: { signal?: AbortSignal } = {}) {
     try {
       validators.notBlank(product_id, "Argument 'product_id'");
       validators.notBlank(variant_category_id, "Argument 'variant_category_id'");
 
       await this.client.request(`./products/${encodeURI(product_id)}/variant_categories/${encodeURI(variant_category_id)}`, {
         method: 'DELETE',
+        signal,
       });
 
       return true as const;

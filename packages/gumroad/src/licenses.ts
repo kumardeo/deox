@@ -18,28 +18,28 @@ export interface PurchaseProps {
    *
    * @returns On success, a {@link Purchase}
    */
-  verify(increment_uses_count?: boolean): Promise<Purchase & PurchaseProps>;
+  verify(increment_uses_count?: boolean, requestOptions?: { signal?: AbortSignal }): Promise<Purchase & PurchaseProps>;
 
   /**
    * Enables the license of the purchase
    *
    * @returns On success, a {@link Purchase}
    */
-  enable(): Promise<Purchase & PurchaseProps>;
+  enable(requestOptions?: { signal?: AbortSignal }): Promise<Purchase & PurchaseProps>;
 
   /**
    * Disables the license of the purchase
    *
    * @returns On success, a {@link Purchase}
    */
-  disable(): Promise<Purchase & PurchaseProps>;
+  disable(requestOptions?: { signal?: AbortSignal }): Promise<Purchase & PurchaseProps>;
 
   /**
    * Decrement the uses count of the license of the product
    *
    * @returns On success, a {@link Purchase}
    */
-  decrementUsesCount(): Promise<Purchase & PurchaseProps>;
+  decrementUsesCount(requestOptions?: { signal?: AbortSignal }): Promise<Purchase & PurchaseProps>;
 }
 
 /**
@@ -60,13 +60,13 @@ export class Licenses extends Methods {
     const properties: PurchaseProps = {
       license_uses: uses,
 
-      verify: async (increment_uses_count) => this.verify(product_id, license_key, increment_uses_count),
+      verify: async (increment_uses_count, requestOptions) => this.verify(product_id, license_key, increment_uses_count, requestOptions),
 
-      enable: async () => this.enable(product_id, license_key),
+      enable: async (requestOptions) => this.enable(product_id, license_key, requestOptions),
 
-      disable: async () => this.disable(product_id, license_key),
+      disable: async (requestOptions) => this.disable(product_id, license_key, requestOptions),
 
-      decrementUsesCount: async () => this.decrementUsesCount(product_id, license_key),
+      decrementUsesCount: async (requestOptions) => this.decrementUsesCount(product_id, license_key, requestOptions),
     };
 
     return addProperties(purchase, properties);
@@ -83,7 +83,7 @@ export class Licenses extends Methods {
    *
    * @see https://app.gumroad.com/api#post-/licenses/verify
    */
-  async verify(product_id: string, license_key: string, increment_uses_count?: boolean) {
+  async verify(product_id: string, license_key: string, increment_uses_count?: boolean, { signal }: { signal?: AbortSignal } = {}) {
     try {
       validators.notBlank(product_id, "Argument 'product_id'");
       validators.notBlank(license_key, "Argument 'license_key'");
@@ -94,6 +94,7 @@ export class Licenses extends Methods {
       }>('./licenses/verify', {
         method: 'POST',
         params: { product_id, license_key, increment_uses_count },
+        signal,
       });
 
       formatCustomField(response.purchase);
@@ -120,7 +121,7 @@ export class Licenses extends Methods {
    *
    * @see https://app.gumroad.com/api#put-/licenses/enable
    */
-  async enable(product_id: string, license_key: string) {
+  async enable(product_id: string, license_key: string, { signal }: { signal?: AbortSignal } = {}) {
     try {
       validators.notBlank(product_id, "Argument 'product_id'");
       validators.notBlank(license_key, "Argument 'license_key'");
@@ -131,6 +132,7 @@ export class Licenses extends Methods {
       }>('./licenses/enable', {
         method: 'PUT',
         params: { product_id, license_key },
+        signal,
       });
 
       formatCustomField(response.purchase);
@@ -156,7 +158,7 @@ export class Licenses extends Methods {
    *
    * @see https://app.gumroad.com/api#put-/licenses/disable
    */
-  async disable(product_id: string, license_key: string) {
+  async disable(product_id: string, license_key: string, { signal }: { signal?: AbortSignal } = {}) {
     try {
       validators.notBlank(product_id, "Argument 'product_id'");
       validators.notBlank(license_key, "Argument 'license_key'");
@@ -167,6 +169,7 @@ export class Licenses extends Methods {
       }>('./licenses/disable', {
         method: 'PUT',
         params: { product_id, license_key },
+        signal,
       });
 
       formatCustomField(response.purchase);
@@ -192,7 +195,7 @@ export class Licenses extends Methods {
    *
    * @see https://app.gumroad.com/api#put-/licenses/decrement_uses_count
    */
-  async decrementUsesCount(product_id: string, license_key: string) {
+  async decrementUsesCount(product_id: string, license_key: string, { signal }: { signal?: AbortSignal } = {}) {
     try {
       validators.notBlank(product_id, "Argument 'product_id'");
       validators.notBlank(license_key, "Argument 'license_key'");
@@ -203,6 +206,7 @@ export class Licenses extends Methods {
       }>('./licenses/decrement_uses_count', {
         method: 'PUT',
         params: { product_id, license_key },
+        signal,
       });
 
       formatCustomField(response.purchase);

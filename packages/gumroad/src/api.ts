@@ -63,7 +63,12 @@ export class API {
    *
    * @see https://app.gumroad.com/api#post-/licenses/verify
    */
-  static async verifyLicense(product_id: string, license_key: string, increment_uses_count?: boolean, options: { debug?: boolean } = {}) {
+  static async verifyLicense(
+    product_id: string,
+    license_key: string,
+    increment_uses_count?: boolean,
+    options: { debug?: boolean; signal?: AbortSignal } = {},
+  ) {
     validators.notBlank(product_id, "Argument 'product_id'");
     validators.notBlank(license_key, "Argument 'license_key'");
 
@@ -78,6 +83,7 @@ export class API {
             increment_uses_count,
           },
           debug: options.debug,
+          signal: options.signal,
         })
       ).data.purchase,
     );

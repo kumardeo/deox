@@ -85,6 +85,11 @@ export interface RequestOptions {
    * The base url for Gumroad API
    */
   baseUrl?: string | RequestURL;
+
+  /**
+   * An AbortSignal to set request's signal.
+   */
+  signal?: AbortSignal;
 }
 
 const getResponseError = (response: Response, message?: string, defaultMessage?: string) => {
@@ -128,7 +133,7 @@ const getResponseError = (response: Response, message?: string, defaultMessage?:
 export const request = async <T extends NonNullable<unknown> = NonNullable<unknown>>(
   path: string | RequestURL,
   accessToken?: string | null,
-  { method = 'GET', params = {}, body, debug = false, baseUrl = 'https://api.gumroad.com/v2/' }: RequestOptions = {},
+  { method = 'GET', params = {}, body, debug = false, baseUrl = 'https://api.gumroad.com/v2/', signal }: RequestOptions = {},
 ): Promise<{ data: T & { success: true }; response: Response }> => {
   try {
     const endpoint = new RequestURL(path, baseUrl, {
@@ -146,6 +151,7 @@ export const request = async <T extends NonNullable<unknown> = NonNullable<unkno
         Accept: 'application/json',
         ...(shouldSendBody ? { 'Content-Type': 'application/json' } : undefined),
       },
+      signal,
     };
 
     const started = debug ? Date.now() : null;

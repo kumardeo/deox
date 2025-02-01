@@ -13,7 +13,7 @@ export interface ResourceSubscriptionProps {
    *
    * @returns On success, `true`
    */
-  delete(): Promise<true>;
+  delete(requestOptions?: { signal?: AbortSignal }): Promise<true>;
 }
 
 /**
@@ -22,7 +22,7 @@ export interface ResourceSubscriptionProps {
 export class ResourceSubscriptions extends Methods {
   protected _bind_resource_subscription(resource_subscription: ResourceSubscription) {
     const properties: ResourceSubscriptionProps = {
-      delete: async () => this.delete(resource_subscription.id),
+      delete: async (requestOptions) => this.delete(resource_subscription.id, requestOptions),
     };
 
     return addProperties(resource_subscription, properties);
@@ -37,7 +37,7 @@ export class ResourceSubscriptions extends Methods {
    *
    * @see https://app.gumroad.com/api#get-/resource_subscriptions
    */
-  async list(resource_name: ResourceSubscriptionName) {
+  async list(resource_name: ResourceSubscriptionName, { signal }: { signal?: AbortSignal } = {}) {
     try {
       validators.notBlank(resource_name, "Argument 'resource_name'");
 
@@ -46,6 +46,7 @@ export class ResourceSubscriptions extends Methods {
           resource_subscriptions: ResourceSubscription[];
         }>('./resource_subscriptions', {
           params: { resource_name },
+          signal,
         })
       ).resource_subscriptions.map((resource_subscription) => this._bind_resource_subscription(resource_subscription));
     } catch (e) {
@@ -69,7 +70,7 @@ export class ResourceSubscriptions extends Methods {
    *
    * @see https://app.gumroad.com/api#put-/resource_subscriptions
    */
-  async create(post_url: string, resource_name: ResourceSubscriptionName) {
+  async create(post_url: string, resource_name: ResourceSubscriptionName, { signal }: { signal?: AbortSignal } = {}) {
     try {
       validators.notBlank(post_url, "Argument 'post_url'");
       validators.notBlank(resource_name, "Argument 'resource_name'");
@@ -88,6 +89,7 @@ export class ResourceSubscriptions extends Methods {
             };
           }>('./resource_subscriptions', {
             method: 'PUT',
+            signal,
           })
         ).resource_subscription,
       );
@@ -110,11 +112,12 @@ export class ResourceSubscriptions extends Methods {
    *
    * @see https://app.gumroad.com/api#delete-/resource_subscriptions/:resource_subscription_id
    */
-  async delete(resource_subscription_id: string) {
+  async delete(resource_subscription_id: string, { signal }: { signal?: AbortSignal } = {}) {
     try {
       validators.notBlank(resource_subscription_id, "Argument 'resource_subscription_id'");
       await this.client.request(`./resource_subscriptions/${encodeURI(resource_subscription_id)}`, {
         method: 'DELETE',
+        signal,
       });
 
       return true as const;

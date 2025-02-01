@@ -11,21 +11,21 @@ export interface ProductProps {
    *
    * @returns On success, `true`
    */
-  delete(): Promise<true>;
+  delete(requestOptions?: { signal?: AbortSignal }): Promise<true>;
 
   /**
    * Enables the product
    *
    * @returns On success, a {@link Product}
    */
-  enable(): Promise<Product & ProductProps>;
+  enable(requestOptions?: { signal?: AbortSignal }): Promise<Product & ProductProps>;
 
   /**
    * Disables the product
    *
    * @returns On success, a {@link Product}
    */
-  disable(): Promise<Product & ProductProps>;
+  disable(requestOptions?: { signal?: AbortSignal }): Promise<Product & ProductProps>;
 }
 
 /**
@@ -34,11 +34,11 @@ export interface ProductProps {
 export class Products extends Methods {
   protected _bind_product(product: Product) {
     const properties: ProductProps = {
-      delete: async () => this.delete(product.id),
+      delete: async (requestOptions) => this.delete(product.id, requestOptions),
 
-      enable: async () => this.enable(product.id),
+      enable: async (requestOptions) => this.enable(product.id, requestOptions),
 
-      disable: async () => this.disable(product.id),
+      disable: async (requestOptions) => this.disable(product.id, requestOptions),
     };
 
     return addProperties(product, properties);
@@ -51,9 +51,13 @@ export class Products extends Methods {
    *
    * @see https://app.gumroad.com/api#get-/products
    */
-  async list() {
+  async list({ signal }: { signal?: AbortSignal } = {}) {
     try {
-      return (await this.client.request<{ products: Product[] }>('./products')).products.map((product) => this._bind_product(product));
+      return (
+        await this.client.request<{ products: Product[] }>('./products', {
+          signal,
+        })
+      ).products.map((product) => this._bind_product(product));
     } catch (e) {
       this.logger.function(e, 'Products.list');
 
@@ -70,11 +74,17 @@ export class Products extends Methods {
    *
    * @see https://app.gumroad.com/api#get-/products/:id
    */
-  async get(product_id: string) {
+  async get(product_id: string, { signal }: { signal?: AbortSignal } = {}) {
     try {
       validators.notBlank(product_id, "Argument 'product_id'");
 
-      return this._bind_product((await this.client.request<{ product: Product }>(`./products/${encodeURI(product_id)}`)).product);
+      return this._bind_product(
+        (
+          await this.client.request<{ product: Product }>(`./products/${encodeURI(product_id)}`, {
+            signal,
+          })
+        ).product,
+      );
     } catch (e) {
       this.logger.function(e, 'Products.get', { product_id });
 
@@ -91,12 +101,13 @@ export class Products extends Methods {
    *
    * @see https://app.gumroad.com/api#delete-/products/:id
    */
-  async delete(product_id: string) {
+  async delete(product_id: string, { signal }: { signal?: AbortSignal } = {}) {
     try {
       validators.notBlank(product_id, "Argument 'product_id'");
 
       await this.client.request(`./products/${encodeURI(product_id)}`, {
         method: 'DELETE',
+        signal,
       });
 
       return true as const;
@@ -116,7 +127,7 @@ export class Products extends Methods {
    *
    * @see https://app.gumroad.com/api#put-/products/:id/enable
    */
-  async enable(product_id: string) {
+  async enable(product_id: string, { signal }: { signal?: AbortSignal } = {}) {
     try {
       validators.notBlank(product_id, "Argument 'product_id'");
 
@@ -124,6 +135,7 @@ export class Products extends Methods {
         (
           await this.client.request<{ product: Product }>(`./products/${encodeURI(product_id)}/enable`, {
             method: 'PUT',
+            signal,
           })
         ).product,
       );
@@ -143,7 +155,7 @@ export class Products extends Methods {
    *
    * @see https://app.gumroad.com/api#put-/products/:id/disable
    */
-  async disable(product_id: string) {
+  async disable(product_id: string, { signal }: { signal?: AbortSignal } = {}) {
     try {
       validators.notBlank(product_id, "Argument 'product_id'");
 
@@ -151,6 +163,7 @@ export class Products extends Methods {
         (
           await this.client.request<{ product: Product }>(`./products/${encodeURI(product_id)}/disable`, {
             method: 'PUT',
+            signal,
           })
         ).product,
       );

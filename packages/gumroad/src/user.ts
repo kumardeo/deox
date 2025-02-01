@@ -12,9 +12,13 @@ export class User extends Methods {
    *
    * @see https://app.gumroad.com/api#get-/user
    */
-  async get() {
+  async get({ signal }: { signal?: AbortSignal } = {}) {
     try {
-      return (await this.client.request<{ user: UserType }>('./user')).user;
+      return (
+        await this.client.request<{ user: UserType }>('./user', {
+          signal,
+        })
+      ).user;
     } catch (e) {
       this.logger.function(e, 'User.get');
 
