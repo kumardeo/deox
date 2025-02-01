@@ -33,7 +33,7 @@ export class Comments extends Methods {
    *
    * @returns On success, an Array of Comment
    */
-  async list(options: CommentsListOptions = {}) {
+  async list(options: CommentsListOptions = {}, { signal }: { signal?: AbortSignal } = {}) {
     const { postId } = options;
 
     // validate post_id if provided
@@ -42,6 +42,7 @@ export class Comments extends Methods {
     const result = await this.c.req(`./${postId ? `${encodeURI(postId)}/` : ''}comments/${options.summary === true ? 'summary' : 'default'}`, {
       params: options,
       exclude: ['query'],
+      signal,
     });
 
     // Make sure to filter once again if post_id is provided,
@@ -61,7 +62,7 @@ export class Comments extends Methods {
    *
    * @returns On success, a Comment
    */
-  async get(postId: string, commentId: string, options: CommentsGetOptions = {}) {
+  async get(postId: string, commentId: string, options: CommentsGetOptions = {}, { signal }: { signal?: AbortSignal } = {}) {
     validators.nB(postId, "Argument 'postId'");
     validators.nB(commentId, "Argument 'commentId'");
 
@@ -71,6 +72,7 @@ export class Comments extends Methods {
         // We need to use blogger service base url since comments by id through domain is not available
         baseUrl: await this.c.serviceBase,
         exclude: ['query'],
+        signal,
       },
     );
 

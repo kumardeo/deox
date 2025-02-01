@@ -69,6 +69,7 @@ export interface FetchFeedOptions {
   exclude?: (keyof Params)[];
   baseUrl?: string | URL;
   jsonp?: boolean;
+  signal?: AbortSignal;
 }
 
 /** A callback function for constructing jsonp url with given callback param */
@@ -117,8 +118,10 @@ const fetchJSONP = async <T = unknown>(getUrl: JSONPGetUrl, scriptOptions?: Reco
  *
  * @returns The json data
  */
-const fetchJSON = async <T = unknown>(url: string | URL) => {
-  const response = await fetch(url).catch((error) => {
+const fetchJSON = async <T = unknown>(url: string | URL, { signal }: { signal?: AbortSignal } = {}) => {
+  const response = await fetch(url, {
+    signal,
+  }).catch((error) => {
     throw new SDKRequestError('Fetch to JSON', String(url), {
       cause: error,
     });
@@ -146,7 +149,7 @@ const fetchJSON = async <T = unknown>(url: string | URL) => {
  *
  * @returns The parsed feed data
  */
-export const fetchFeed = async (path: string | URL, { params, include, exclude, baseUrl, jsonp }: FetchFeedOptions = {}) => {
+export const fetchFeed = async (path: string | URL, { params, include, exclude, baseUrl, jsonp, signal }: FetchFeedOptions = {}) => {
   const queries: RequestURLOptions['params'] = {};
 
   // List of supported search params options and map to valid params
@@ -188,7 +191,9 @@ export const fetchFeed = async (path: string | URL, { params, include, exclude, 
 
   const endpoint = new RequestURL(path, baseUrl, { params: queries });
 
-  const json = await (jsonp ? fetchJSONP(({ callback }) => new RequestURL(endpoint, undefined, { params: { callback } })) : fetchJSON(endpoint));
+  const json = await (jsonp
+    ? fetchJSONP(({ callback }) => new RequestURL(endpoint, undefined, { params: { callback } }))
+    : fetchJSON(endpoint, { signal }));
 
   // Parse the feed object to feed info
   return parseFeed(json);

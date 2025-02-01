@@ -11,12 +11,13 @@ export class Blog extends Methods {
    *
    * @returns The blog info
    */
-  async get() {
+  async get({ signal }: { signal?: AbortSignal } = {}) {
     const { blog } = await this.c.req('./posts/summary', {
       params: {
         // Do not load entries since we only need blog info
         maxResults: 0,
       },
+      signal,
     });
 
     // Throw an error if feed doesn't contain blog info

@@ -31,7 +31,7 @@ export class Posts extends Methods {
    *
    * @returns On success, an Array of Post
    */
-  async list(options: PostsListOptions = {}) {
+  async list(options: PostsListOptions = {}, { signal }: { signal?: AbortSignal } = {}) {
     const { label } = options;
 
     // validate label if provided
@@ -40,6 +40,7 @@ export class Posts extends Methods {
     const result = await this.c.req(`./posts/${options.summary === true ? 'summary' : 'default'}${label ? `/-/${encodeURI(label)}` : ''}`, {
       params: options,
       exclude: ['query'],
+      signal,
     });
 
     return this._p('posts', result);
@@ -53,11 +54,12 @@ export class Posts extends Methods {
    *
    * @returns On success, a Post
    */
-  async get(postId: string, options: PostsGetOptions = {}) {
+  async get(postId: string, options: PostsGetOptions = {}, { signal }: { signal?: AbortSignal } = {}) {
     validators.nB(postId, "Argument 'postId'");
 
     const { posts } = await this.c.req(`./posts/${options.summary === true ? 'summary' : 'default'}/${encodeURIComponent(postId)}`, {
       exclude: ['query'],
+      signal,
     });
 
     const post = posts?.find((p) => p.id === postId);
@@ -76,7 +78,7 @@ export class Posts extends Methods {
    *
    * @returns On success, an Array of Post
    */
-  async query(query: string, options: PostsQueryOptions = {}) {
+  async query(query: string, options: PostsQueryOptions = {}, { signal }: { signal?: AbortSignal } = {}) {
     validators.nB(query, "Argument 'query'");
 
     const result = await this.c.req(`./posts/${options.summary === true ? 'summary' : 'default'}`, {
@@ -84,6 +86,7 @@ export class Posts extends Methods {
         ...options,
         query,
       },
+      signal,
     });
 
     return this._p('posts', result);

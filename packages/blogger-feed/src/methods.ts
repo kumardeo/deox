@@ -15,8 +15,8 @@ export interface PaginationProps<T extends keyof PaginationMap> {
   readonly selfUrl: string | null;
   readonly previousUrl: string | null;
   readonly nextUrl: string | null;
-  next(): Promise<(PaginationMap[T] & PaginationProps<T>) | null>;
-  previous(): Promise<(PaginationMap[T] & PaginationProps<T>) | null>;
+  next(requestOptions?: { signal?: AbortSignal }): Promise<(PaginationMap[T] & PaginationProps<T>) | null>;
+  previous(requestOptions?: { signal?: AbortSignal }): Promise<(PaginationMap[T] & PaginationProps<T>) | null>;
 }
 
 export class Methods {
@@ -35,16 +35,20 @@ export class Methods {
       selfUrl: feed.selfUrl,
       previousUrl: feed.previousUrl,
       nextUrl: feed.nextUrl,
-      previous: async () => {
+      previous: async ({ signal } = {}) => {
         if (properties.previousUrl) {
-          const result = await this.c.req(properties.previousUrl);
+          const result = await this.c.req(properties.previousUrl, {
+            signal,
+          });
           return this._p(type, result);
         }
         return null;
       },
-      next: async () => {
+      next: async ({ signal } = {}) => {
         if (properties.nextUrl) {
-          const result = await this.c.req(properties.nextUrl);
+          const result = await this.c.req(properties.nextUrl, {
+            signal,
+          });
           return this._p(type, result);
         }
         return null;

@@ -29,10 +29,11 @@ export class Pages extends Methods {
    *
    * @returns On success, an Array of Post
    */
-  async list(options: PagesListOptions = {}) {
+  async list(options: PagesListOptions = {}, { signal }: { signal?: AbortSignal } = {}) {
     const result = await this.c.req(`./pages/${options.summary === true ? 'summary' : 'default'}`, {
       params: options,
       exclude: ['query'],
+      signal,
     });
 
     return this._p('posts', result);
@@ -46,11 +47,12 @@ export class Pages extends Methods {
    *
    * @returns On success, a Post
    */
-  async get(pageId: string, options: PagesGetOptions = {}) {
+  async get(pageId: string, options: PagesGetOptions = {}, { signal }: { signal?: AbortSignal } = {}) {
     validators.nB(pageId, "Argument 'pageId'");
 
     const { posts } = await this.c.req(`./pages/${options.summary === true ? 'summary' : 'default'}/${encodeURI(pageId)}`, {
       exclude: ['query'],
+      signal,
     });
 
     const page = posts?.find((p) => p.id === pageId);
