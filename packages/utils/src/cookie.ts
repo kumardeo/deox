@@ -81,7 +81,7 @@ export const cookie = {
   set(key: string, value: string, options?: SetCookieOptions) {
     const object = { path: '/', ...options };
 
-    let cookieString = `${encodeURIComponent(key)}=${encodeURIComponent(value !== undefined ? value : '')}`;
+    let cookieString = `${encodeURIComponent(key)}=${typeof value !== 'undefined' ? encodeURIComponent(value) : ''}`;
 
     for (let flagKey in object) {
       let flagValue = object[flagKey as keyof typeof object];
@@ -95,6 +95,7 @@ export const cookie = {
           flagKey = 'max-age';
           break;
         case 'sameSite':
+        case 'samesite':
           flagKey = 'samesite';
           if (flagValue === 'none') {
             flagValue = true;
