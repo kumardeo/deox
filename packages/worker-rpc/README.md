@@ -1,13 +1,14 @@
-# @deox/cors-worker
+# @deox/worker-rpc
 
-A cors web worker (supports creating a `Worker` instance for scripts from different hosts). Can be used with webpack or other bundlers.
+Lightweight RPC utility for calling functions in Web Workers and receiving results with simple, promise-based syntax.  
+Can be used with webpack or other bundlers.
 
 ## Installation
 
 Install the package by running the following command in terminal:
 
 ```shell
-npm install @deox/cors-worker
+npm install @deox/worker-rpc
 ```
 
 ## Usage
@@ -18,7 +19,7 @@ ES Modules:
 
 ```ts
 // index.ts
-import { Worker } from "@deox/cors-worker";
+import { Worker } from "@deox/worker-rpc";
 
 // ...
 ```
@@ -27,7 +28,7 @@ Common JS:
 
 ```cjs
 // index.cjs
-const { Worker } = require("@deox/cors-worker");
+const { Worker } = require("@deox/worker-rpc");
 
 // ...
 ```
@@ -40,7 +41,7 @@ Create a `worker.ts` as shown below:
 
 ```ts
 // worker.ts
-import { register } from "@deox/cors-worker/register";
+import { register } from "@deox/worker-rpc/register";
 
 export type Context = {
   info: string;
@@ -58,7 +59,7 @@ Create a `Worker` instance in your entrypoint and utilize it:
 
 ```ts
 // index.ts
-import { Worker } from "@deox/cors-worker";
+import { Worker } from "@deox/worker-rpc";
 import { type Context, type Registered } from "./worker";
 
 const context: Context = {

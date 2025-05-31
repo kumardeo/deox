@@ -47,7 +47,7 @@ const ExtendWorker = (MayBeWorker as (typeof globalThis)['Worker']) ?? DummyWork
  *
  * ```ts
  * // worker.ts
- * import { register } from "@deox/cors-worker/register";
+ * import { register } from "@deox/worker-rpc/register";
  *
  * // Context type
  * export type Context = { from: string };
@@ -64,7 +64,7 @@ const ExtendWorker = (MayBeWorker as (typeof globalThis)['Worker']) ?? DummyWork
  * Now you can create a {@link Worker} instance and use the registered methods in your entrypoints:
  *
  * ```ts
- * import { Worker } from "@deox/cors-worker";
+ * import { Worker } from "@deox/worker-rpc";
  * import { type Context, type Registered } from "./worker";
  *
  * // Context data to be sent to worker

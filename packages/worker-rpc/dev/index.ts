@@ -28,7 +28,7 @@ worker.addEventListener('message', (event) => {
   });
 
   // Network request
-  await worker.proxy.fetchJson('https://raw.githubusercontent.com/kumardeo/deox/main/packages/cors-worker/package.json').then((result) => {
+  await worker.proxy.fetchJson('https://raw.githubusercontent.com/kumardeo/deox/main/packages/worker-rpc/package.json').then((result) => {
     console.info("(thread:main) .proxy.fetchJson('..{+}../package.json'): ", result);
   });
 

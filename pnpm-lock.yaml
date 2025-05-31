@@ -131,40 +131,6 @@ importers:
         specifier: ^2.1.1
         version: 2.1.1
 
-  packages/cors-worker:
-    dependencies:
-      '@deox/utils':
-        specifier: workspace:^
-        version: link:../utils
-    devDependencies:
-      '@deox/clc':
-        specifier: workspace:^
-        version: link:../clc
-      babel-loader:
-        specifier: ^10.0.0
-        version: 10.0.0(@babel/core@7.24.4)(webpack@5.99.9)
-      html-webpack-plugin:
-        specifier: ^5.6.3
-        version: 5.6.3(webpack@5.99.9)
-      source-map-loader:
-        specifier: ^5.0.0
-        version: 5.0.0(webpack@5.99.9)
-      ts-loader:
-        specifier: ^9.5.2
-        version: 9.5.2(typescript@5.8.3)(webpack@5.99.9)
-      webpack:
-        specifier: ^5.99.9
-        version: 5.99.9(esbuild@0.25.5)(webpack-cli@6.0.1)
-      webpack-cli:
-        specifier: ^6.0.1
-        version: 6.0.1(webpack-dev-server@5.2.1)(webpack@5.99.9)
-      webpack-define-config:
-        specifier: ^0.0.1
-        version: 0.0.1
-      webpack-dev-server:
-        specifier: ^5.2.1
-        version: 5.2.1(webpack-cli@6.0.1)(webpack@5.99.9)
-
   packages/gumroad:
     dependencies:
       '@deox/clc':
@@ -202,6 +168,40 @@ importers:
       '@types/shade-blend-color':
         specifier: ^1.0.3
         version: 1.0.3
+
+  packages/worker-rpc:
+    dependencies:
+      '@deox/utils':
+        specifier: workspace:^
+        version: link:../utils
+    devDependencies:
+      '@deox/clc':
+        specifier: workspace:^
+        version: link:../clc
+      babel-loader:
+        specifier: ^10.0.0
+        version: 10.0.0(@babel/core@7.24.4)(webpack@5.99.9)
+      html-webpack-plugin:
+        specifier: ^5.6.3
+        version: 5.6.3(webpack@5.99.9)
+      source-map-loader:
+        specifier: ^5.0.0
+        version: 5.0.0(webpack@5.99.9)
+      ts-loader:
+        specifier: ^9.5.2
+        version: 9.5.2(typescript@5.8.3)(webpack@5.99.9)
+      webpack:
+        specifier: ^5.99.9
+        version: 5.99.9(esbuild@0.25.5)(webpack-cli@6.0.1)
+      webpack-cli:
+        specifier: ^6.0.1
+        version: 6.0.1(webpack-dev-server@5.2.1)(webpack@5.99.9)
+      webpack-define-config:
+        specifier: ^0.0.1
+        version: 0.0.1
+      webpack-dev-server:
+        specifier: ^5.2.1
+        version: 5.2.1(webpack-cli@6.0.1)(webpack@5.99.9)
 
 packages:
 

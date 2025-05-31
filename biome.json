@@ -53,7 +53,7 @@
       }
     },
     {
-      "include": ["packages/oson", "packages/cors-worker", "packages/check-types", "packages/utils/src/predicate.ts"],
+      "include": ["packages/oson", "packages/worker-rpc", "packages/check-types", "packages/utils/src/predicate.ts"],
       "linter": {
         "rules": {
           "suspicious": {

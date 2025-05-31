@@ -12,11 +12,12 @@ A blogger feed API client.
 
 [Read more..](./packages/blogger-feed/README.md)
 
-### [@deox/cors-worker](https://www.npmjs.com/package/@deox/cors-worker)
+### [@deox/worker-rpc](https://www.npmjs.com/package/@deox/worker-rpc)
 
-A cors web worker (supports creating a `Worker` instance for scripts from different hosts). Can be used with webpack or other bundlers.
+Lightweight RPC utility for calling functions in Web Workers and receiving results with simple, promise-based syntax.  
+Can be used with webpack or other bundlers.
 
-[Read more..](./packages/cors-worker/README.md)
+[Read more..](./packages/worker-rpc/README.md)
 
 ### [@deox/gumroad](https://www.npmjs.com/package/@deox/gumroad)
 

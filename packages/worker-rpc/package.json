@@ -1,8 +1,8 @@
 {
-	"name": "@deox/cors-worker",
-	"version": "0.0.11",
+	"name": "@deox/worker-rpc",
+	"version": "0.0.12",
 	"private": false,
-	"description": "Cors Web Worker",
+	"description": "Lightweight RPC utility for calling functions in Web Workers and receiving results with simple, promise-based syntax.",
 	"keywords": [
 		"web-worker",
 		"webpack"
@@ -12,11 +12,11 @@
 		"name": "Deo Kumar",
 		"url": "https://github.com/kumardeo"
 	},
-	"homepage": "https://github.com/kumardeo/deox/tree/main/packages/cors-worker#readme",
+	"homepage": "https://github.com/kumardeo/deox/tree/main/packages/worker-rpc#readme",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/kumardeo/deox",
-		"directory": "packages/cors-worker"
+		"directory": "packages/worker-rpc"
 	},
 	"bugs": {
 		"url": "https://github.com/kumardeo/deox/issues"
