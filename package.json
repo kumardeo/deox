@@ -4,7 +4,7 @@
   "description": "Internal Packages for personal projects (Plus UI, Web Apps, etc)",
   "author": "Deo Kumar",
   "homepage": "https://github.com/kumardeo/deox",
-  "packageManager": "pnpm@9.15.4",
+  "packageManager": "pnpm@10.11.0",
   "scripts": {
     "check": "pnpm biome check .",
     "check:types": "turbo check:types --force",
@@ -19,23 +19,20 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
-    "@changesets/changelog-github": "^0.5.0",
-    "@changesets/cli": "^2.27.12",
-    "@cloudflare/workers-types": "^4.20250129.0",
+    "@changesets/changelog-github": "^0.5.1",
+    "@changesets/cli": "^2.29.4",
     "@types/fs-extra": "^11.0.4",
-    "@types/node": "^22.13.0",
-    "arg": "^5.0.2",
+    "@types/node": "^22.15.29",
     "cross-env": "^7.0.3",
-    "esbuild": "^0.24.2",
+    "esbuild": "^0.25.5",
     "fs-extra": "^11.3.0",
-    "glob": "^11.0.1",
-    "npm-check-updates": "^17.1.14",
-    "prettier": "^3.4.2",
+    "glob": "^11.0.2",
+    "npm-check-updates": "^18.0.1",
     "rimraf": "^6.0.1",
-    "tsup": "^8.3.6",
-    "tsx": "^4.19.2",
-    "turbo": "^2.4.0",
-    "typescript": "^5.7.3",
-    "vitest": "^3.0.4"
+    "tsup": "^8.5.0",
+    "tsx": "^4.19.4",
+    "turbo": "^2.5.4",
+    "typescript": "^5.8.3",
+    "vitest": "^3.1.4"
   }
 }

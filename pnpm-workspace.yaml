@@ -1,4 +1,8 @@
 packages:
-  - "packages/*"
-  - "__tests__"
-  - "__tests__/*"
+  - packages/*
+  - __tests__
+  - __tests__/*
+onlyBuiltDependencies:
+  - esbuild
+  - sharp
+  - workerd
