@@ -53,12 +53,12 @@ export type InferWorkerOptions<R extends RegisterOutput<RegisterInput>> = InferC
   ?
       | (WorkerOptions & {
           context?: InferContext<R>;
-          generate?: () => string;
+          generate?: (message: MessageWorkerInput) => string;
         })
       | undefined
   : WorkerOptions & {
       context: InferContext<R>;
-      generate?: () => string;
+      generate?: (message: MessageWorkerInput) => string;
     };
 
 /* message types */

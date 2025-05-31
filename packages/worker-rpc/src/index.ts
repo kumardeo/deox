@@ -150,7 +150,13 @@ export class Worker<
 
     this._queue = {};
 
-    this._generate = typeof workerOptions.generate === 'function' ? workerOptions.generate : (message) => `worker_${message.type}_${generateId()}`;
+    this._generate = (message) => {
+      let id: string;
+      do {
+        id = typeof workerOptions.generate === 'function' ? workerOptions.generate(message) : `worker_${message.type}_${generateId()}`;
+      } while (Object.prototype.hasOwnProperty.call(this._queue, id));
+      return id;
+    };
 
     // add message event listener to handle responses
     this.addEventListener('message', (event: MessageEvent<MessageMain>) => {
