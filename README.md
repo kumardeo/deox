@@ -6,28 +6,20 @@ Crafting handy libraries for hobbies, simplifying tasks with ease.
 
 This monorepo contains the following packages:
 
-### [@deox/blogger-feed](https://www.npmjs.com/package/@deox/blogger-feed)
+### [@deox/blogger-feed](./packages/blogger-feed/README.md)
 
 A blogger feed API client.
 
-[Read more..](./packages/blogger-feed/README.md)
-
-### [@deox/worker-rpc](https://www.npmjs.com/package/@deox/worker-rpc)
+### [@deox/worker-rpc](./packages/worker-rpc/README.md)
 
 Lightweight RPC utility for calling functions in Web Workers and receiving results with simple, promise-based syntax.  
 Can be used with webpack or other bundlers.
 
-[Read more..](./packages/worker-rpc/README.md)
-
-### [@deox/gumroad](https://www.npmjs.com/package/@deox/gumroad)
+### [@deox/gumroad](./packages/gumroad/README.md)
 
 API client and Resource Subscriptions (Gumroad Webhooks) handler for Gumroad.
 
-[Read more..](./packages/gumroad/README.md)
-
-### [@deox/oson](https://www.npmjs.com/package/@deox/oson)
+### [@deox/oson](./packages/oson/README.md)
 
 Oson Structured Object Notation - JSON has a bunch of problems, OSON fixes them.  
 Powered by [@KnorpelSenf/oson](https://github.com/KnorpelSenf/oson)
-
-[Read more..](./packages/oson/README.md)
