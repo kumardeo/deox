@@ -1,5 +1,11 @@
 # @deox/worker-rpc
 
+## 0.0.14
+
+### Patch Changes
+
+- [`2d5215f`](https://github.com/kumardeo/deox/commit/2d5215f1d65fee984cdf60f41fc2e795ebce5e64) Thanks [@kumardeo](https://github.com/kumardeo)! - fix: invalid types
+
 ## 0.0.13
 
 ### Patch Changes
