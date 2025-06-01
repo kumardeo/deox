@@ -25,7 +25,7 @@ export type MethodsMap<T, I extends string | number | symbol = string | number, 
   PickProps<
     {
       [K in keyof T as T[K] extends (...args: any[]) => any ? K : never]: T[K] extends (...args: any[]) => any
-        ? [Params<T[K]>, Return<T[K]> extends WithOptions<infer R> ? R : '']
+        ? [Params<T[K]>, Return<T[K]> extends WithOptions<infer R> ? R : Return<T[K]>]
         : never;
     },
     I
