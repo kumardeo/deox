@@ -1,6 +1,6 @@
 import { DeferredPromise } from '@deox/utils/deferred-promise';
 import type { MayBePromise, MessageWorker, Params, RegisterOutput } from '../types';
-import { type HandlerType, handle, isRequestEvent, messageHandler, respond } from './utils';
+import { type HandlerType, WithOptions, handle, isRequestEvent, messageHandler, respond } from './utils';
 
 const eventHandler = messageHandler<MessageWorker>();
 
@@ -45,7 +45,11 @@ export const register = <F extends (ctx?: any) => MayBePromise<NonNullable<objec
       } else if (request.type === 'request') {
         if (['string', 'number'].includes(typeof request.handler)) {
           const handleData = (data: unknown) => {
-            respond.handlerSuccess(request.id, request.handler, data);
+            if (data instanceof WithOptions) {
+              respond.handlerSuccess(request.id, request.handler, data.result, data.options);
+            } else {
+              respond.handlerSuccess(request.id, request.handler, data);
+            }
           };
 
           const handleError = (error: unknown) => {
@@ -88,4 +92,5 @@ export const register = <F extends (ctx?: any) => MayBePromise<NonNullable<objec
   return result;
 };
 
+export { withOptions } from './utils';
 export type { MessageWorker, MessageMain } from '../types';

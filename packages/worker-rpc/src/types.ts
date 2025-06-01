@@ -1,3 +1,5 @@
+import type { WithOptions } from './register/utils';
+
 /* utils types */
 export type Return<T extends (...args: any) => any> = ReturnType<T>;
 
@@ -22,7 +24,9 @@ export type OmitProps<T, K> = { [P in Exc<keyof T, K>]: T[P] };
 export type MethodsMap<T, I extends string | number | symbol = string | number, E extends string | number | symbol = never> = OmitProps<
   PickProps<
     {
-      [K in keyof T as T[K] extends (...args: any[]) => any ? K : never]: T[K] extends (...args: any[]) => any ? [Params<T[K]>, Return<T[K]>] : never;
+      [K in keyof T as T[K] extends (...args: any[]) => any ? K : never]: T[K] extends (...args: any[]) => any
+        ? [Params<T[K]>, Return<T[K]> extends WithOptions<infer R> ? R : '']
+        : never;
     },
     I
   >,

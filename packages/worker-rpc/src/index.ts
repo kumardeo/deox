@@ -115,7 +115,7 @@ export class Worker<
    *
    * @returns The response message object
    */
-  private _request(message: MessageWorkerInput) {
+  private _request(message: MessageWorkerInput, options?: StructuredSerializeOptions | Transferable[]) {
     const requestId = this._generate(message);
     const messageData: MessageWorker = {
       ...message,
@@ -124,7 +124,11 @@ export class Worker<
     Object.assign(messageData, { [WORKER_NAMESPACE]: true });
     return new Promise<MessageMain>((resolve, reject) => {
       this._queue[requestId] = [resolve, reject];
-      this.postMessage(messageData);
+      if (options) {
+        this.postMessage(messageData, Array.isArray(options) ? { transfer: options } : options);
+      } else {
+        this.postMessage(messageData);
+      }
     });
   }
 
@@ -207,25 +211,56 @@ export class Worker<
   /**
    * Call registered method from worker thread
    *
-   * @param handler The name of handler function
+   * @param name The name of handler function
    * @param args The arguments to be passed to handler
    *
    * @returns A Promise which resolves with the return value of the handler
    */
-  async call<N extends keyof InferMethodsMap<R>>(name: N, ...args: InferMethodsMap<R>[N][0]): Promise<Await<InferMethodsMap<R>[N][1]>> {
+  async call<N extends keyof InferMethodsMap<R>>(name: N, ...args: InferMethodsMap<R>[N][0]): Promise<Await<InferMethodsMap<R>[N][1]>>;
+  /**
+   * Call registered method from worker thread and also transfer `Transferable`
+   *
+   * @param options Options
+   * @param name The name of handler function
+   * @param args The arguments to be passed to handler
+   *
+   * @returns A Promise which resolves with the return value of the handler
+   */
+  async call<N extends keyof InferMethodsMap<R>, O extends StructuredSerializeOptions | Transferable[]>(
+    options: O,
+    name: N,
+    ...args: InferMethodsMap<R>[N][0]
+  ): Promise<Await<InferMethodsMap<R>[N][1]>>;
+
+  async call<N extends keyof InferMethodsMap<R>>(
+    ...rest: [N, ...InferMethodsMap<R>[N][0]] | [StructuredSerializeOptions | Transferable[], N, ...InferMethodsMap<R>[N][0]]
+  ): Promise<Await<InferMethodsMap<R>[N][1]>> {
+    let name: N;
+    let args: InferMethodsMap<R>[N][0];
+    let options: StructuredSerializeOptions | Transferable[] | undefined = undefined;
+    const hasOptions = typeof rest[0] === 'object' && rest[0] !== null;
+    if (hasOptions) {
+      [options, name, ...args] = rest as [StructuredSerializeOptions | Transferable[], N, ...InferMethodsMap<R>[N][0]];
+    } else {
+      [name, ...args] = rest as [N, ...InferMethodsMap<R>[N][0]];
+    }
+
     // throw an error if name is neither string nor number
     if (!['string', 'number'].includes(typeof name)) {
-      throw new TypeError('Argument 1 must be of type string or number');
+      throw new TypeError(`${hasOptions ? 'Argument 2' : 'Argument 1'} must be of type string or number`);
     }
 
     // make sure context is setup
     await this._setup;
 
-    const response = await this._request({
-      type: 'request',
-      arguments: args,
-      handler: name,
-    });
+    const response = await this._request(
+      {
+        type: 'request',
+        arguments: args,
+        handler: name,
+      },
+      options,
+    );
 
     if (response.type !== 'response') {
       throw new Error(`Requested 'response' type but got '${String(response.type)}'`);
