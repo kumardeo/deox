@@ -2,7 +2,19 @@ import { WORKER_NAMESPACE } from '../constants';
 import type { Await, AwaitReturn, MayBePromise, MessageMain, MessageMainInput, MethodsMap } from '../types';
 
 /// <reference lib="WebWorker" />
-declare const self: DedicatedWorkerGlobalScope;
+declare let self: DedicatedWorkerGlobalScope;
+
+export class WithOptions<T> {
+  result: T;
+  options: StructuredSerializeOptions | Transferable[];
+
+  constructor(result: T, options: StructuredSerializeOptions | Transferable[]) {
+    this.result = result;
+    this.options = options;
+  }
+}
+
+export const withOptions = <T>(result: T, options: StructuredSerializeOptions | Transferable[]) => new WithOptions(result, options);
 
 /**
  * A helper function to get Error object from any data type
@@ -24,7 +36,7 @@ export const respond = {
    *
    * @param data The object to be sent
    */
-  post(id: string, data: MessageMainInput) {
+  post(id: string, data: MessageMainInput, options?: StructuredSerializeOptions | Transferable[]) {
     const response: MessageMain = Object.assign(
       {
         ...data,
@@ -34,7 +46,11 @@ export const respond = {
       { [WORKER_NAMESPACE]: true },
     );
 
-    self.postMessage(response);
+    if (options) {
+      self.postMessage(response, Array.isArray(options) ? { transfer: options } : options);
+    } else {
+      self.postMessage(response);
+    }
   },
 
   /**
@@ -72,13 +88,17 @@ export const respond = {
    * @param body The body to be sent
    * (it should be the value returned by calling handler)
    */
-  handlerSuccess(id: string, handler: string | number, body: unknown) {
-    this.post(id, {
-      type: 'response',
-      status: 'success',
-      handler,
-      body,
-    });
+  handlerSuccess(id: string, handler: string | number, body: unknown, options?: StructuredSerializeOptions | Transferable[]) {
+    this.post(
+      id,
+      {
+        type: 'response',
+        status: 'success',
+        handler,
+        body,
+      },
+      options,
+    );
   },
 
   /**

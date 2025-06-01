@@ -1,1 +1,1 @@
-export const WORKER_NAMESPACE = '____DEOX_WORKER_RPC____';
+export const WORKER_NAMESPACE = '____{{DEOX_WORKER_RPC}}____';
