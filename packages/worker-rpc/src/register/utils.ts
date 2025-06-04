@@ -1,10 +1,10 @@
 import { WORKER_NAMESPACE } from '../constants';
-import type { Await, AwaitReturn, MayBePromise, MessageMain, MessageMainInput, MethodsMap } from '../types';
+import type { Await, AwaitReturn, MayBePromise, MessageMain, MessageMainInput, MethodsMap, WithOptionsInstance } from '../types';
 
 /// <reference lib="WebWorker" />
 declare let self: DedicatedWorkerGlobalScope;
 
-export class WithOptions<T> {
+export class WithOptions<T> implements WithOptionsInstance<T> {
   result: T;
   options: StructuredSerializeOptions | Transferable[];
 

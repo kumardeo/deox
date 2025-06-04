@@ -1,5 +1,3 @@
-import type { WithOptions } from './register/utils';
-
 /* utils types */
 export type Return<T extends (...args: any) => any> = ReturnType<T>;
 
@@ -21,11 +19,24 @@ export type PickProps<T, K> = { [P in Inc<keyof T, K>]: T[P] };
 
 export type OmitProps<T, K> = { [P in Exc<keyof T, K>]: T[P] };
 
+/* worker types */
+export interface WithOptionsInstance<T> {
+  result: T;
+  options: StructuredSerializeOptions | Transferable[];
+}
+
 export type MethodsMap<T, I extends string | number | symbol = string | number, E extends string | number | symbol = never> = OmitProps<
   PickProps<
     {
       [K in keyof T as T[K] extends (...args: any[]) => any ? K : never]: T[K] extends (...args: any[]) => any
-        ? [Params<T[K]>, Return<T[K]> extends WithOptions<infer R> ? R : Return<T[K]>]
+        ? [
+            Params<T[K]>,
+            Return<T[K]> extends Promise<WithOptionsInstance<infer R>>
+              ? Promise<R>
+              : Return<T[K]> extends WithOptionsInstance<infer R>
+                ? R
+                : Return<T[K]>,
+          ]
         : never;
     },
     I
@@ -33,7 +44,6 @@ export type MethodsMap<T, I extends string | number | symbol = string | number, 
   E
 >;
 
-/* worker types */
 export type RegisterInput = (ctx?: any) => MayBePromise<NonNullable<object>>;
 
 export type RegisterOutput<F extends RegisterInput> = (context: Params<F>[0]) => {
