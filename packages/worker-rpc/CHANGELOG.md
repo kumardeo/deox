@@ -1,5 +1,11 @@
 # @deox/worker-rpc
 
+## 0.0.15
+
+### Patch Changes
+
+- [`7bdb86e`](https://github.com/kumardeo/deox/commit/7bdb86ea925fd8e6192f1410a8c27073484317f7) Thanks [@kumardeo](https://github.com/kumardeo)! - fix: fix `withOptions()` types
+
 ## 0.0.14
 
 ### Patch Changes
