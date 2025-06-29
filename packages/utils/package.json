@@ -1,103 +1,103 @@
 {
-	"name": "@deox/utils",
-	"version": "0.0.2",
-	"private": false,
-	"description": "Utilities",
-	"keywords": [
-		"utils"
-	],
-	"license": "MIT",
-	"author": {
-		"name": "Deo Kumar",
-		"url": "https://github.com/kumardeo"
-	},
-	"homepage": "https://github.com/kumardeo/deox/tree/main/packages/utils#readme",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/kumardeo/deox",
-		"directory": "packages/utils"
-	},
-	"bugs": {
-		"url": "https://github.com/kumardeo/deox/issues"
-	},
-	"scripts": {
-		"check:types": "tsc --noEmit",
-		"build": "rimraf dist && tsx ./build.ts",
-		"clean": "rimraf dist"
-	},
-	"files": [
-		"dist"
-	],
-	"type": "module",
-	"module": "./dist/esm/index.js",
-	"types": "./dist/dts/index.d.ts",
-	"exports": {
-		".": {
-			"types": "./dist/dts/index.d.ts",
-			"import": "./dist/esm/index.js",
-			"require": "./dist/cjs/index.js"
-		},
-		"./abbreviate-number": {
-			"types": "./dist/dts/abbreviate-number.d.ts",
-			"import": "./dist/esm/abbreviate-number.js",
-			"require": "./dist/cjs/abbreviate-number.js"
-		},
-		"./base64": {
-			"types": "./dist/dts/base64.d.ts",
-			"import": "./dist/esm/base64.js",
-			"require": "./dist/cjs/base64.js"
-		},
-		"./cookie": {
-			"types": "./dist/dts/cookie.d.ts",
-			"import": "./dist/esm/cookie.js",
-			"require": "./dist/cjs/cookie.js"
-		},
-		"./copy-text": {
-			"types": "./dist/dts/copy-text.d.ts",
-			"import": "./dist/esm/copy-text.js",
-			"require": "./dist/cjs/copy-text.js"
-		},
-		"./create-element": {
-			"types": "./dist/dts/create-element.d.ts",
-			"import": "./dist/esm/create-element.js",
-			"require": "./dist/cjs/create-element.js"
-		},
-		"./deferred-promise": {
-			"types": "./dist/dts/deferred-promise.d.ts",
-			"import": "./dist/esm/deferred-promise.js",
-			"require": "./dist/cjs/deferred-promise.js"
-		},
-		"./generate-id": {
-			"types": "./dist/dts/generate-id.d.ts",
-			"import": "./dist/esm/generate-id.js",
-			"require": "./dist/cjs/generate-id.js"
-		},
-		"./predicate": {
-			"types": "./dist/dts/predicate.d.ts",
-			"import": "./dist/esm/predicate.js",
-			"require": "./dist/cjs/predicate.js"
-		},
-		"./pretty-bytes": {
-			"types": "./dist/dts/pretty-bytes.d.ts",
-			"import": "./dist/esm/pretty-bytes.js",
-			"require": "./dist/cjs/pretty-bytes.js"
-		},
-		"./shade-blend-color": {
-			"types": "./dist/dts/shade-blend-color.d.ts",
-			"import": "./dist/esm/shade-blend-color.js",
-			"require": "./dist/cjs/shade-blend-color.js"
-		},
-		"./transform-image": {
-			"types": "./dist/dts/transform-image.d.ts",
-			"import": "./dist/esm/transform-image.js",
-			"require": "./dist/cjs/transform-image.js"
-		}
-	},
-	"dependencies": {
-		"shade-blend-color": "^1.0.0"
-	},
-	"devDependencies": {
-		"@deox/clc": "workspace:^",
-		"@types/shade-blend-color": "^1.0.3"
-	}
+  "name": "@deox/utils",
+  "version": "0.0.2",
+  "private": false,
+  "description": "Utilities",
+  "keywords": [
+    "utils"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "Deo Kumar",
+    "url": "https://github.com/kumardeo"
+  },
+  "homepage": "https://github.com/kumardeo/deox/tree/main/packages/utils#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kumardeo/deox",
+    "directory": "packages/utils"
+  },
+  "bugs": {
+    "url": "https://github.com/kumardeo/deox/issues"
+  },
+  "scripts": {
+    "check:types": "tsc --noEmit",
+    "build": "rimraf dist && tsx ./build.ts",
+    "clean": "rimraf dist"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/dts/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/dts/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    },
+    "./abbreviate-number": {
+      "types": "./dist/dts/abbreviate-number.d.ts",
+      "import": "./dist/esm/abbreviate-number.js",
+      "require": "./dist/cjs/abbreviate-number.js"
+    },
+    "./base64": {
+      "types": "./dist/dts/base64.d.ts",
+      "import": "./dist/esm/base64.js",
+      "require": "./dist/cjs/base64.js"
+    },
+    "./cookie": {
+      "types": "./dist/dts/cookie.d.ts",
+      "import": "./dist/esm/cookie.js",
+      "require": "./dist/cjs/cookie.js"
+    },
+    "./copy-text": {
+      "types": "./dist/dts/copy-text.d.ts",
+      "import": "./dist/esm/copy-text.js",
+      "require": "./dist/cjs/copy-text.js"
+    },
+    "./create-element": {
+      "types": "./dist/dts/create-element.d.ts",
+      "import": "./dist/esm/create-element.js",
+      "require": "./dist/cjs/create-element.js"
+    },
+    "./deferred-promise": {
+      "types": "./dist/dts/deferred-promise.d.ts",
+      "import": "./dist/esm/deferred-promise.js",
+      "require": "./dist/cjs/deferred-promise.js"
+    },
+    "./generate-id": {
+      "types": "./dist/dts/generate-id.d.ts",
+      "import": "./dist/esm/generate-id.js",
+      "require": "./dist/cjs/generate-id.js"
+    },
+    "./predicate": {
+      "types": "./dist/dts/predicate.d.ts",
+      "import": "./dist/esm/predicate.js",
+      "require": "./dist/cjs/predicate.js"
+    },
+    "./pretty-bytes": {
+      "types": "./dist/dts/pretty-bytes.d.ts",
+      "import": "./dist/esm/pretty-bytes.js",
+      "require": "./dist/cjs/pretty-bytes.js"
+    },
+    "./shade-blend-color": {
+      "types": "./dist/dts/shade-blend-color.d.ts",
+      "import": "./dist/esm/shade-blend-color.js",
+      "require": "./dist/cjs/shade-blend-color.js"
+    },
+    "./transform-image": {
+      "types": "./dist/dts/transform-image.d.ts",
+      "import": "./dist/esm/transform-image.js",
+      "require": "./dist/cjs/transform-image.js"
+    }
+  },
+  "dependencies": {
+    "shade-blend-color": "^1.0.0"
+  },
+  "devDependencies": {
+    "@deox/clc": "workspace:^",
+    "@types/shade-blend-color": "^1.0.3"
+  }
 }

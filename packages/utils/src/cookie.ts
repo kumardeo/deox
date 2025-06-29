@@ -27,6 +27,7 @@ export const cookie = {
 
   /** Set cookie string equivalent to `document.cookie = value` */
   set value(value: string) {
+    // biome-ignore lint/suspicious/noDocumentCookie: we need to set cookie
     document.cookie = value;
   },
 
@@ -38,7 +39,7 @@ export const cookie = {
    * @returns The value of the cookie, or null if not found.
    */
   get(key: string) {
-    const regex = new RegExp(`(?:^|; )${encodeURIComponent(key).replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}=([^;]*)`);
+    const regex = new RegExp(`(?:^|; )${encodeURIComponent(key).replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}=([^;]*)`);
     const matches = this.value.match(regex);
     return typeof matches?.[1] === 'string' ? decodeURIComponent(matches[1]) : null;
   },

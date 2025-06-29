@@ -44,7 +44,7 @@ export class Client {
       } else if (typeof urlOrId === 'string') {
         try {
           url = new URL(!/^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//.test(urlOrId) ? `https://${urlOrId}` : urlOrId);
-        } catch (e) {}
+        } catch (_) {}
       }
       if (!url) {
         throw new Error("Argument 'urlOrId' is not a valid blogger blog url or blog id");

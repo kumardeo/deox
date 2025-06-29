@@ -1,18 +1,18 @@
 {
-	"name": "@deox-tests/base",
-	"version": "1.0.0",
-	"description": "deox tests",
-	"private": true,
-	"author": "Deo Kumar",
-	"license": "MIT",
-	"homepage": "https://github.com/kumardeo/deox",
-	"scripts": {
-		"test": "vitest run"
-	},
-	"dependencies": {
-		"@deox/oson": "workspace:^"
-	},
-	"devDependencies": {
-		"vitest": "^3.1.4"
-	}
+  "name": "@deox-tests/base",
+  "version": "1.0.0",
+  "description": "deox tests",
+  "private": true,
+  "author": "Deo Kumar",
+  "license": "MIT",
+  "homepage": "https://github.com/kumardeo/deox",
+  "scripts": {
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@deox/oson": "workspace:^"
+  },
+  "devDependencies": {
+    "vitest": "^3.2.4"
+  }
 }

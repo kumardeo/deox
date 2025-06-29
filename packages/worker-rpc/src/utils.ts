@@ -17,7 +17,7 @@ export const getBlobContent = (entry: string, type?: 'module' | 'classic') => {
 /** Checks whether a message event is a response which was received from worker thread */
 export const eventIsResponse = (event: MessageEvent<unknown>) => {
   const response = event.data;
-  if (typeof response === 'object' && response && Object.hasOwnProperty.call(response, WORKER_NAMESPACE)) {
+  if (typeof response === 'object' && response && Object.hasOwn(response, WORKER_NAMESPACE)) {
     return true;
   }
   return false;

@@ -4,7 +4,7 @@ import clc from '@deox/clc';
 import type { Plugin } from 'esbuild';
 import fs from 'fs-extra';
 import * as glob from 'glob';
-import { type Options, build } from 'tsup';
+import { build, type Options } from 'tsup';
 
 // Entrypoints for ESM
 const ESM_ENTRYPOINTS = glob.sync('./src/**/*.{ts,js}', {

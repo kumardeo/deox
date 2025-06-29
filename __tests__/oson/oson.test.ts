@@ -1,6 +1,5 @@
-import { assert, describe, it } from 'vitest';
-
 import { GLOBAL_CONSTRUCTOR_MAP, parse, stringify } from '@deox/oson';
+import { assert, describe, it } from 'vitest';
 
 class CustomClass {
   constructor(

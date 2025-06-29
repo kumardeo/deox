@@ -6,7 +6,7 @@ export const nestedData = (obj: unknown, ...levels: string[]) => {
   let current = obj;
 
   for (let i = 0; i < levels.length; i += 1) {
-    if (!current || !Object.prototype.hasOwnProperty.call(current, levels[i])) {
+    if (!current || !Object.hasOwn(current, levels[i])) {
       return { exists: false, value: undefined };
     }
     current = current[levels[i] as never];

@@ -50,7 +50,6 @@ export const globalConstructorMap = () => {
       err.message = message;
 
       if (stack === undefined) {
-        // biome-ignore lint/performance/noDelete: we need to use `delete`
         delete err.stack;
       } else {
         err.stack = stack;

@@ -4,11 +4,11 @@
   "description": "Internal Packages for personal projects (Plus UI, Web Apps, etc)",
   "author": "Deo Kumar",
   "homepage": "https://github.com/kumardeo/deox",
-  "packageManager": "pnpm@10.11.0",
+  "packageManager": "pnpm@10.12.4",
   "scripts": {
     "check": "pnpm biome check .",
     "check:types": "turbo check:types --force",
-    "check:fix": "pnpm biome check --apply .",
+    "check:fix": "pnpm biome check . --write",
     "upgrade": "ncu --interactive --workspaces --root",
     "build": "turbo run build --concurrency=1",
     "dev": "turbo run dev",
@@ -18,21 +18,21 @@
     "publish-packages": "cross-env PUBLISH=true pnpm run build && changeset publish"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
+    "@biomejs/biome": "^2.0.6",
     "@changesets/changelog-github": "^0.5.1",
-    "@changesets/cli": "^2.29.4",
+    "@changesets/cli": "^2.29.5",
     "@types/fs-extra": "^11.0.4",
-    "@types/node": "^22.15.29",
+    "@types/node": "^24.0.7",
     "cross-env": "^7.0.3",
     "esbuild": "^0.25.5",
     "fs-extra": "^11.3.0",
-    "glob": "^11.0.2",
+    "glob": "^11.0.3",
     "npm-check-updates": "^18.0.1",
     "rimraf": "^6.0.1",
     "tsup": "^8.5.0",
-    "tsx": "^4.19.4",
+    "tsx": "^4.20.3",
     "turbo": "^2.5.4",
     "typescript": "^5.8.3",
-    "vitest": "^3.1.4"
+    "vitest": "^3.2.4"
   }
 }

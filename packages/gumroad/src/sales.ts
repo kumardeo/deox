@@ -51,11 +51,7 @@ export interface SaleProps {
  * A class having API methods related to Sales
  */
 export class Sales extends Methods {
-  protected _bind_sales(object: {
-    next_page_url?: string;
-    next_page_key?: string;
-    sales: Sale[];
-  }) {
+  protected _bind_sales(object: { next_page_url?: string; next_page_key?: string; sales: Sale[] }) {
     const properties: SalesProps = {
       next_page_key: object.next_page_key,
       next_page_url: object.next_page_url,

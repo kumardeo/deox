@@ -2,9 +2,9 @@ export { BloggerFeed, type BloggerFeedOptions } from './blogger-feed';
 
 export {
   SDKError,
-  SDKTypeError,
-  SDKRequestError,
   SDKInputNotFoundError,
+  SDKRequestError,
+  SDKTypeError,
 } from './errors';
 
 export { parseFeed } from './feed-parser';

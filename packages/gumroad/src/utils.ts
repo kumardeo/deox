@@ -228,7 +228,7 @@ export const parseDeepFormData = <T extends ParsedDeepFormData = ParsedDeepFormD
             // biome-ignore lint/suspicious/noImplicitAnyLet: we need to use `any` here
             let value;
             if (i !== keys.length - 1) {
-              if (!Object.hasOwnProperty.call(acc, key)) {
+              if (!Object.hasOwn(acc, key)) {
                 value = {};
               } else {
                 value = parseValue(acc[key], options);

@@ -1,52 +1,52 @@
 {
-	"name": "@deox/gumroad",
-	"version": "0.0.9",
-	"private": false,
-	"description": "API client for Gumroad",
-	"keywords": [
-		"gumroad",
-		"gumroad-api"
-	],
-	"license": "MIT",
-	"author": {
-		"name": "Deo Kumar",
-		"url": "https://github.com/kumardeo"
-	},
-	"homepage": "https://github.com/kumardeo/deox/tree/main/packages/gumroad#readme",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/kumardeo/deox",
-		"directory": "packages/gumroad"
-	},
-	"bugs": {
-		"url": "https://github.com/kumardeo/deox/issues"
-	},
-	"scripts": {
-		"check:types": "tsc --noEmit",
-		"dev": "wrangler dev",
-		"build": "rimraf dist && tsx ./build.ts",
-		"clean": "rimraf dist"
-	},
-	"files": [
-		"dist"
-	],
-	"type": "module",
-	"module": "./dist/esm/index.js",
-	"types": "./dist/dts/index.d.ts",
-	"exports": {
-		".": {
-			"types": "./dist/dts/index.d.ts",
-			"import": "./dist/esm/index.js",
-			"require": "./dist/cjs/index.js"
-		}
-	},
-	"dependencies": {
-		"@deox/clc": "workspace:^",
-		"@deox/utils": "workspace:^"
-	},
-	"devDependencies": {
-		"@cloudflare/workers-types": "^4.20250531.0",
-		"hono": "^4.7.10",
-		"wrangler": "^4.18.0"
-	}
+  "name": "@deox/gumroad",
+  "version": "0.0.9",
+  "private": false,
+  "description": "API client for Gumroad",
+  "keywords": [
+    "gumroad",
+    "gumroad-api"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "Deo Kumar",
+    "url": "https://github.com/kumardeo"
+  },
+  "homepage": "https://github.com/kumardeo/deox/tree/main/packages/gumroad#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kumardeo/deox",
+    "directory": "packages/gumroad"
+  },
+  "bugs": {
+    "url": "https://github.com/kumardeo/deox/issues"
+  },
+  "scripts": {
+    "check:types": "tsc --noEmit",
+    "dev": "wrangler dev",
+    "build": "rimraf dist && tsx ./build.ts",
+    "clean": "rimraf dist"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/dts/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/dts/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    }
+  },
+  "dependencies": {
+    "@deox/clc": "workspace:^",
+    "@deox/utils": "workspace:^"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250628.0",
+    "hono": "^4.8.3",
+    "wrangler": "^4.22.0"
+  }
 }

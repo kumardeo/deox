@@ -1,62 +1,62 @@
 {
-	"name": "@deox/blogger-feed",
-	"version": "0.0.9",
-	"private": false,
-	"description": "A blogger feed API client.",
-	"keywords": [
-		"blogger",
-		"blogger-feed"
-	],
-	"license": "MIT",
-	"author": {
-		"name": "Deo Kumar",
-		"url": "https://github.com/kumardeo"
-	},
-	"homepage": "https://github.com/kumardeo/deox/tree/main/packages/blogger-feed#readme",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/kumardeo/deox",
-		"directory": "packages/blogger-feed"
-	},
-	"bugs": {
-		"url": "https://github.com/kumardeo/deox/issues"
-	},
-	"scripts": {
-		"check:types": "tsc --noEmit",
-		"dev": "webpack server --config dev/webpack.dev.cjs",
-		"build": "rimraf dist && tsx ./build.ts",
-		"clean": "rimraf dist"
-	},
-	"files": [
-		"dist"
-	],
-	"type": "module",
-	"module": "./dist/esm/index.js",
-	"types": "./dist/dts/index.d.ts",
-	"exports": {
-		".": {
-			"types": "./dist/dts/index.d.ts",
-			"import": "./dist/esm/index.js",
-			"require": "./dist/cjs/index.js"
-		},
-		"./feed-parser": {
-			"types": "./dist/dts/feed-parser.d.ts",
-			"import": "./dist/esm/feed-parser.js",
-			"require": "./dist/cjs/feed-parser.js"
-		}
-	},
-	"dependencies": {
-		"@deox/utils": "workspace:^"
-	},
-	"devDependencies": {
-		"@deox/clc": "workspace:^",
-		"babel-loader": "^10.0.0",
-		"html-webpack-plugin": "^5.6.3",
-		"source-map-loader": "^5.0.0",
-		"ts-loader": "^9.5.2",
-		"webpack": "^5.99.9",
-		"webpack-cli": "^6.0.1",
-		"webpack-define-config": "^0.0.1",
-		"webpack-dev-server": "^5.2.1"
-	}
+  "name": "@deox/blogger-feed",
+  "version": "0.0.9",
+  "private": false,
+  "description": "A blogger feed API client.",
+  "keywords": [
+    "blogger",
+    "blogger-feed"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "Deo Kumar",
+    "url": "https://github.com/kumardeo"
+  },
+  "homepage": "https://github.com/kumardeo/deox/tree/main/packages/blogger-feed#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kumardeo/deox",
+    "directory": "packages/blogger-feed"
+  },
+  "bugs": {
+    "url": "https://github.com/kumardeo/deox/issues"
+  },
+  "scripts": {
+    "check:types": "tsc --noEmit",
+    "dev": "webpack server --config dev/webpack.dev.cjs",
+    "build": "rimraf dist && tsx ./build.ts",
+    "clean": "rimraf dist"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/dts/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/dts/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js"
+    },
+    "./feed-parser": {
+      "types": "./dist/dts/feed-parser.d.ts",
+      "import": "./dist/esm/feed-parser.js",
+      "require": "./dist/cjs/feed-parser.js"
+    }
+  },
+  "dependencies": {
+    "@deox/utils": "workspace:^"
+  },
+  "devDependencies": {
+    "@deox/clc": "workspace:^",
+    "babel-loader": "^10.0.0",
+    "html-webpack-plugin": "^5.6.3",
+    "source-map-loader": "^5.0.0",
+    "ts-loader": "^9.5.2",
+    "webpack": "^5.99.9",
+    "webpack-cli": "^6.0.1",
+    "webpack-define-config": "^0.0.1",
+    "webpack-dev-server": "^5.2.2"
+  }
 }

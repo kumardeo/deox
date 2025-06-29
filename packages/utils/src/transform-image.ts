@@ -2,7 +2,7 @@ import { isArray, isBoolean, isRegExp, isString, isUndefined, isValidNumber } fr
 
 /* utilities */
 const isPositiveNumber = (input: unknown): input is number => isValidNumber(input) && input > 0;
-const escapeRegex = (input: string) => input.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+const escapeRegex = (input: string) => input.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
 const floor = Math.floor;
 
 /* constants */
@@ -34,7 +34,7 @@ const UNKNOWN_PARAMS = [/^mm,.*/, /^t.*/, /^q.*/, /^fcrop64=1,([0-9A-Fa-f]{6,16}
 const DYNAMIC_PARAMS = NUMBER_PARAMS.concat(HEX_PARAMS, UNKNOWN_PARAMS);
 const ALL_PARAMS = DYNAMIC_PARAMS.concat(STATIC_PARAMS);
 
-const PARAM_REGEX = /(?<=\/)[^\/]+(?=\/[^\/]+\.[^\/?]+(\?|$))|(?<==)[^=&?]+(?=\?|$)/g;
+const PARAM_REGEX = /(?<=\/)[^/]+(?=\/[^/]+\.[^/?]+(\?|$))|(?<==)[^=&?]+(?=\?|$)/g;
 
 /** Options for image transformation */
 export interface TransformOptions {

@@ -41,7 +41,7 @@ export const respond = {
       {
         ...data,
         id,
-        timestamp: new Date().getTime(),
+        timestamp: Date.now(),
       },
       { [WORKER_NAMESPACE]: true },
     );
@@ -145,7 +145,7 @@ export const toPromise = <T = any>(data: T): Promise<Await<T>> => {
 export const isRequestEvent = (event: MessageEvent<unknown>) => {
   const request = event.data;
 
-  return !!request && typeof request === 'object' && Object.hasOwnProperty.call(request, WORKER_NAMESPACE);
+  return !!request && typeof request === 'object' && Object.hasOwn(request, WORKER_NAMESPACE);
 };
 
 export type HandlerType<F extends (ctx?: any) => MayBePromise<NonNullable<object>>> = {
@@ -174,7 +174,7 @@ export const handle = <F extends (ctx?: any) => MayBePromise<NonNullable<object>
 
       const methods = await this.getObject();
 
-      if (!Object.hasOwnProperty.call(methods, name)) {
+      if (!Object.hasOwn(methods, name)) {
         throw new Error(`Method '${String(name)}' does not exists.`);
       }
 

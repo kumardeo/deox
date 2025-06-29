@@ -1,6 +1,7 @@
+export { API, type APIOptions } from './api';
 export {
-  SDKError,
   SDKBadRequestError,
+  SDKError,
   SDKInputNotFoundError,
   SDKInternalServerError,
   SDKNotFoundError,
@@ -9,16 +10,13 @@ export {
   SDKTypeError,
   SDKUnauthorizedError,
 } from './errors';
-
 export {
+  type Context,
+  type ErrorHandler,
   Gumroad,
   type GumroadOptions,
-  type Context,
   type Handler,
-  type ErrorHandler,
 } from './gumroad';
-
-export { API, type APIOptions } from './api';
 
 export type {
   Card,
@@ -40,13 +38,13 @@ export type {
   SubscriberStatus,
   Tier,
   Update,
-  UpdateMap,
   UpdateCancellation,
+  UpdateMap,
   UpdatePing,
   UpdateSubscription,
   UpdateSubscriptionEnded,
-  UpdateSubscriptionUpdated,
   UpdateSubscriptionRestarted,
+  UpdateSubscriptionUpdated,
   User,
   Variant,
   VariantCategory,

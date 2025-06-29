@@ -158,7 +158,7 @@ export class Worker<
       let id: string;
       do {
         id = typeof workerOptions.generate === 'function' ? workerOptions.generate(message) : `worker_${message.type}_${generateId()}`;
-      } while (Object.prototype.hasOwnProperty.call(this._queue, id));
+      } while (Object.hasOwn(this._queue, id));
       return id;
     };
 
@@ -237,7 +237,7 @@ export class Worker<
   ): Promise<Await<InferMethodsMap<R>[N][1]>> {
     let name: N;
     let args: InferMethodsMap<R>[N][0];
-    let options: StructuredSerializeOptions | Transferable[] | undefined = undefined;
+    let options: StructuredSerializeOptions | Transferable[] | undefined;
     const hasOptions = typeof rest[0] === 'object' && rest[0] !== null;
     if (hasOptions) {
       [options, name, ...args] = rest as [StructuredSerializeOptions | Transferable[], N, ...InferMethodsMap<R>[N][0]];
