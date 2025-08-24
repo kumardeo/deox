@@ -23,7 +23,9 @@ export class RequestURL extends URL {
     super(url, base);
     const { searchParams } = this;
     if (options.clearParams) {
-      searchParams.forEach((_value, key, params) => params.delete(key));
+      searchParams.forEach((_value, key, params) => {
+        params.delete(key);
+      });
     }
     const append = (key: string, value: string | number | boolean | undefined) => {
       if (['string', 'boolean', 'number'].includes(typeof value)) {

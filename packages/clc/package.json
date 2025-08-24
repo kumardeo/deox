@@ -64,6 +64,6 @@
     "kleur": "^4.1.5",
     "kolorist": "^1.8.0",
     "picocolors": "^1.1.1",
-    "yoctocolors": "^2.1.1"
+    "yoctocolors": "^2.1.2"
   }
 }
