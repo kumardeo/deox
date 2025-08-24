@@ -32,28 +32,20 @@ jobs:
     strategy:
       matrix:
         node-version: ["22.x"]
-        pnpm-version: ["10.x"]
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
-
-      - name: Use pnpm ${{ matrix.pnpm-version }}
-        uses: pnpm/action-setup@v2
-        with:
-          version: ${{ matrix.pnpm-version }}
-
+        uses: actions/checkout@v4
+      - name: Use pnpm
+        uses: pnpm/action-setup@v4
       - name: Use Node ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: pnpm
-
       - name: Update npm
         run: npm i -g npm@10
-
       - name: Install dependencies
         run: pnpm install
-
       - name: Publish to NPM
         uses: changesets/action@v1
         with:

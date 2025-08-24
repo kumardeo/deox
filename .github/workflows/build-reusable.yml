@@ -11,10 +11,6 @@ on:
         required: false
         description: "Version of Node.js to use"
         type: string
-      pnpmVersion:
-        required: false
-        description: "Version of pnpm to use"
-        type: string
       afterBuild:
         required: false
         description: "Additional steps to run"
@@ -32,31 +28,23 @@ jobs:
     strategy:
       matrix:
         node-version: ${{ fromJson(inputs.nodeVersion || '["22.x"]') }}
-        pnpm-version: ${{ fromJson(inputs.pnpmVersion || '["10.x"]') }}
         os: [ubuntu-latest]
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
-
-      - name: Use pnpm ${{ matrix.pnpm-version }}
-        uses: pnpm/action-setup@v2
-        with:
-          version: ${{ matrix.pnpm-version }}
-
+        uses: actions/checkout@v4
+      - name: Use pnpm
+        uses: pnpm/action-setup@v4
       - name: Use Node ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: pnpm
-
       - name: Install dependencies
         if: ${{ inputs.skipInstallBuild == false }}
         run: pnpm install
-
       - name: Build
         if: ${{ inputs.skipInstallBuild == false }}
         run: pnpm run build
-
       - name: Run after build
         if: ${{ inputs.afterBuild != '' }}
         run: /bin/bash -c "${{ inputs.afterBuild }}"
