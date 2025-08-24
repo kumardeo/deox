@@ -18,8 +18,3 @@ Can be used with webpack or other bundlers.
 ### [@deox/gumroad](./packages/gumroad/README.md)
 
 API client and Resource Subscriptions (Gumroad Webhooks) handler for Gumroad.
-
-### [@deox/oson](./packages/oson/README.md)
-
-Oson Structured Object Notation - JSON has a bunch of problems, OSON fixes them.  
-Powered by [@KnorpelSenf/oson](https://github.com/KnorpelSenf/oson)

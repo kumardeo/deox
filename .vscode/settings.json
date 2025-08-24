@@ -43,5 +43,5 @@
   "yaml.schemas": {
     "https://raw.githubusercontent.com/raineorshine/npm-check-updates/main/src/types/RunOptions.json": [".ncurc.yml"]
   },
-  "cSpell.words": ["biomejs", "delistify", "deox", "gifter", "gumroad", "Hono", "listify", "oson", "outbase", "outdir", "tsup", "typeof"]
+  "cSpell.words": ["biomejs", "delistify", "deox", "gifter", "gumroad", "Hono", "listify", "outbase", "outdir", "tsup", "typeof"]
 }

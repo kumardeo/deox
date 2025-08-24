@@ -64,7 +64,7 @@
       }
     },
     {
-      "includes": ["**/packages/oson/**", "**/packages/worker-rpc/**", "**/packages/check-types/**", "**/packages/utils/src/predicate.ts"],
+      "includes": ["**/packages/worker-rpc/**", "**/packages/check-types/**", "**/packages/utils/src/predicate.ts"],
       "linter": {
         "rules": {
           "suspicious": {

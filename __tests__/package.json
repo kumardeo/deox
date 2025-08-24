@@ -6,12 +6,8 @@
   "author": "Deo Kumar",
   "license": "MIT",
   "homepage": "https://github.com/kumardeo/deox",
-  "scripts": {
-    "test": "vitest run"
-  },
-  "dependencies": {
-    "@deox/oson": "workspace:^"
-  },
+  "scripts": {},
+  "dependencies": {},
   "devDependencies": {
     "vitest": "^3.2.4"
   }
