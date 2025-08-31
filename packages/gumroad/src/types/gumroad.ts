@@ -929,6 +929,7 @@ export type Sale = {
   zip_code?: `${number}`;
   paid: boolean;
   has_variants: boolean;
+  variants?: Record<string, string>;
   variants_and_quantity: string;
 
   /**
