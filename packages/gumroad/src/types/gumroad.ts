@@ -1449,7 +1449,7 @@ export type UpdateSubscriptionRestarted = UpdateSubscription & {
 /**
  * Represents an `cancellation` update
  */
-export type UpdateCancellation = {
+export type UpdateCancellation = UpdateSubscription & {
   /**
    * `true` if subscription has been cancelled, otherwise false
    */
