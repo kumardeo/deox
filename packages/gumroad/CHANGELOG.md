@@ -1,5 +1,11 @@
 # @deox/gumroad
 
+## 0.0.10
+
+### Patch Changes
+
+- [`c43a1cb`](https://github.com/kumardeo/deox/commit/c43a1cb4db775cf18fcafd4be12637799a0b4073) Thanks [@kumardeo](https://github.com/kumardeo)! - fix types for `UpdateCancellation`
+
 ## 0.0.9
 
 ### Patch Changes
