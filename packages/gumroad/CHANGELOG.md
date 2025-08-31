@@ -1,5 +1,11 @@
 # @deox/gumroad
 
+## 0.0.11
+
+### Patch Changes
+
+- [`427609a`](https://github.com/kumardeo/deox/commit/427609a52b34c73e99e2f34e5fe1232a8c2ced0f) Thanks [@kumardeo](https://github.com/kumardeo)! - add missing `variants` field in `Sale` type
+
 ## 0.0.10
 
 ### Patch Changes
