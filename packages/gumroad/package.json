@@ -45,8 +45,8 @@
     "@deox/utils": "workspace:^"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20250831.0",
-    "hono": "^4.9.5",
-    "wrangler": "^4.33.1"
+    "@cloudflare/workers-types": "^4.20250924.0",
+    "hono": "^4.9.8",
+    "wrangler": "^4.39.0"
   }
 }

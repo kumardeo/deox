@@ -4,7 +4,7 @@
   "description": "Internal Packages for personal projects (Plus UI, Web Apps, etc)",
   "author": "Deo Kumar",
   "homepage": "https://github.com/kumardeo/deox",
-  "packageManager": "pnpm@10.15.0",
+  "packageManager": "pnpm@10.17.1",
   "scripts": {
     "check": "pnpm biome check .",
     "check:types": "turbo check:types --force",
@@ -18,19 +18,19 @@
     "publish-packages": "cross-env PUBLISH=true pnpm run build && changeset publish"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.2.2",
+    "@biomejs/biome": "^2.2.4",
     "@changesets/changelog-github": "^0.5.1",
-    "@changesets/cli": "^2.29.6",
+    "@changesets/cli": "^2.29.7",
     "@types/fs-extra": "^11.0.4",
-    "@types/node": "^24.3.0",
+    "@types/node": "^24.5.2",
     "cross-env": "^10.0.0",
-    "esbuild": "^0.25.9",
-    "fs-extra": "^11.3.1",
+    "esbuild": "^0.25.10",
+    "fs-extra": "^11.3.2",
     "glob": "^11.0.3",
     "rimraf": "^6.0.1",
     "tsup": "^8.5.0",
     "tsx": "^4.20.5",
-    "turbo": "^2.5.6",
+    "turbo": "^2.5.8",
     "typescript": "^5.9.2",
     "vitest": "^3.2.4"
   }
