@@ -1,0 +1,55 @@
+{
+  "name": "@deox/google-image",
+  "version": "0.0.0",
+  "private": false,
+  "description": "Transform Google or Blogger images",
+  "keywords": [
+    "blogger-image",
+    "google-image"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "Deo Kumar",
+    "url": "https://github.com/kumardeo"
+  },
+  "homepage": "https://github.com/kumardeo/deox/tree/main/packages/google-image#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kumardeo/deox",
+    "directory": "packages/google-image"
+  },
+  "bugs": {
+    "url": "https://github.com/kumardeo/deox/issues"
+  },
+  "scripts": {
+    "check:types": "tsc --noEmit",
+    "build": "tsup",
+    "clean": "rimraf dist"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "dependencies": {
+    "@deox/utils": "workspace:^"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.0"
+  }
+}
