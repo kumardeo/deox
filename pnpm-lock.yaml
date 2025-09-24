@@ -57,9 +57,6 @@ importers:
         specifier: workspace:^
         version: link:../utils
     devDependencies:
-      '@deox/clc':
-        specifier: workspace:^
-        version: link:../clc
       babel-loader:
         specifier: ^10.0.0
         version: 10.0.0(@babel/core@7.24.4)(webpack@5.101.3)
@@ -156,9 +153,6 @@ importers:
         specifier: ^1.0.0
         version: 1.0.0
     devDependencies:
-      '@deox/clc':
-        specifier: workspace:^
-        version: link:../clc
       '@types/shade-blend-color':
         specifier: ^1.0.3
         version: 1.0.3
@@ -172,9 +166,6 @@ importers:
         specifier: workspace:^
         version: link:../utils
     devDependencies:
-      '@deox/clc':
-        specifier: workspace:^
-        version: link:../clc
       babel-loader:
         specifier: ^10.0.0
         version: 10.0.0(@babel/core@7.24.4)(webpack@5.101.3)
@@ -192,7 +183,7 @@ importers:
         version: 8.5.0(@microsoft/api-extractor@7.47.6(@types/node@24.5.2))(postcss@8.4.38)(tsx@4.20.5)(typescript@5.9.2)(yaml@2.4.2)
       webpack:
         specifier: ^5.101.3
-        version: 5.101.3(esbuild@0.25.10)(webpack-cli@6.0.1)
+        version: 5.101.3(webpack-cli@6.0.1)
       webpack-cli:
         specifier: ^6.0.1
         version: 6.0.1(webpack-dev-server@5.2.2)(webpack@5.101.3)
@@ -6561,6 +6552,15 @@ snapshots:
     optionalDependencies:
       esbuild: 0.25.10
 
+  terser-webpack-plugin@5.3.14(webpack@5.101.3):
+    dependencies:
+      '@jridgewell/trace-mapping': 0.3.25
+      jest-worker: 27.5.1
+      schema-utils: 4.3.2
+      serialize-javascript: 6.0.2
+      terser: 5.31.6
+      webpack: 5.101.3(webpack-cli@6.0.1)
+
   terser@5.31.6:
     dependencies:
       '@jridgewell/source-map': 0.3.6
@@ -6925,6 +6925,40 @@ snapshots:
       schema-utils: 4.3.2
       tapable: 2.2.1
       terser-webpack-plugin: 5.3.14(esbuild@0.25.10)(webpack@5.101.3)
+      watchpack: 2.4.1
+      webpack-sources: 3.3.3
+    optionalDependencies:
+      webpack-cli: 6.0.1(webpack-dev-server@5.2.2)(webpack@5.101.3)
+    transitivePeerDependencies:
+      - '@swc/core'
+      - esbuild
+      - uglify-js
+
+  webpack@5.101.3(webpack-cli@6.0.1):
+    dependencies:
+      '@types/eslint-scope': 3.7.7
+      '@types/estree': 1.0.8
+      '@types/json-schema': 7.0.15
+      '@webassemblyjs/ast': 1.14.1
+      '@webassemblyjs/wasm-edit': 1.14.1
+      '@webassemblyjs/wasm-parser': 1.14.1
+      acorn: 8.15.0
+      acorn-import-phases: 1.0.4(acorn@8.15.0)
+      browserslist: 4.24.2
+      chrome-trace-event: 1.0.3
+      enhanced-resolve: 5.18.3
+      es-module-lexer: 1.7.0
+      eslint-scope: 5.1.1
+      events: 3.3.0
+      glob-to-regexp: 0.4.1
+      graceful-fs: 4.2.11
+      json-parse-even-better-errors: 2.3.1
+      loader-runner: 4.3.0
+      mime-types: 2.1.35
+      neo-async: 2.6.2
+      schema-utils: 4.3.2
+      tapable: 2.2.1
+      terser-webpack-plugin: 5.3.14(webpack@5.101.3)
       watchpack: 2.4.1
       webpack-sources: 3.3.3
     optionalDependencies:
