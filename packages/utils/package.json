@@ -86,11 +86,6 @@
       "types": "./dist/dts/shade-blend-color.d.ts",
       "import": "./dist/esm/shade-blend-color.js",
       "require": "./dist/cjs/shade-blend-color.js"
-    },
-    "./transform-image": {
-      "types": "./dist/dts/transform-image.d.ts",
-      "import": "./dist/esm/transform-image.js",
-      "require": "./dist/cjs/transform-image.js"
     }
   },
   "dependencies": {

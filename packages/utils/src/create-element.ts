@@ -80,14 +80,9 @@ export const createElement = <K extends keyof HTMLElementTagNameMap>(tagName: K,
       switch (option) {
         case 'class':
           {
-            let classes: string[];
-            if (Array.isArray(optionValue)) {
-              classes = (optionValue as string[]).filter((className) => isString(className) && className.trim());
-            } else if (isString(optionValue) && option.trim()) {
-              classes = optionValue.split(' ');
-            } else {
-              classes = [];
-            }
+            const classes: string[] = (
+              Array.isArray(optionValue) ? (optionValue as string[]) : isString(optionValue) && option.trim() ? optionValue.split(' ') : []
+            ).filter((name) => isString(name) && name.trim());
             if (classes.length !== 0) {
               element.classList.add(...classes);
             }
