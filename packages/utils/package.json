@@ -22,77 +22,134 @@
   },
   "scripts": {
     "check:types": "tsc --noEmit",
-    "build": "rimraf dist && tsx ./build.ts",
+    "build": "tsup",
     "clean": "rimraf dist"
   },
   "files": [
     "dist"
   ],
   "type": "module",
-  "module": "./dist/esm/index.js",
-  "types": "./dist/dts/index.d.ts",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
+    "./package.json": "./package.json",
     ".": {
-      "types": "./dist/dts/index.d.ts",
-      "import": "./dist/esm/index.js",
-      "require": "./dist/cjs/index.js"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
     },
     "./abbreviate-number": {
-      "types": "./dist/dts/abbreviate-number.d.ts",
-      "import": "./dist/esm/abbreviate-number.js",
-      "require": "./dist/cjs/abbreviate-number.js"
+      "import": {
+        "types": "./dist/abbreviate-number.d.ts",
+        "default": "./dist/abbreviate-number.js"
+      },
+      "require": {
+        "types": "./dist/abbreviate-number.d.cts",
+        "default": "./dist/abbreviate-number.cjs"
+      }
     },
     "./base64": {
-      "types": "./dist/dts/base64.d.ts",
-      "import": "./dist/esm/base64.js",
-      "require": "./dist/cjs/base64.js"
+      "import": {
+        "types": "./dist/base64.d.ts",
+        "default": "./dist/base64.js"
+      },
+      "require": {
+        "types": "./dist/base64.d.cts",
+        "default": "./dist/base64.cjs"
+      }
     },
     "./cookie": {
-      "types": "./dist/dts/cookie.d.ts",
-      "import": "./dist/esm/cookie.js",
-      "require": "./dist/cjs/cookie.js"
+      "import": {
+        "types": "./dist/cookie.d.ts",
+        "default": "./dist/cookie.js"
+      },
+      "require": {
+        "types": "./dist/cookie.d.cts",
+        "default": "./dist/cookie.cjs"
+      }
     },
     "./copy-text": {
-      "types": "./dist/dts/copy-text.d.ts",
-      "import": "./dist/esm/copy-text.js",
-      "require": "./dist/cjs/copy-text.js"
+      "import": {
+        "types": "./dist/copy-text.d.ts",
+        "default": "./dist/copy-text.js"
+      },
+      "require": {
+        "types": "./dist/copy-text.d.cts",
+        "default": "./dist/copy-text.cjs"
+      }
     },
     "./create-element": {
-      "types": "./dist/dts/create-element.d.ts",
-      "import": "./dist/esm/create-element.js",
-      "require": "./dist/cjs/create-element.js"
+      "import": {
+        "types": "./dist/create-element.d.ts",
+        "default": "./dist/create-element.js"
+      },
+      "require": {
+        "types": "./dist/create-element.d.cts",
+        "default": "./dist/create-element.cjs"
+      }
     },
     "./deferred-promise": {
-      "types": "./dist/dts/deferred-promise.d.ts",
-      "import": "./dist/esm/deferred-promise.js",
-      "require": "./dist/cjs/deferred-promise.js"
+      "import": {
+        "types": "./dist/deferred-promise.d.ts",
+        "default": "./dist/deferred-promise.js"
+      },
+      "require": {
+        "types": "./dist/deferred-promise.d.cts",
+        "default": "./dist/deferred-promise.cjs"
+      }
     },
     "./generate-id": {
-      "types": "./dist/dts/generate-id.d.ts",
-      "import": "./dist/esm/generate-id.js",
-      "require": "./dist/cjs/generate-id.js"
+      "import": {
+        "types": "./dist/generate-id.d.ts",
+        "default": "./dist/generate-id.js"
+      },
+      "require": {
+        "types": "./dist/generate-id.d.cts",
+        "default": "./dist/generate-id.cjs"
+      }
     },
     "./predicate": {
-      "types": "./dist/dts/predicate.d.ts",
-      "import": "./dist/esm/predicate.js",
-      "require": "./dist/cjs/predicate.js"
+      "import": {
+        "types": "./dist/predicate.d.ts",
+        "default": "./dist/predicate.js"
+      },
+      "require": {
+        "types": "./dist/predicate.d.cts",
+        "default": "./dist/predicate.cjs"
+      }
     },
     "./pretty-bytes": {
-      "types": "./dist/dts/pretty-bytes.d.ts",
-      "import": "./dist/esm/pretty-bytes.js",
-      "require": "./dist/cjs/pretty-bytes.js"
+      "import": {
+        "types": "./dist/pretty-bytes.d.ts",
+        "default": "./dist/pretty-bytes.js"
+      },
+      "require": {
+        "types": "./dist/pretty-bytes.d.cts",
+        "default": "./dist/pretty-bytes.cjs"
+      }
     },
     "./shade-blend-color": {
-      "types": "./dist/dts/shade-blend-color.d.ts",
-      "import": "./dist/esm/shade-blend-color.js",
-      "require": "./dist/cjs/shade-blend-color.js"
+      "import": {
+        "types": "./dist/shade-blend-color.d.ts",
+        "default": "./dist/shade-blend-color.js"
+      },
+      "require": {
+        "types": "./dist/shade-blend-color.d.cts",
+        "default": "./dist/shade-blend-color.cjs"
+      }
     }
   },
   "dependencies": {
     "shade-blend-color": "^1.0.0"
   },
   "devDependencies": {
-    "@deox/clc": "workspace:^",
-    "@types/shade-blend-color": "^1.0.3"
+    "@types/shade-blend-color": "^1.0.3",
+    "tsup": "^8.5.0"
   }
 }

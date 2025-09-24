@@ -24,36 +24,38 @@
   "scripts": {
     "check:types": "tsc --noEmit",
     "dev": "webpack server --config dev/webpack.dev.cjs",
-    "build": "rimraf dist && tsx ./build.ts",
+    "build": "tsup",
     "clean": "rimraf dist"
   },
   "files": [
     "dist"
   ],
   "type": "module",
-  "module": "./dist/esm/index.js",
-  "types": "./dist/dts/index.d.ts",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
+    "./package.json": "./package.json",
     ".": {
-      "types": "./dist/dts/index.d.ts",
-      "import": "./dist/esm/index.js",
-      "require": "./dist/cjs/index.js"
-    },
-    "./feed-parser": {
-      "types": "./dist/dts/feed-parser.d.ts",
-      "import": "./dist/esm/feed-parser.js",
-      "require": "./dist/cjs/feed-parser.js"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
     }
   },
   "dependencies": {
     "@deox/utils": "workspace:^"
   },
   "devDependencies": {
-    "@deox/clc": "workspace:^",
     "babel-loader": "^10.0.0",
     "html-webpack-plugin": "^5.6.4",
     "source-map-loader": "^5.0.0",
     "ts-loader": "^9.5.4",
+    "tsup": "^8.5.0",
     "webpack": "^5.101.3",
     "webpack-cli": "^6.0.1",
     "webpack-define-config": "^0.0.1",

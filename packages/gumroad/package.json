@@ -24,20 +24,27 @@
   "scripts": {
     "check:types": "tsc --noEmit",
     "dev": "wrangler dev",
-    "build": "rimraf dist && tsx ./build.ts",
+    "build": "tsup",
     "clean": "rimraf dist"
   },
   "files": [
     "dist"
   ],
   "type": "module",
-  "module": "./dist/esm/index.js",
-  "types": "./dist/dts/index.d.ts",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
+    "./package.json": "./package.json",
     ".": {
-      "types": "./dist/dts/index.d.ts",
-      "import": "./dist/esm/index.js",
-      "require": "./dist/cjs/index.js"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
     }
   },
   "dependencies": {
@@ -47,6 +54,7 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250924.0",
     "hono": "^4.9.8",
+    "tsup": "^8.5.0",
     "wrangler": "^4.39.0"
   }
 }

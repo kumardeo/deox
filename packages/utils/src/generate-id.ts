@@ -9,6 +9,7 @@ export const generateId = (format = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx') => {
   // Timestamp
   let d1 = Date.now();
   // Time in microseconds since page-load or 0 if unsupported
+  // biome-ignore lint/complexity/useOptionalChain: performance may not be defined
   let d2 = (typeof performance !== 'undefined' && performance.now && performance.now() * 1000) || 0;
   return format.replace(/[xy]/g, (c) => {
     // random number between 0 and 16

@@ -16,11 +16,16 @@ import { eventIsResponse, getBlobContent } from './utils';
 
 /** Worker constructor from global object */
 let MayBeWorker: (typeof globalThis)['Worker'] | undefined;
+// biome-ignore lint/complexity/useOptionalChain: globalThis may not be defined
 if (typeof globalThis !== 'undefined' && globalThis.Worker) {
   MayBeWorker = globalThis.Worker;
-} else if (typeof window !== 'undefined' && window.Worker) {
+}
+// biome-ignore lint/complexity/useOptionalChain: window may not be defined
+else if (typeof window !== 'undefined' && window.Worker) {
   MayBeWorker = window.Worker;
-} else if (typeof self !== 'undefined' && self.Worker) {
+}
+// biome-ignore lint/complexity/useOptionalChain: self may not be defined
+else if (typeof self !== 'undefined' && self.Worker) {
   MayBeWorker = self.Worker;
 }
 
