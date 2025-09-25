@@ -1,5 +1,13 @@
 # @deox/utils
 
+## 0.0.3
+
+### Patch Changes
+
+- [`93c9cbf`](https://github.com/kumardeo/deox/commit/93c9cbfa43caba5dc41e23c1a54d6bb6501ce320) Thanks [@kumardeo](https://github.com/kumardeo)! - chore: remove `transform-image` submodule
+
+- [`0c21e68`](https://github.com/kumardeo/deox/commit/0c21e68780b81d2f2a17000c8885633ffcb017cf) Thanks [@kumardeo](https://github.com/kumardeo)! - chore: use `tsup` for bundling
+
 ## 0.0.2
 
 ### Patch Changes
