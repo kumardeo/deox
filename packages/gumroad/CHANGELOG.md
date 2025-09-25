@@ -1,5 +1,14 @@
 # @deox/gumroad
 
+## 0.0.12
+
+### Patch Changes
+
+- [`0c21e68`](https://github.com/kumardeo/deox/commit/0c21e68780b81d2f2a17000c8885633ffcb017cf) Thanks [@kumardeo](https://github.com/kumardeo)! - chore: use `tsup` for bundling
+
+- Updated dependencies [[`93c9cbf`](https://github.com/kumardeo/deox/commit/93c9cbfa43caba5dc41e23c1a54d6bb6501ce320), [`0c21e68`](https://github.com/kumardeo/deox/commit/0c21e68780b81d2f2a17000c8885633ffcb017cf)]:
+  - @deox/utils@0.0.3
+
 ## 0.0.11
 
 ### Patch Changes
