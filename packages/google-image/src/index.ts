@@ -70,6 +70,12 @@ export class GoogleImage {
   };
   private _e: boolean;
 
+  /**
+   * Creates an instance of {@link GoogleImage}
+   *
+   * @param url The image url
+   * @param options Options
+   */
   constructor(url: string | URL, { existing = true, pass = false }: GoogleImageOptions = {}) {
     let imageUrl: string;
     if (isURL(url)) {
@@ -213,6 +219,11 @@ export class GoogleImage {
     return this._b(param, value, ['rj', 'rp', 'rw', 'rwa', 'rg', 'rh', 'nw']);
   }
 
+  /**
+   * To check whether image url is supported for transformations
+   *
+   * @returns `true` if image url is supported otherwise `false`
+   */
   isSupported() {
     return !!this._m;
   }
@@ -441,6 +452,9 @@ export class GoogleImage {
     return this._n('a', value);
   }
 
+  /**
+   * Get the new image url
+   */
   url() {
     const skip = this._a();
 
