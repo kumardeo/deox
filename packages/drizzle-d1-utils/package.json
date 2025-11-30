@@ -1,6 +1,6 @@
 {
   "name": "@deox/drizzle-d1-utils",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": false,
   "description": "Drizzle D1 utils",
   "keywords": [
