@@ -1,0 +1,57 @@
+{
+  "name": "@deox/drizzle-d1-utils",
+  "version": "0.0.0",
+  "private": false,
+  "description": "Drizzle D1 utils",
+  "keywords": [
+    "drizzle-d1",
+    "cloudflare-d1"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "Deo Kumar",
+    "url": "https://github.com/kumardeo"
+  },
+  "homepage": "https://github.com/kumardeo/deox/tree/main/packages/drizzle-d1-utils#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kumardeo/deox",
+    "directory": "packages/drizzle-d1-utils"
+  },
+  "bugs": {
+    "url": "https://github.com/kumardeo/deox/issues"
+  },
+  "scripts": {
+    "check:types": "tsc --noEmit",
+    "build": "tsup",
+    "clean": "rimraf dist"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.31.7",
+    "tsup": "^8.5.0",
+    "wrangler": "^4.39.0"
+  },
+  "peerDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}
