@@ -240,10 +240,14 @@ export class Worker<
   async call<N extends keyof InferMethodsMap<R>>(
     ...rest: [N, ...InferMethodsMap<R>[N][0]] | [StructuredSerializeOptions | Transferable[], N, ...InferMethodsMap<R>[N][0]]
   ): Promise<Await<InferMethodsMap<R>[N][1]>> {
+    if (!['string', 'number', 'object'].includes(typeof rest[0]) || rest[0] === null) {
+      throw new TypeError('Argument 1 must be of type string, number, object or array');
+    }
+
     let name: N;
     let args: InferMethodsMap<R>[N][0];
     let options: StructuredSerializeOptions | Transferable[] | undefined;
-    const hasOptions = typeof rest[0] === 'object' && rest[0] !== null;
+    const hasOptions = typeof rest[0] === 'object';
     if (hasOptions) {
       [options, name, ...args] = rest as [StructuredSerializeOptions | Transferable[], N, ...InferMethodsMap<R>[N][0]];
     } else {

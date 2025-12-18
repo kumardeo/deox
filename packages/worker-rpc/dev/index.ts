@@ -51,17 +51,17 @@ worker.addEventListener('message', (event) => {
 
   const bytes = new Uint8Array([1, 2, 3, 4]);
 
-  console.log(bytes.byteLength);
+  console.log('(thread:main)', bytes.byteLength);
 
-  console.log(await worker.call([bytes.buffer], 'transferToWorker', bytes));
+  console.log('(thread:main)', await worker.call([bytes.buffer], 'transferToWorker', bytes));
 
-  console.log(bytes.byteLength);
+  console.log('(thread:main)', bytes.byteLength);
 
-  console.log(await worker.call('getByteLength'));
+  console.log('(thread:main)', await worker.call('getByteLength'));
 
-  console.log(await worker.call('transferToMain'));
+  console.log('(thread:main)', await worker.call('transferToMain'));
 
-  console.log(await worker.call('getByteLength'));
+  console.log('(thread:main)', await worker.call('getByteLength'));
 })().catch(console.error);
 
 // Expose to window for external uses

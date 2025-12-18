@@ -18,7 +18,7 @@ const registered = register((ctx: { info: string }) => {
       return withOptions(bytes, [bytes.buffer]);
     },
     transferToWorker(bytes: Uint8Array) {
-      console.log(bytes);
+      console.log('(thread:worker)', bytes);
     },
     getByteLength() {
       return bytes.byteLength;
