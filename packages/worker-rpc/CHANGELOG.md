@@ -1,5 +1,11 @@
 # @deox/worker-rpc
 
+## 0.0.17
+
+### Patch Changes
+
+- [`6c3a88c`](https://github.com/kumardeo/deox/commit/6c3a88c5998dd8fa0b419517a3e12bc8437bfbb1) Thanks [@kumardeo](https://github.com/kumardeo)! - docs: add docs about transferring data
+
 ## 0.0.16
 
 ### Patch Changes
