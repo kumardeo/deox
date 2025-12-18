@@ -1,6 +1,6 @@
 {
   "name": "@deox/worker-rpc",
-  "version": "0.0.16",
+  "version": "0.0.17",
   "private": false,
   "description": "Lightweight RPC utility for calling functions in Web Workers and receiving results with simple, promise-based syntax.",
   "keywords": [
