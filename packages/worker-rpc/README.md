@@ -133,7 +133,7 @@ worker.call({
 */
 ```
 
-## Worker to Main
+### Worker to Main
 
 To transfer transferable objects from the worker thread to the main thread, use the `withOptions()` helper to pass the transferable objects along with the result and return it from the worker method.
 
