@@ -148,12 +148,12 @@ import { register, withOptions } from "@deox/worker-rpc/register";
 const registered = register(() => ({
   doSomething: () => {
     const bytes = new Uint8Array([1, 2, 3, 4]);
-    return withOptions([bytes.buffer], bytes);
+    return withOptions(bytes, [bytes.buffer]);
     // or alternatively
     /*
-    return withOptions({
+    return withOptions(bytes, {
       transfer: [bytes.buffer]
-    }, bytes);
+    });
     */
   }
 }));
