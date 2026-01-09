@@ -4,4 +4,5 @@ export { cookie, type SetCookieOptions } from './cookie';
 export { copyText } from './copy-text';
 export { DeferredPromise } from './deferred-promise';
 export { generateId } from './generate-id';
+export { getLazy, type LazyEventType, lazy, setLazy } from './lazy';
 export { prettyBytes } from './pretty-bytes';

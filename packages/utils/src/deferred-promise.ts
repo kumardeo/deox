@@ -1,6 +1,6 @@
 import { isUndefined } from './predicate';
 
-const functionsMap = new WeakMap();
+const functionsMap = new WeakMap<DeferredPromise<unknown>, ((...args: unknown[]) => void)[]>();
 
 export class DeferredPromise<T> extends Promise<T> {
   /**
@@ -15,24 +15,25 @@ export class DeferredPromise<T> extends Promise<T> {
       reject: (reason?: any) => void,
     ) => void,
   ) {
-    let functions: unknown[] | undefined;
+    const functions = new Array(2);
     super((resolve, reject) => {
-      functions = [resolve, reject];
+      functions[0] = resolve;
+      functions[1] = reject;
       if (!isUndefined(executor)) {
         executor(resolve, reject);
       }
     });
-    functionsMap.set(this, functions ?? []);
+    functionsMap.set(this, functions);
   }
 
   resolve(value: T | PromiseLike<T>) {
-    functionsMap.get(this)[0]?.(value);
+    functionsMap.get(this)?.[0]?.(value);
     return this;
   }
 
   // biome-ignore lint/suspicious/noExplicitAny: we needed to use `any` here
   reject(reason?: any) {
-    functionsMap.get(this)[1]?.(reason);
+    functionsMap.get(this)?.[1]?.(reason);
     return this;
   }
 }
