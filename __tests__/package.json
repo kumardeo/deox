@@ -6,9 +6,14 @@
   "author": "Deo Kumar",
   "license": "MIT",
   "homepage": "https://github.com/kumardeo/deox",
-  "scripts": {},
+  "scripts": {
+    "lint": "biome lint .",
+    "check": "biome check .",
+    "test": "vitest run",
+    "check:types": "tsc --noEmit"
+  },
   "dependencies": {},
   "devDependencies": {
-    "vitest": "^3.2.4"
+    "vitest": "^4.0.16"
   }
 }

@@ -22,9 +22,11 @@
     "url": "https://github.com/kumardeo/deox/issues"
   },
   "scripts": {
+    "lint": "biome lint ./src",
+    "check": "biome check ./src",
     "check:types": "tsc --noEmit",
-    "build": "tsup",
-    "clean": "rimraf dist"
+    "build": "NODE_ENV=production tsup",
+    "dev": "NODE_ENV=development tsup --watch"
   },
   "files": [
     "dist"
@@ -47,9 +49,10 @@
     }
   },
   "devDependencies": {
-    "drizzle-kit": "^0.31.7",
-    "tsup": "^8.5.0",
-    "wrangler": "^4.39.0"
+    "@cloudflare/workers-utils": "^0.6.0",
+    "drizzle-kit": "^0.31.8",
+    "tsup": "^8.5.1",
+    "wrangler": "^4.58.0"
   },
   "peerDependencies": {
     "wrangler": "^4.0.0"

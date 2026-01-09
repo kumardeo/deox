@@ -22,9 +22,11 @@
     "url": "https://github.com/kumardeo/deox/issues"
   },
   "scripts": {
+    "lint": "biome lint ./src",
+    "check": "biome check ./src",
     "check:types": "tsc --noEmit",
-    "build": "tsup",
-    "clean": "rimraf dist"
+    "build": "NODE_ENV=production tsup",
+    "dev": "NODE_ENV=development tsup --watch"
   },
   "files": [
     "dist"
@@ -50,6 +52,6 @@
     "@deox/utils": "workspace:^"
   },
   "devDependencies": {
-    "tsup": "^8.5.0"
+    "tsup": "^8.5.1"
   }
 }

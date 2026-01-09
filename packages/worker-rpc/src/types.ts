@@ -63,17 +63,18 @@ export type InferProxyType<R extends RegisterInput> = {
   readonly [K in keyof InferMethodsMap<R>]: (...args: InferMethodsMap<R>[K][0]) => Promise<Await<InferMethodsMap<R>[K][1]>>;
 };
 
-export type InferWorkerOptions<R extends RegisterOutput<RegisterInput>> = InferContext<R> extends undefined | undefined
-  ?
-      | (WorkerOptions & {
-          context?: InferContext<R>;
-          generate?: (message: MessageWorkerInput) => string;
-        })
-      | undefined
-  : WorkerOptions & {
-      context: InferContext<R>;
-      generate?: (message: MessageWorkerInput) => string;
-    };
+export type InferWorkerOptions<R extends RegisterOutput<RegisterInput>> =
+  InferContext<R> extends undefined | undefined
+    ?
+        | (WorkerOptions & {
+            context?: InferContext<R>;
+            generate?: (message: MessageWorkerInput) => string;
+          })
+        | undefined
+    : WorkerOptions & {
+        context: InferContext<R>;
+        generate?: (message: MessageWorkerInput) => string;
+      };
 
 /* message types */
 export type MessageWorkerInput =

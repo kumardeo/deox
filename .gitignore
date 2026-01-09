@@ -11,10 +11,7 @@ dist/
 .dev.vars.*
 
 # turbo
-.turbo
-
-# ignore
-.ignore
+.turbo/
 
 # Environment variables
 actions.env

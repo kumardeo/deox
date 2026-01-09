@@ -1,23 +1,27 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "tasks": {
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+      "outputs": [".next/**", "!.next/cache/**", "out/**", "dist/**", ".svelte-kit/**", ".vercel/**", ".output/**", ".nuxt/**", ".astro/**"]
     },
-    "test": {
-      "dependsOn": ["build", "^build"],
+    "lint": {
+      "dependsOn": ["^build"]
+    },
+    "check": {
+      "dependsOn": ["^build"]
+    },
+    "check:types": {
+      "dependsOn": ["^build"],
       "outputs": []
     },
-    "dev": {
-      "cache": false
-    },
-    "start": {
-      "cache": false
-    },
-    "clean": {
-      "cache": false
-    },
-    "check:types": {}
+    "test": {
+      "dependsOn": ["^build"],
+      "outputs": []
+    }
   }
 }

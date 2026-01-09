@@ -22,10 +22,12 @@
     "url": "https://github.com/kumardeo/deox/issues"
   },
   "scripts": {
+    "lint": "biome lint ./src",
+    "check": "biome check ./src",
     "check:types": "tsc --noEmit",
-    "dev": "webpack server --config dev/webpack.dev.cjs",
-    "build": "tsup",
-    "clean": "rimraf dist"
+    "build": "NODE_ENV=production tsup",
+    "dev": "NODE_ENV=development tsup --watch",
+    "playground": "webpack server --config dev/webpack.dev.cjs"
   },
   "files": [
     "dist"
@@ -52,11 +54,11 @@
   },
   "devDependencies": {
     "babel-loader": "^10.0.0",
-    "html-webpack-plugin": "^5.6.4",
+    "html-webpack-plugin": "^5.6.5",
     "source-map-loader": "^5.0.0",
     "ts-loader": "^9.5.4",
-    "tsup": "^8.5.0",
-    "webpack": "^5.101.3",
+    "tsup": "^8.5.1",
+    "webpack": "^5.104.1",
     "webpack-cli": "^6.0.1",
     "webpack-define-config": "^0.0.1",
     "webpack-dev-server": "^5.2.2"

@@ -2,7 +2,9 @@ packages:
   - packages/*
   - __tests__
   - __tests__/*
+
 onlyBuiltDependencies:
+  - es5-ext
   - esbuild
   - sharp
   - workerd
