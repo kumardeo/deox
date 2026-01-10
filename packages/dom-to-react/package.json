@@ -1,22 +1,22 @@
 {
-  "name": "@deox/gumroad",
-  "version": "0.0.12",
+  "name": "@deox/dom-to-react",
+  "version": "0.0.0",
   "private": false,
-  "description": "API client for Gumroad",
+  "description": "DOM node to React node converter.",
   "keywords": [
-    "gumroad",
-    "gumroad-api"
+    "react",
+    "dom-to-react"
   ],
   "license": "MIT",
   "author": {
     "name": "Deo Kumar",
     "url": "https://github.com/kumardeo"
   },
-  "homepage": "https://github.com/kumardeo/deox/tree/main/packages/gumroad#readme",
+  "homepage": "https://github.com/kumardeo/deox/tree/main/packages/dom-to-react#readme",
   "repository": {
     "type": "git",
     "url": "https://github.com/kumardeo/deox",
-    "directory": "packages/gumroad"
+    "directory": "packages/dom-to-react"
   },
   "bugs": {
     "url": "https://github.com/kumardeo/deox/issues"
@@ -26,8 +26,7 @@
     "check": "biome check ./src",
     "check:types": "tsc --noEmit",
     "build": "NODE_ENV=production tsup",
-    "dev": "NODE_ENV=development tsup --watch",
-    "playground": "wrangler dev"
+    "dev": "NODE_ENV=development tsup --watch"
   },
   "files": [
     "dist"
@@ -50,13 +49,14 @@
     }
   },
   "dependencies": {
-    "@deox/clc": "workspace:^",
-    "@deox/utils": "workspace:^"
+    "style-to-js": "^1.1.21"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "catalog:default",
-    "hono": "^4.11.3",
-    "tsup": "catalog:default",
-    "wrangler": "catalog:default"
+    "@types/react": "catalog:default",
+    "react": "catalog:default",
+    "tsup": "catalog:default"
+  },
+  "peerDependencies": {
+    "react": "17 - 19"
   }
 }

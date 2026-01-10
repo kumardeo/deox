@@ -51,8 +51,8 @@
   "devDependencies": {
     "@cloudflare/workers-utils": "^0.6.0",
     "drizzle-kit": "^0.31.8",
-    "tsup": "^8.5.1",
-    "wrangler": "^4.58.0"
+    "tsup": "catalog:default",
+    "wrangler": "catalog:default"
   },
   "peerDependencies": {
     "wrangler": "^4.0.0"

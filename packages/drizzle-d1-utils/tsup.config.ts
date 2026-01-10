@@ -5,9 +5,10 @@ export default defineConfig({
   format: ['esm', 'cjs'],
   platform: 'node',
   sourcemap: true,
-  shims: true,
   splitting: true,
-  bundle: false,
+  bundle: true,
+  skipNodeModulesBundle: true,
+  shims: true,
   dts: true,
   clean: true,
 });

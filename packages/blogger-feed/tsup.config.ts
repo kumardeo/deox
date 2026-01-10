@@ -4,18 +4,22 @@ export default defineConfig([
   {
     entry: ['src/index.ts'],
     format: ['esm', 'cjs'],
-    splitting: false,
+    platform: 'neutral',
     sourcemap: true,
-    clean: true,
+    splitting: true,
+    bundle: true,
+    skipNodeModulesBundle: true,
     dts: true,
+    clean: true,
   },
   {
     entry: {
       'blogger-feed': 'src/iife.ts',
     },
     format: 'iife',
-    splitting: false,
+    platform: 'browser',
     sourcemap: true,
+    splitting: false,
     bundle: true,
     minify: true,
     outExtension: () => ({

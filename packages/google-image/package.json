@@ -52,6 +52,6 @@
     "@deox/utils": "workspace:^"
   },
   "devDependencies": {
-    "tsup": "^8.5.1"
+    "tsup": "catalog:default"
   }
 }

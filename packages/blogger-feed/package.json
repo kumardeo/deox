@@ -57,7 +57,7 @@
     "html-webpack-plugin": "^5.6.5",
     "source-map-loader": "^5.0.0",
     "ts-loader": "^9.5.4",
-    "tsup": "^8.5.1",
+    "tsup": "catalog:default",
     "webpack": "^5.104.1",
     "webpack-cli": "^6.0.1",
     "webpack-define-config": "^0.0.1",

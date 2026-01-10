@@ -6,8 +6,11 @@ export default defineConfig({
     register: 'src/register/index.ts',
   },
   format: ['esm', 'cjs'],
-  splitting: true,
+  platform: 'browser',
   sourcemap: true,
-  clean: true,
+  splitting: true,
+  bundle: true,
+  skipNodeModulesBundle: true,
   dts: true,
+  clean: true,
 });

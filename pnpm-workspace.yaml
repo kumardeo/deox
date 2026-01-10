@@ -8,3 +8,11 @@ onlyBuiltDependencies:
   - esbuild
   - sharp
   - workerd
+
+catalog:
+  "@cloudflare/workers-types": "^4.20260109.0"
+  "@types/react": "^19.2.8"
+  react: "^19.2.3"
+  react-dom: "^19.2.3"
+  tsup: "^8.5.1"
+  wrangler: "^4.58.0"
