@@ -1,5 +1,12 @@
 # @deox/blogger-feed
 
+## 0.0.11
+
+### Patch Changes
+
+- Updated dependencies [[`db96ae4`](https://github.com/kumardeo/deox/commit/db96ae4f0f63ef5280f52e141a9951439d51ba73)]:
+  - @deox/utils@0.0.4
+
 ## 0.0.10
 
 ### Patch Changes
