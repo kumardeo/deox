@@ -4,9 +4,32 @@ import { attrToPropMap, noTextChildNodes } from './shared';
 
 export type Output = ReactElement | string | number | bigint | boolean | null;
 
-export type FilterAction = (node: Node, info: { level: number; index: number }) => boolean;
-export type ModifyAction = (node: Node, info: { level: number; index: number }) => Node | undefined;
-export type TransformAction = (node: Node, info: { level: number; index: number; key: Key }) => Output | undefined;
+export type FilterAction = (
+  node: Node,
+  info: {
+    level: number;
+    index: number;
+  },
+) => boolean;
+
+export type ModifyAction = (
+  node: Node,
+  info: {
+    level: number;
+    index: number;
+  },
+) => Node | null | undefined;
+
+export type TransformAction = (
+  node: Node,
+  info: {
+    level: number;
+    index: number;
+    key: Key;
+    props: () => Record<string, unknown> | null;
+    children: () => (ReactElement | string | number | bigint)[] | null;
+  },
+) => Output | undefined;
 
 export interface Actions {
   filter?: FilterAction;
@@ -16,6 +39,12 @@ export interface Actions {
 
 export interface Options extends Actions {
   key?: Key;
+}
+
+export interface FromNodeOptions extends Options {}
+
+export interface FromHTMLOptions extends Options {
+  body?(body: HTMLBodyElement): void;
 }
 
 function isOutput(value: unknown): value is Output {
@@ -101,7 +130,7 @@ function parseAttributes(attributes: NamedNodeMap): Record<string, unknown> {
 }
 
 function parseChildren(nodes: NodeList, { level, filter, modify, transform }: { level: number } & Actions) {
-  const children = [];
+  const children: (ReactElement | string | number | bigint)[] = [];
 
   for (let i = 0; i < nodes.length; i++) {
     const element = convertToReact(nodes[i], {
@@ -139,8 +168,11 @@ function convertToReact(
   if (typeof modify === 'function') {
     const result = modify(node, { level, index });
     if (typeof result !== 'undefined') {
+      if (result === null) {
+        return null;
+      }
       if (!(result instanceof Node)) {
-        throw new TypeError("Callback 'modify' must return `Node | undefined`");
+        throw new TypeError("Callback 'modify' must return `Node | null | undefined`");
       }
       node = result;
     }
@@ -149,10 +181,34 @@ function convertToReact(
   const reactKey = typeof key !== 'undefined' ? key : createKey(level, index);
 
   if (typeof transform === 'function') {
-    const result = transform(node, { level, index, key: reactKey });
+    const result = transform(node, {
+      level,
+      index,
+      key: reactKey,
+      props: () => {
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          return parseAttributes((node as Element).attributes);
+        }
+        return null;
+      },
+      children() {
+        if (node.nodeType === Node.ELEMENT_NODE || node.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
+          return parseChildren(node.childNodes, {
+            level: level + 1,
+            filter,
+            modify,
+            transform,
+          });
+        }
+        return null;
+      },
+    });
     if (typeof result !== 'undefined') {
+      if (result === null) {
+        return null;
+      }
       if (!isOutput(result)) {
-        throw new TypeError("Callback 'transform' must return `ReactElement | string | number | bigint | boolean | null`");
+        throw new TypeError("Callback 'transform' must return `ReactElement | string | number | bigint | boolean | null | undefined`");
       }
       return result;
     }
@@ -167,6 +223,9 @@ function convertToReact(
         }),
         ...parseChildren(node.childNodes, {
           level: level + 1,
+          filter,
+          modify,
+          transform,
         }),
       );
     }
@@ -178,6 +237,9 @@ function convertToReact(
         },
         ...parseChildren(node.childNodes, {
           level: level + 1,
+          filter,
+          modify,
+          transform,
         }),
       );
     }
@@ -210,7 +272,7 @@ function convertToReact(
   }
 }
 
-export function convertFromNode(node: Node, options: Options = {}): Output {
+export function convertFromNode(node: Node, options: FromNodeOptions = {}): Output {
   const { key } = options;
 
   if (!node || !(node instanceof Node)) {
@@ -224,15 +286,21 @@ export function convertFromNode(node: Node, options: Options = {}): Output {
   });
 }
 
-export function convertFromHTML(html: string, options: Options = {}): Output {
-  const { key, filter, modify, transform } = options;
+export function convertFromHTML(html: string, options: FromHTMLOptions = {}): Output {
+  const { key, filter, modify, transform, body } = options;
 
   if (typeof html !== 'string') {
     throw new TypeError("Argument 'input' must be of type `string`");
   }
 
   const document = new DOMParser().parseFromString(html, 'text/html');
-  const nodes = document.body.childNodes;
+  const root = document.body as HTMLBodyElement;
+
+  if (typeof body === 'function') {
+    body(root);
+  }
+
+  const nodes = root.childNodes;
 
   if (nodes.length === 0) {
     return null;
