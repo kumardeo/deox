@@ -1,6 +1,6 @@
 {
   "name": "@deox/dom-to-react",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "private": false,
   "description": "DOM node to React node converter.",
   "keywords": [

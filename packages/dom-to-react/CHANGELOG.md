@@ -1,5 +1,11 @@
 # @deox/dom-to-react
 
+## 0.0.3
+
+### Patch Changes
+
+- [`7054fdd`](https://github.com/kumardeo/deox/commit/7054fdd92785e0b41f83105674b29cda83338045) Thanks [@kumardeo](https://github.com/kumardeo)! - refactor: use class instead of functions
+
 ## 0.0.2
 
 ### Patch Changes
