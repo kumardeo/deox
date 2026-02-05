@@ -49,9 +49,9 @@ export interface FromHTMLOptions extends Options {
 }
 
 export class Transformer {
-  protected filter?: FilterAction;
-  protected modify?: ModifyAction;
-  protected transform?: TransformAction;
+  private filter?: FilterAction;
+  private modify?: ModifyAction;
+  private transform?: TransformAction;
 
   static fromNode(node: Node, options: FromNodeOptions = {}): Output {
     const { key, filter, modify, transform } = options;
@@ -60,7 +60,7 @@ export class Transformer {
       throw new TypeError("Argument 'node' must be of type `Node`");
     }
 
-    return new Transformer({ filter, modify, transform }).nodeToReact(node, {
+    return new Transformer({ filter, modify, transform }).parseNode(node, {
       level: 0,
       index: 0,
       key,
@@ -108,7 +108,7 @@ export class Transformer {
     this.transform = actions.transform;
   }
 
-  protected isOutput(value: unknown): value is Output {
+  isOutput(value: unknown): value is Output {
     return (
       value === null ||
       typeof value === 'string' ||
@@ -119,7 +119,7 @@ export class Transformer {
     );
   }
 
-  protected createKey(level: number, index: number) {
+  createKey(level: number, index: number) {
     return `{{__[level:${level}][index:${index}]__}}`;
   }
 
@@ -194,7 +194,7 @@ export class Transformer {
     const children: (ReactElement | string | number | bigint)[] = [];
 
     for (let i = 0; i < nodes.length; i++) {
-      const element = this.nodeToReact(nodes[i], {
+      const element = this.parseNode(nodes[i], {
         level,
         index: children.length,
       });
@@ -207,7 +207,7 @@ export class Transformer {
     return children;
   }
 
-  nodeToReact(input: Node, { level, index, key }: { level: number; index: number; key?: Key }): Output {
+  parseNode(input: Node, { level, index, key }: { level: number; index: number; key?: Key }): Output {
     let node = input;
 
     if (typeof this.filter === 'function') {
