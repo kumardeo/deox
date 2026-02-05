@@ -1,5 +1,11 @@
 # @deox/dom-to-react
 
+## 0.0.4
+
+### Patch Changes
+
+- [`1651da9`](https://github.com/kumardeo/deox/commit/1651da9172779d4b424747c2c3f8e6c61dd2667f) Thanks [@kumardeo](https://github.com/kumardeo)! - refactor: rename `nodeToReact` method to `parseNode`
+
 ## 0.0.3
 
 ### Patch Changes
