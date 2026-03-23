@@ -48,13 +48,17 @@
       }
     }
   },
+  "peerDependencies": {
+    "drizzle-kit": ">=0.21.3",
+    "wrangler": "^4.0.0"
+  },
+  "dependencies": {
+    "prompt-sync": "^4.2.0"
+  },
   "devDependencies": {
-    "@cloudflare/workers-utils": "^0.6.0",
-    "drizzle-kit": "^0.31.8",
+    "@types/prompt-sync": "^4.2.3",
+    "drizzle-kit": "^0.21.3",
     "tsup": "catalog:default",
     "wrangler": "catalog:default"
-  },
-  "peerDependencies": {
-    "wrangler": "^4.0.0"
   }
 }

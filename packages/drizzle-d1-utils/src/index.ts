@@ -4,6 +4,7 @@ import { existsSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { dirname, join, relative } from 'node:path';
 import type { Config } from 'drizzle-kit';
+import promptSync from 'prompt-sync';
 import { unstable_readConfig } from 'wrangler/wrangler-dist/cli';
 
 function durableObjectNamespaceIdFromName(uniqueKey: string, name: string) {
@@ -22,6 +23,24 @@ function durableObjectNamespaceIdFromName(uniqueKey: string, name: string) {
   return Buffer.concat([nameHmac, hmac]).toString('hex');
 }
 
+function confirmSync(message: string): boolean {
+  const prompt = promptSync();
+  const answer = prompt(`${message} (y/N): `);
+  return answer?.toLowerCase() === 'y';
+}
+
+interface MinimalD1Database {
+  binding?: string;
+  database_id?: string;
+  preview_database_id?: string;
+  database_name?: string;
+}
+
+interface WranglerMinimalConfig {
+  d1_databases?: MinimalD1Database[];
+  configPath?: string;
+}
+
 function getD1BindingInfo({
   binding,
   environment,
@@ -33,14 +52,17 @@ function getD1BindingInfo({
   persistTo?: string;
   environment?: string;
 } = {}) {
-  const { d1_databases, configPath } = unstable_readConfig({ env: environment, config: wranglerConfigPath });
-  if (d1_databases.length === 0) {
+  const { d1_databases, configPath } = unstable_readConfig({ env: environment, config: wranglerConfigPath }) as WranglerMinimalConfig;
+  if (typeof configPath !== 'string') {
+    throw new Error('Failed to get wrangler config path');
+  }
+  if (!d1_databases || d1_databases.length === 0) {
     throw new Error('No D1 binding exists in the config');
   }
   if (d1_databases.length > 1 && !binding) {
     throw new Error("Argument 'binding' is required when more than one D1 bindings exist in the config");
   }
-  let bindingConfig: (typeof d1_databases)[number] | undefined;
+  let bindingConfig: MinimalD1Database | undefined;
   if (binding) {
     bindingConfig = d1_databases.find((d1) => d1.binding === binding);
     if (!bindingConfig) {
@@ -134,8 +156,16 @@ export function drizzleD1Config(config: Omit<Config, 'dialect' | 'driver' | 'dbC
         }
 
         const command = ['wrangler', ...args].join(' ');
-        console.log(`[!] SQLite file for D1 binding '${binding.binding}' does not exist. Trying to create one by executing the following command:`);
+        console.log(`[!] SQLite file for D1 binding '${binding.binding}' does not exist.`);
+        console.log('[!] The file can be created by executing the following command:');
         console.log(`    ${command}`);
+
+        const confirmed = confirmSync('[!] Run this command to create it?');
+        if (!confirmed) {
+          throw new Error('Aborted by user.');
+        }
+
+        console.log('[!] Command is being executed. Please wait...');
 
         try {
           execFileSync(bin, args, {
