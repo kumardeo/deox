@@ -1,5 +1,12 @@
 # @deox/drizzle-d1-utils
 
+## 0.0.3
+
+### Patch Changes
+
+- [`5b7a0c4`](https://github.com/kumardeo/deox/commit/5b7a0c465d91c0870626bb132cd82296a5166ebb) Thanks [@kumardeo](https://github.com/kumardeo)! - feat: use `remote` flag from binding if set
+  docs: add README.md and JSDoc comments
+
 ## 0.0.2
 
 ### Patch Changes
