@@ -11,9 +11,9 @@ onlyBuiltDependencies:
 
 catalog:
   "@cloudflare/workers-types": "^4.20260317.1"
-  "@types/react": "^19.2.8"
-  react: "^19.2.3"
-  react-dom: "^19.2.3"
-  tsup: "^8.5.1"
-  tsdown: "^0.21.4"
-  wrangler: "^4.76.0"
+  "@types/react": "^19.2.14"
+  react: "^19.2.4"
+  react-dom: "^19.2.4"
+  tsdown: "^0.21.6"
+  vite: "^6.4.1"
+  wrangler: "^4.77.0"

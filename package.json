@@ -4,7 +4,7 @@
   "description": "Internal Packages for personal projects (Plus UI, Web Apps, etc)",
   "author": "Deo Kumar",
   "homepage": "https://github.com/kumardeo/deox",
-  "packageManager": "pnpm@10.32.1",
+  "packageManager": "pnpm@10.33.0",
   "scripts": {
     "format": "biome format --max-diagnostics=100 --log-kind=compact",
     "format:all": "pnpm run format .",
@@ -24,7 +24,7 @@
     "version-packages": "changeset version && pnpm run format:write"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.4.8",
+    "@biomejs/biome": "^2.4.9",
     "@changesets/changelog-github": "^0.6.0",
     "@changesets/cli": "^2.30.0",
     "turbo": "^2.8.20",

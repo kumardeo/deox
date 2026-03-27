@@ -25,9 +25,9 @@
     "lint": "biome lint ./src",
     "check": "biome check ./src",
     "check:types": "tsc --noEmit",
-    "build": "NODE_ENV=production tsup",
-    "dev": "NODE_ENV=development tsup --watch",
-    "playground": "webpack server --config dev/webpack.dev.cjs"
+    "build": "NODE_ENV=production tsdown",
+    "dev": "NODE_ENV=development tsdown --watch",
+    "playground": "vite ./dev"
   },
   "files": [
     "dist"
@@ -53,14 +53,7 @@
     "@deox/utils": "workspace:^"
   },
   "devDependencies": {
-    "babel-loader": "^10.0.0",
-    "html-webpack-plugin": "^5.6.5",
-    "source-map-loader": "^5.0.0",
-    "ts-loader": "^9.5.4",
-    "tsup": "catalog:default",
-    "webpack": "^5.104.1",
-    "webpack-cli": "^6.0.1",
-    "webpack-define-config": "^0.0.1",
-    "webpack-dev-server": "^5.2.2"
+    "tsdown": "catalog:default",
+    "vite": "catalog:default"
   }
 }

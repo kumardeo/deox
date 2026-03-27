@@ -1,6 +1,7 @@
 {
-  "typescript.tsdk": "node_modules/typescript/lib",
-  "editor.formatOnSave": true,
+  "js/ts.tsdk.path": "node_modules/typescript/lib",
+
+  "editor.formatOnSave": false,
   "editor.codeActionsOnSave": {
     "source.organizeImports.biome": "explicit"
   },
@@ -31,17 +32,6 @@
   "[markdown]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "markdownlint.config": {
-    "no-trailing-spaces": false
-  },
-  "json.schemas": [
-    {
-      "fileMatch": [".ncurc", ".ncurc.json"],
-      "url": "https://raw.githubusercontent.com/raineorshine/npm-check-updates/main/src/types/RunOptions.json"
-    }
-  ],
-  "yaml.schemas": {
-    "https://raw.githubusercontent.com/raineorshine/npm-check-updates/main/src/types/RunOptions.json": [".ncurc.yml"]
-  },
-  "cSpell.words": ["biomejs", "delistify", "deox", "gifter", "gumroad", "Hono", "listify", "outbase", "outdir", "tsup", "typeof"]
+
+  "cSpell.words": []
 }

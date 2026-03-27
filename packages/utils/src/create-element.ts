@@ -6,7 +6,7 @@ export type Dataset = Record<string, string | number | boolean | null>;
 export type Style = Partial<PickString<Pick<CSSStyleDeclaration, WritableKeys<CSSStyleDeclaration>>>>;
 
 export type UpdateElementOptions<T extends HTMLElement> = Partial<
-  Omit<OmitFunction<Pick<T, WritableKeys<T>>>, 'class' | 'attributes' | 'style' | 'dataset'>
+  Omit<OmitFunction<Pick<T, WritableKeys<T>>>, 'class' | 'attributes' | 'dataset' | 'style'>
 > & {
   class?: string | string[];
   attributes?: Attributes;

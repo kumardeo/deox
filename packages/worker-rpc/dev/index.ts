@@ -3,6 +3,7 @@ import type { Registered } from './worker';
 
 // Create a Worker instance
 const worker = new Worker<Registered>(new URL('./worker', import.meta.url), {
+  type: 'module',
   context: { info: 'Hello World!' },
 });
 

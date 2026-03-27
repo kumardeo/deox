@@ -25,9 +25,9 @@
     "lint": "biome lint ./src",
     "check": "biome check ./src",
     "check:types": "tsc --noEmit",
-    "build": "NODE_ENV=production tsup",
-    "dev": "NODE_ENV=development tsup --watch",
-    "playground": "wrangler dev"
+    "build": "NODE_ENV=production tsdown",
+    "dev": "NODE_ENV=development tsdown --watch",
+    "playground": "wrangler dev --cwd dev"
   },
   "files": [
     "dist"
@@ -55,8 +55,8 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "catalog:default",
-    "hono": "^4.12.8",
-    "tsup": "catalog:default",
+    "hono": "^4.12.9",
+    "tsdown": "catalog:default",
     "wrangler": "catalog:default"
   }
 }
