@@ -5,7 +5,7 @@
  *
  * @returns Generated random string
  */
-export const generateId = (format = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx') => {
+export const generateId = (format = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'): string => {
   // Timestamp
   let d1 = Date.now();
   // Time in microseconds since page-load or 0 if unsupported

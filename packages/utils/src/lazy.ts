@@ -7,9 +7,9 @@ const WINDOW_ONLOAD_EVENTS = ['keydown', 'mouseover', 'touchmove', 'touchstart']
 // All window events which will be attached
 const WINDOW_EVENTS = [...WINDOW_INITIAL_EVENTS, ...WINDOW_ONLOAD_EVENTS] as const;
 
-export type LazyEventType = (typeof WINDOW_EVENTS)[number] | 'local';
+export type LazyType = (typeof WINDOW_EVENTS)[number] | 'local';
 
-export function getLazy() {
+function getLazy(): boolean {
   try {
     return localStorage.getItem(LOCAL_KEY) === LOCAL_VALUE;
   } catch (_) {
@@ -17,7 +17,7 @@ export function getLazy() {
   }
 }
 
-export function setLazy(lazied = true) {
+function setLazy(lazied = true): void {
   try {
     if (lazied) {
       localStorage.setItem(LOCAL_KEY, LOCAL_VALUE);
@@ -29,10 +29,10 @@ export function setLazy(lazied = true) {
   }
 }
 
-export const lazy = new Promise<{ type: LazyEventType }>((resolve) => {
+export const lazy = new Promise<{ type: LazyType }>((resolve) => {
   function execute(data: { type: string }) {
     setLazy(true);
-    resolve({ type: data.type.toLowerCase() as LazyEventType });
+    resolve({ type: data.type.toLowerCase() as LazyType });
     // detach event listeners
     for (const type of WINDOW_EVENTS) {
       window.removeEventListener(type, execute);

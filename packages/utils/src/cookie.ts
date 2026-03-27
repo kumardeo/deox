@@ -21,7 +21,7 @@ export interface SetCookieOptions {
 
 export const cookie = {
   /** Cookie string equivalent to `document.cookie` */
-  get value() {
+  get value(): string {
     return document.cookie;
   },
 
@@ -38,7 +38,7 @@ export const cookie = {
    *
    * @returns The value of the cookie, or null if not found.
    */
-  get(key: string) {
+  get(key: string): string | null {
     const regex = new RegExp(`(?:^|; )${encodeURIComponent(key).replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}=([^;]*)`);
     const matches = this.value.match(regex);
     return typeof matches?.[1] === 'string' ? decodeURIComponent(matches[1]) : null;
@@ -49,7 +49,7 @@ export const cookie = {
    *
    * @returns Record of string and string
    */
-  getAll() {
+  getAll(): Record<string, string> {
     const cookies: Record<string, string> = {};
     const cookieArray = this.value.split('; ');
     for (let i = 0; i < cookieArray.length; i += 1) {
@@ -66,7 +66,7 @@ export const cookie = {
    *
    * @param key The cookie key to check.
    */
-  has(key: string) {
+  has(key: string): boolean {
     return this.get(key) !== null;
   },
 
@@ -79,7 +79,7 @@ export const cookie = {
    *
    * @returns The cookie string that was set.
    */
-  set(key: string, value: string, options?: SetCookieOptions) {
+  set(key: string, value: string, options?: SetCookieOptions): string {
     const object = { path: '/', ...options };
 
     let cookieString = `${encodeURIComponent(key)}=${typeof value !== 'undefined' ? encodeURIComponent(value) : ''}`;
@@ -119,7 +119,7 @@ export const cookie = {
    *
    * @param key - The key of the cookie to remove.
    */
-  remove(key: string) {
+  remove(key: string): void {
     this.set(key, '', {
       maxAge: -1,
     });
@@ -128,7 +128,7 @@ export const cookie = {
   /**
    * Removes all the cookies.
    */
-  clear() {
+  clear(): void {
     for (const key in this.getAll()) {
       this.remove(key);
     }
@@ -137,14 +137,14 @@ export const cookie = {
   /**
    * All cookie keys
    */
-  get keys() {
+  get keys(): string[] {
     return Object.keys(this.getAll());
   },
 
   /**
    * Number of cookies set
    */
-  get size() {
+  get size(): number {
     return this.keys.length;
   },
 };

@@ -7,7 +7,7 @@ import { isString } from './predicate';
  *
  * @returns Promise which resolves with the same input string
  */
-export const copyText = async (text: string) => {
+export const copyText = async (text: string): Promise<string> => {
   if (!isString(text)) {
     throw new TypeError('Argument 1 must be a string.');
   }

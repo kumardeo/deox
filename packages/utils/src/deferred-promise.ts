@@ -26,13 +26,13 @@ export class DeferredPromise<T> extends Promise<T> {
     functionsMap.set(this, functions);
   }
 
-  resolve(value: T | PromiseLike<T>) {
+  resolve(value: T | PromiseLike<T>): this {
     functionsMap.get(this)?.[0]?.(value);
     return this;
   }
 
   // biome-ignore lint/suspicious/noExplicitAny: we needed to use `any` here
-  reject(reason?: any) {
+  reject(reason?: any): this {
     functionsMap.get(this)?.[1]?.(reason);
     return this;
   }

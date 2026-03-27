@@ -1,32 +1,20 @@
-import { isFunction, isString } from './predicate';
+import { isFunction, isNull, isString, isUndefined } from './predicate';
+import type { OmitFunction, PickString, WritableKeys } from './types';
 
-/* utilities types */
-type IfEquals<X, Y, A = X, B = never> = (<T>() => T extends X ? 1 : 2) extends <T>() => T extends Y ? 1 : 2 ? A : B;
+export type Attributes = Record<string, string | number | boolean | null>;
+export type Dataset = Record<string, string | number | boolean | null>;
+export type Style = Partial<PickString<Pick<CSSStyleDeclaration, WritableKeys<CSSStyleDeclaration>>>>;
 
-type WritableKeys<T> = {
-  [P in keyof T]-?: IfEquals<{ [Q in P]: T[P] }, { -readonly [Q in P]: T[P] }, P>;
-}[keyof T];
-
-type KeysOfType<O, T> = {
-  [K in keyof O]: O[K] extends T ? K : never;
-}[keyof O];
-
-type RemoveFunctions<T> = Omit<T, KeysOfType<T, (...args: unknown[]) => unknown>>;
-
-type SelectStrings<T> = Pick<T, KeysOfType<T, string>>;
-
-/* types */
-
-type StyleOptions = Partial<SelectStrings<Pick<CSSStyleDeclaration, WritableKeys<CSSStyleDeclaration>>>>;
-
-export type CreateElementOptions<T extends keyof HTMLElementTagNameMap> = Partial<
-  RemoveFunctions<Pick<HTMLElementTagNameMap[T], WritableKeys<HTMLElementTagNameMap[T]>>>
+export type UpdateElementOptions<T extends HTMLElement> = Partial<
+  Omit<OmitFunction<Pick<T, WritableKeys<T>>>, 'class' | 'attributes' | 'style' | 'dataset'>
 > & {
   class?: string | string[];
-  attributes?: Record<string, string | number | boolean>;
-  styles?: string | StyleOptions;
-  datasets?: Record<string, string | number | boolean>;
+  attributes?: Attributes;
+  dataset?: Dataset;
+  style?: string | Style;
 };
+
+export type CreateElementOptions<T extends keyof HTMLElementTagNameMap> = UpdateElementOptions<HTMLElementTagNameMap[T]>;
 
 export type CreateJavaScriptOptions = Omit<CreateElementOptions<'script'>, 'textContent' | 'innerHTML' | 'innerText'>;
 
@@ -42,7 +30,7 @@ export type LoadStylesheetOptions = Omit<CreateElementOptions<'link'>, 'href' | 
  * @param element The element to append
  * @param tagName The tag name to target
  */
-const insertAfterendOrLastInHead = <T extends Element>(element: T, tagName: keyof HTMLElementTagNameMap) => {
+const insertAfterendOrLastInHead = <T extends Element>(element: T, tagName: keyof HTMLElementTagNameMap): T => {
   const elements = document.head.getElementsByTagName(tagName);
   const lastElement = elements.length ? elements[elements.length - 1] : null;
   const appendToHead = () => document.head.appendChild(element);
@@ -64,6 +52,93 @@ const insertAfterendOrLastInHead = <T extends Element>(element: T, tagName: keyo
   return element;
 };
 
+const tokenize = (name: string): string[] => name.trim().split(/\s+/).filter(Boolean);
+
+export const setClass = (element: HTMLElement, value: string | string[], keepExisting = true): void => {
+  const names = Array.isArray(value)
+    ? value.filter((item) => isString(item)).flatMap((name) => tokenize(name))
+    : isString(value)
+      ? tokenize(value)
+      : [];
+
+  if (keepExisting) {
+    if (names.length) {
+      element.classList.add(...names);
+    }
+  } else {
+    element.className = names.join(' ');
+  }
+};
+
+export const setAttributes = (element: HTMLElement, attributes: Attributes): void => {
+  for (const name in attributes) {
+    const value = attributes[name];
+    if (isNull(value)) {
+      element.removeAttribute(name);
+    } else if (!isUndefined(value)) {
+      element.setAttribute(name, isString(value) ? value : `${value}`);
+    }
+  }
+};
+
+export const setDataset = (element: HTMLElement, dataset: Dataset): void => {
+  for (const name in dataset) {
+    const value = dataset[name];
+    if (isNull(value)) {
+      delete element.dataset[name];
+    } else if (!isUndefined(value)) {
+      element.dataset[name] = isString(value) ? value : `${value}`;
+    }
+  }
+};
+
+export const setStyle = (element: HTMLElement, style: Style): void => {
+  for (const property in style) {
+    const value = style[property];
+    if (!isUndefined(value)) {
+      const trimmedProperty = property.trim();
+      const stringValue = isString(value) ? value : `${value}`;
+      if (trimmedProperty.includes('-') || !(property in element.style)) {
+        element.style.setProperty(trimmedProperty, stringValue);
+      } else {
+        element.style[property] = stringValue;
+      }
+    }
+  }
+};
+
+export const updateElement = <T extends HTMLElement>(element: T, options: UpdateElementOptions<T>): T => {
+  if (options) {
+    if (options.class) {
+      setClass(element, options.class);
+    }
+    if (options.attributes) {
+      setAttributes(element, options.attributes);
+    }
+    if (options.dataset) {
+      setDataset(element, options.dataset);
+    }
+    if (options.style) {
+      if (isString(options.style)) {
+        element.setAttribute('style', options.style);
+      } else {
+        setStyle(element, options.style);
+      }
+    }
+
+    for (const property in options) {
+      const value = options[property as keyof typeof options];
+
+      if (property !== 'class' && property !== 'attributes' && property !== 'dataset' && property !== 'style' && property in element) {
+        // @ts-expect-error we can assign
+        element[option] = value;
+      }
+    }
+  }
+
+  return element;
+};
+
 /**
  * Creates an instance of the element for the specified tag.
  *
@@ -74,57 +149,7 @@ const insertAfterendOrLastInHead = <T extends Element>(element: T, tagName: keyo
  */
 export const createElement = <K extends keyof HTMLElementTagNameMap>(tagName: K, options?: CreateElementOptions<K>): HTMLElementTagNameMap[K] => {
   const element = document.createElement(tagName);
-  if (options) {
-    for (const option in options) {
-      const optionValue = options[option as keyof typeof options];
-      switch (option) {
-        case 'class':
-          {
-            const classes: string[] = (
-              Array.isArray(optionValue) ? (optionValue as string[]) : isString(optionValue) && optionValue.trim() ? optionValue.split(' ') : []
-            ).filter((name) => isString(name) && name.trim());
-            if (classes.length !== 0) {
-              element.classList.add(...classes);
-            }
-          }
-          break;
-        case 'datasets':
-        case 'styles':
-        case 'attributes':
-          if (option === 'styles' && isString(optionValue)) {
-            element.setAttribute('style', optionValue);
-          } else if (optionValue) {
-            for (const key in optionValue as object) {
-              const value = optionValue[key as keyof typeof optionValue];
-              if (value !== undefined) {
-                const string = String(value);
-                switch (option) {
-                  case 'datasets':
-                    element.dataset[key] = string;
-                    break;
-                  case 'styles':
-                    if (key in element.style) {
-                      // @ts-expect-error we can set style
-                      element.style[key] = string;
-                    }
-                    break;
-                  default:
-                    element.setAttribute(key, string);
-                }
-              }
-            }
-          }
-          break;
-        default: {
-          if (option in element) {
-            // @ts-expect-error we can assign
-            element[option] = optionValue;
-          }
-        }
-      }
-    }
-  }
-  return element;
+  return options ? updateElement(element, options) : element;
 };
 
 /**
@@ -135,7 +160,10 @@ export const createElement = <K extends keyof HTMLElementTagNameMap>(tagName: K,
  *
  * @returns The created HTMLScriptElement
  */
-export const createJavascript = (javascript: string, options?: CreateJavaScriptOptions | ((element: HTMLScriptElement) => void)) => {
+export const createJavascript = (
+  javascript: string,
+  options?: CreateJavaScriptOptions | ((element: HTMLScriptElement) => void),
+): HTMLScriptElement => {
   const script = createElement('script', {
     ...(!isFunction(options) && options ? options : undefined),
     textContent: javascript,
@@ -156,7 +184,7 @@ export const createJavascript = (javascript: string, options?: CreateJavaScriptO
  *
  * @returns The created HTMLStyleElement
  */
-export const createStylesheet = (css: string, options?: CreateStylesheetOptions | ((element: HTMLStyleElement) => void)) => {
+export const createStylesheet = (css: string, options?: CreateStylesheetOptions | ((element: HTMLStyleElement) => void)): HTMLStyleElement => {
   const style = createElement('style', {
     ...(!isFunction(options) && options ? options : undefined),
     textContent: css,
