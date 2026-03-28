@@ -1,12 +1,12 @@
 import { isFunction, isNull, isString, isUndefined } from './predicate';
-import type { OmitFunction, PickString, WritableKeys } from './types';
+import type { OmitFunction, PickString, PickWritable } from './types';
 
 export type Attributes = Record<string, string | number | boolean | null>;
 export type Dataset = Record<string, string | number | boolean | null>;
-export type Style = Partial<PickString<Pick<CSSStyleDeclaration, WritableKeys<CSSStyleDeclaration>>>>;
+export type Style = Partial<PickString<PickWritable<CSSStyleDeclaration>> & Record<string, string | number>>;
 
 export type UpdateElementOptions<T extends HTMLElement> = Partial<
-  Omit<OmitFunction<Pick<T, WritableKeys<T>>>, 'class' | 'attributes' | 'dataset' | 'style'>
+  Omit<OmitFunction<PickWritable<T>>, 'class' | 'attributes' | 'dataset' | 'style'>
 > & {
   class?: string | string[];
   attributes?: Attributes;
@@ -101,7 +101,7 @@ export const setStyle = (element: HTMLElement, style: Style): void => {
       if (trimmedProperty.includes('-') || !(property in element.style)) {
         element.style.setProperty(trimmedProperty, stringValue);
       } else {
-        element.style[property] = stringValue;
+        (element.style as unknown as Style)[property] = stringValue;
       }
     }
   }
@@ -109,20 +109,22 @@ export const setStyle = (element: HTMLElement, style: Style): void => {
 
 export const updateElement = <T extends HTMLElement>(element: T, options: UpdateElementOptions<T>): T => {
   if (options) {
-    if (options.class) {
-      setClass(element, options.class);
+    const { class: classes, attributes, dataset, style } = options;
+
+    if (classes) {
+      setClass(element, classes);
     }
-    if (options.attributes) {
-      setAttributes(element, options.attributes);
+    if (attributes) {
+      setAttributes(element, attributes);
     }
-    if (options.dataset) {
-      setDataset(element, options.dataset);
+    if (dataset) {
+      setDataset(element, dataset);
     }
-    if (options.style) {
-      if (isString(options.style)) {
-        element.setAttribute('style', options.style);
+    if (style) {
+      if (isString(style)) {
+        element.setAttribute('style', style);
       } else {
-        setStyle(element, options.style);
+        setStyle(element, style);
       }
     }
 
@@ -131,7 +133,7 @@ export const updateElement = <T extends HTMLElement>(element: T, options: Update
 
       if (property !== 'class' && property !== 'attributes' && property !== 'dataset' && property !== 'style' && property in element) {
         // @ts-expect-error we can assign
-        element[option] = value;
+        element[property] = value;
       }
     }
   }
