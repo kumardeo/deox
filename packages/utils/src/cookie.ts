@@ -84,8 +84,7 @@ export const cookie = {
 
     let cookieString = `${encodeURIComponent(key)}=${typeof value !== 'undefined' ? encodeURIComponent(value) : ''}`;
 
-    for (let flagKey in object) {
-      let flagValue = object[flagKey as keyof typeof object];
+    for (let [flagKey, flagValue] of Object.entries(object)) {
       switch (flagKey) {
         case 'expires':
           if (flagValue instanceof Date) {
@@ -129,7 +128,7 @@ export const cookie = {
    * Removes all the cookies.
    */
   clear(): void {
-    for (const key in this.getAll()) {
+    for (const key of this.keys) {
       this.remove(key);
     }
   },

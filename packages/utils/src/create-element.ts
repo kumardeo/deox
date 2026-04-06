@@ -1,9 +1,14 @@
-import { isFunction, isNull, isString, isUndefined } from './predicate';
+import { isBoolean, isFunction, isNull, isNumber, isObjectLike, isString, isUndefined } from './predicate';
 import type { OmitFunction, PickString, PickWritable } from './types';
 
 export type Attributes = Record<string, string | number | boolean | null>;
 export type Dataset = Record<string, string | number | boolean | null>;
 export type Style = Partial<PickString<PickWritable<CSSStyleDeclaration>> & Record<string, string | number>>;
+export type Listeners<O extends EventListenerOptions = EventListenerOptions> = {
+  [K in keyof HTMLElementEventMap]?:
+    | ((this: HTMLElement, event: HTMLElementEventMap[K]) => void)
+    | (O & { handler: (event: HTMLElementEventMap[K]) => void });
+};
 
 export type UpdateElementOptions<T extends HTMLElement> = Partial<
   Omit<OmitFunction<PickWritable<T>>, 'class' | 'attributes' | 'dataset' | 'style'>
@@ -12,17 +17,18 @@ export type UpdateElementOptions<T extends HTMLElement> = Partial<
   attributes?: Attributes;
   dataset?: Dataset;
   style?: string | Style;
+  listeners?: Listeners<AddEventListenerOptions>;
 };
 
-export type CreateElementOptions<T extends keyof HTMLElementTagNameMap> = UpdateElementOptions<HTMLElementTagNameMap[T]>;
+export type CreateElementOptions<T extends HTMLElement> = UpdateElementOptions<T>;
 
-export type CreateJavaScriptOptions = Omit<CreateElementOptions<'script'>, 'textContent' | 'innerHTML' | 'innerText'>;
+export type CreateJavaScriptOptions = Omit<CreateElementOptions<HTMLScriptElement>, 'textContent' | 'innerHTML' | 'innerText'>;
 
-export type CreateStylesheetOptions = Omit<CreateElementOptions<'style'>, 'textContent' | 'innerHTML' | 'innerText'>;
+export type CreateStylesheetOptions = Omit<CreateElementOptions<HTMLStyleElement>, 'textContent' | 'innerHTML' | 'innerText'>;
 
-export type LoadJavascriptOptions = Omit<CreateElementOptions<'script'>, 'src'>;
+export type LoadJavascriptOptions = Omit<CreateElementOptions<HTMLScriptElement>, 'src'>;
 
-export type LoadStylesheetOptions = Omit<CreateElementOptions<'link'>, 'href' | 'rel'>;
+export type LoadStylesheetOptions = Omit<CreateElementOptions<HTMLLinkElement>, 'href' | 'rel'>;
 
 /**
  * Appends new element to head after specified tag name if found otherwise append it in head
@@ -30,7 +36,7 @@ export type LoadStylesheetOptions = Omit<CreateElementOptions<'link'>, 'href' | 
  * @param element The element to append
  * @param tagName The tag name to target
  */
-const insertAfterendOrLastInHead = <T extends Element>(element: T, tagName: keyof HTMLElementTagNameMap): T => {
+function insertAfterendOrLastInHead<T extends Element>(element: T, tagName: keyof HTMLElementTagNameMap): T {
   const elements = document.head.getElementsByTagName(tagName);
   const lastElement = elements.length ? elements[elements.length - 1] : null;
   const appendToHead = () => document.head.appendChild(element);
@@ -50,11 +56,13 @@ const insertAfterendOrLastInHead = <T extends Element>(element: T, tagName: keyo
   }
 
   return element;
-};
+}
 
-const tokenize = (name: string): string[] => name.trim().split(/\s+/).filter(Boolean);
+function tokenize(name: string): string[] {
+  return name.trim().split(/\s+/).filter(Boolean);
+}
 
-export const setClass = (element: HTMLElement, value: string | string[], keepExisting = true): void => {
+export function setClass(element: HTMLElement, value: string | string[], keepExisting = true): void {
   const names = Array.isArray(value)
     ? value.filter((item) => isString(item)).flatMap((name) => tokenize(name))
     : isString(value)
@@ -68,33 +76,30 @@ export const setClass = (element: HTMLElement, value: string | string[], keepExi
   } else {
     element.className = names.join(' ');
   }
-};
+}
 
-export const setAttributes = (element: HTMLElement, attributes: Attributes): void => {
-  for (const name in attributes) {
-    const value = attributes[name];
+export function setAttributes(element: HTMLElement, attributes: Attributes): void {
+  for (const [name, value] of Object.entries(attributes)) {
     if (isNull(value)) {
       element.removeAttribute(name);
     } else if (!isUndefined(value)) {
       element.setAttribute(name, isString(value) ? value : `${value}`);
     }
   }
-};
+}
 
-export const setDataset = (element: HTMLElement, dataset: Dataset): void => {
-  for (const name in dataset) {
-    const value = dataset[name];
+export function setDataset(element: HTMLElement, dataset: Dataset): void {
+  for (const [name, value] of Object.entries(dataset)) {
     if (isNull(value)) {
       delete element.dataset[name];
     } else if (!isUndefined(value)) {
       element.dataset[name] = isString(value) ? value : `${value}`;
     }
   }
-};
+}
 
-export const setStyle = (element: HTMLElement, style: Style): void => {
-  for (const property in style) {
-    const value = style[property];
+export function setStyle(element: HTMLElement, style: Style): void {
+  for (const [property, value] of Object.entries(style)) {
     if (!isUndefined(value)) {
       const trimmedProperty = property.trim();
       const stringValue = isString(value) ? value : `${value}`;
@@ -105,11 +110,35 @@ export const setStyle = (element: HTMLElement, style: Style): void => {
       }
     }
   }
-};
+}
 
-export const updateElement = <T extends HTMLElement>(element: T, options: UpdateElementOptions<T>): T => {
+export function removeListeners(target: HTMLElement, listeners: Listeners) {
+  for (const [type, value] of Object.entries(listeners)) {
+    if (isFunction(value)) {
+      target.removeEventListener(type, value as EventListener);
+    } else if (isObjectLike(value) && isFunction(value.handler)) {
+      target.removeEventListener(type, value.handler as EventListener, value);
+    }
+  }
+}
+
+export function addListeners(target: HTMLElement, listeners: Listeners<AddEventListenerOptions>) {
+  for (const [type, value] of Object.entries(listeners)) {
+    if (isFunction(value)) {
+      target.addEventListener(type, value as EventListener);
+    } else if (isObjectLike(value) && isFunction(value.handler)) {
+      target.addEventListener(type, value.handler as EventListener, value);
+    }
+  }
+
+  return () => {
+    removeListeners(target, listeners);
+  };
+}
+
+export function updateElement<T extends HTMLElement>(element: T, options: UpdateElementOptions<T>): T {
   if (options) {
-    const { class: classes, attributes, dataset, style } = options;
+    const { class: classes, attributes, dataset, style, listeners } = options;
 
     if (classes) {
       setClass(element, classes);
@@ -127,11 +156,19 @@ export const updateElement = <T extends HTMLElement>(element: T, options: Update
         setStyle(element, style);
       }
     }
+    if (listeners) {
+      addListeners(element, listeners);
+    }
 
-    for (const property in options) {
-      const value = options[property as keyof typeof options];
-
-      if (property !== 'class' && property !== 'attributes' && property !== 'dataset' && property !== 'style' && property in element) {
+    for (const [property, value] of Object.entries(options)) {
+      if (
+        property !== 'class' &&
+        property !== 'attributes' &&
+        property !== 'dataset' &&
+        property !== 'style' &&
+        property !== 'listeners' &&
+        property in element
+      ) {
         // @ts-expect-error we can assign
         element[property] = value;
       }
@@ -139,8 +176,14 @@ export const updateElement = <T extends HTMLElement>(element: T, options: Update
   }
 
   return element;
-};
+}
 
+export function createElement<K extends keyof HTMLElementTagNameMap>(
+  tagName: K,
+  options?: CreateElementOptions<HTMLElementTagNameMap[K]>,
+  children?: (Node | string | number)[],
+): HTMLElementTagNameMap[K];
+export function createElement(tagName: string, options?: CreateElementOptions<HTMLElement>, children?: (Node | string | number)[]): HTMLElement;
 /**
  * Creates an instance of the element for the specified tag.
  *
@@ -149,10 +192,41 @@ export const updateElement = <T extends HTMLElement>(element: T, options: Update
  *
  * @returns The created HTMLElement
  */
-export const createElement = <K extends keyof HTMLElementTagNameMap>(tagName: K, options?: CreateElementOptions<K>): HTMLElementTagNameMap[K] => {
+export function createElement(tagName: string, options?: CreateElementOptions<HTMLElement>, children?: (Node | string | number)[]): HTMLElement {
   const element = document.createElement(tagName);
-  return options ? updateElement(element, options) : element;
-};
+
+  if (options) {
+    updateElement(element, options);
+  }
+
+  if (children && children.length > 0) {
+    for (const child of children) {
+      if (isNull(child) || isBoolean(child) || isUndefined(children)) {
+        continue;
+      }
+      if (isString(child) || isNumber(child)) {
+        const node = document.createTextNode(isNumber(child) ? `${child}` : child);
+        element.appendChild(node);
+      } else {
+        element.appendChild(child);
+      }
+    }
+  }
+
+  return element;
+}
+
+export function createFragment(html?: string): DocumentFragment {
+  const fragment = document.createDocumentFragment();
+  if (isString(html)) {
+    const element = document.createElement('div');
+    element.innerHTML = html;
+    while (element.firstChild) {
+      fragment.appendChild(element.firstChild);
+    }
+  }
+  return fragment;
+}
 
 /**
  * Creates a HTMLScriptElement with given contents and append it to head
@@ -162,10 +236,7 @@ export const createElement = <K extends keyof HTMLElementTagNameMap>(tagName: K,
  *
  * @returns The created HTMLScriptElement
  */
-export const createJavascript = (
-  javascript: string,
-  options?: CreateJavaScriptOptions | ((element: HTMLScriptElement) => void),
-): HTMLScriptElement => {
+export function createJavascript(javascript: string, options?: CreateJavaScriptOptions | ((element: HTMLScriptElement) => void)): HTMLScriptElement {
   const script = createElement('script', {
     ...(!isFunction(options) && options ? options : undefined),
     textContent: javascript,
@@ -176,7 +247,7 @@ export const createJavascript = (
   }
 
   return insertAfterendOrLastInHead(script, 'script');
-};
+}
 
 /**
  * Creates a HTMLStyleElement with given contents and append it to head
@@ -186,7 +257,7 @@ export const createJavascript = (
  *
  * @returns The created HTMLStyleElement
  */
-export const createStylesheet = (css: string, options?: CreateStylesheetOptions | ((element: HTMLStyleElement) => void)): HTMLStyleElement => {
+export function createStylesheet(css: string, options?: CreateStylesheetOptions | ((element: HTMLStyleElement) => void)): HTMLStyleElement {
   const style = createElement('style', {
     ...(!isFunction(options) && options ? options : undefined),
     textContent: css,
@@ -197,7 +268,7 @@ export const createStylesheet = (css: string, options?: CreateStylesheetOptions 
   }
 
   return insertAfterendOrLastInHead(style, 'style');
-};
+}
 
 /** Represents an error that occurs during loading, associated with an HTML element and a source. */
 export class ResourceLoadingError extends Error {
@@ -235,10 +306,10 @@ export class ResourceLoadingError extends Error {
  *
  * @returns A promise which resolves with `HTMLScriptElement`
  */
-export const loadJavascript = (
+export function loadJavascript(
   source: URL | string,
   options?: LoadJavascriptOptions | ((element: HTMLScriptElement) => void),
-): Promise<HTMLScriptElement> => {
+): Promise<HTMLScriptElement> {
   const url = source instanceof URL ? source.href : source;
 
   if (!isString(url)) {
@@ -263,28 +334,20 @@ export const loadJavascript = (
       options(script);
     }
 
-    const events = {
+    const unsubscribe = addListeners(script, {
       load: () => {
-        removeEvents();
+        unsubscribe();
         resolve(script);
       },
       error: () => {
-        removeEvents();
+        unsubscribe();
         reject(new ResourceLoadingError(script, script.src, `Failed to load Javascript from ${script.src}`));
       },
-    };
-    const removeEvents = () => {
-      for (const event in events) {
-        script.removeEventListener(event, events[event as keyof typeof events]);
-      }
-    };
-    for (const event in events) {
-      script.addEventListener(event, events[event as keyof typeof events]);
-    }
+    });
 
     insertAfterendOrLastInHead(script, 'script');
   });
-};
+}
 
 /**
  * Function to load external stylesheet
@@ -294,10 +357,10 @@ export const loadJavascript = (
  *
  * @returns A promise which resolves with `HTMLLinkElement`
  */
-export const loadStylesheet = (
+export function loadStylesheet(
   source: URL | string,
   options?: LoadStylesheetOptions | ((element: HTMLLinkElement) => void),
-): Promise<HTMLLinkElement> => {
+): Promise<HTMLLinkElement> {
   const url = source instanceof URL ? source.href : source;
 
   if (!isString(url)) {
@@ -321,25 +384,17 @@ export const loadStylesheet = (
       options(link);
     }
 
-    const events = {
+    const unsubscribe = addListeners(link, {
       load: () => {
-        removeEvents();
+        unsubscribe();
         resolve(link);
       },
       error: () => {
-        removeEvents();
+        unsubscribe();
         reject(new ResourceLoadingError(link, link.href, `Failed to load Stylesheet from ${link.href}`));
       },
-    };
-    const removeEvents = () => {
-      for (const event in events) {
-        link.removeEventListener(event, events[event as keyof typeof events]);
-      }
-    };
-    for (const event in events) {
-      link.addEventListener(event, events[event as keyof typeof events]);
-    }
+    });
 
     insertAfterendOrLastInHead(link, 'link');
   });
-};
+}
