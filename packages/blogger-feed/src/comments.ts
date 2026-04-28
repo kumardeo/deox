@@ -1,8 +1,7 @@
-import { isUndefined } from '@deox/utils/predicate';
 import { NOT_FOUND_ERRORS } from './constants';
 import { SDKInputNotFoundError } from './errors';
 import { Methods } from './methods';
-import { validators } from './utils';
+import { assertNonBlankString, isUndefined } from './utils';
 
 /** Options for {@link Comments.list} */
 export type CommentsListOptions = {
@@ -37,7 +36,9 @@ export class Comments extends Methods {
     const { postId } = options;
 
     // validate post_id if provided
-    if (!isUndefined(postId)) validators.nB(postId, 'options.postId');
+    if (!isUndefined(postId)) {
+      assertNonBlankString(postId, 'options.postId');
+    }
 
     const result = await this.c.req(`./${postId ? `${encodeURI(postId)}/` : ''}comments/${options.summary === true ? 'summary' : 'default'}`, {
       params: options,
@@ -63,8 +64,8 @@ export class Comments extends Methods {
    * @returns On success, a Comment
    */
   async get(postId: string, commentId: string, options: CommentsGetOptions = {}, { signal }: { signal?: AbortSignal } = {}) {
-    validators.nB(postId, "Argument 'postId'");
-    validators.nB(commentId, "Argument 'commentId'");
+    assertNonBlankString(postId, "Argument 'postId'");
+    assertNonBlankString(commentId, "Argument 'commentId'");
 
     const { comments } = await this.c.req(
       `./${encodeURI(postId)}/comments/${options.summary === true ? 'summary' : 'default'}/${encodeURI(commentId)}`,
@@ -78,7 +79,9 @@ export class Comments extends Methods {
 
     const comment = comments?.find((c) => c.id === commentId);
 
-    if (!comment) throw new SDKInputNotFoundError(NOT_FOUND_ERRORS.comment);
+    if (!comment) {
+      throw new SDKInputNotFoundError(NOT_FOUND_ERRORS.comment);
+    }
 
     return comment;
   }

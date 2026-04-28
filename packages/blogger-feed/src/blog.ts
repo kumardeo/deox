@@ -21,7 +21,9 @@ export class Blog extends Methods {
     });
 
     // Throw an error if feed doesn't contain blog info
-    if (!blog) throw new SDKInputNotFoundError(NOT_FOUND_ERRORS.blog);
+    if (!blog) {
+      throw new SDKInputNotFoundError(NOT_FOUND_ERRORS.blog);
+    }
 
     return blog;
   }

@@ -1,7 +1,7 @@
 import { Blog } from './blog';
 import { Client } from './client';
 import { Comments } from './comments';
-import { SDKError, SDKInputNotFoundError, SDKRequestError, SDKTypeError } from './errors';
+import { SDKError, SDKInputNotFoundError, SDKRequestError } from './errors';
 import { parseFeed } from './feed-parser';
 import { Pages } from './pages';
 import { Posts } from './posts';
@@ -25,7 +25,6 @@ export class BloggerFeed {
   static readonly SDKError = SDKError;
   static readonly SDKInputNotFoundError = SDKInputNotFoundError;
   static readonly SDKRequestError = SDKRequestError;
-  static readonly SDKTypeError = SDKTypeError;
   static readonly parseFeed = parseFeed;
 
   readonly posts: Posts;

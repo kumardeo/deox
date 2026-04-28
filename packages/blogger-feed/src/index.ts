@@ -4,7 +4,6 @@ export {
   SDKError,
   SDKInputNotFoundError,
   SDKRequestError,
-  SDKTypeError,
 } from './errors';
 
 export { parseFeed } from './feed-parser';

@@ -1,8 +1,7 @@
-import { generateId } from '@deox/utils/generate-id';
-import { isObject } from '@deox/utils/predicate';
 import { JSONP_NAMESPACE } from './constants';
 import { SDKError, SDKRequestError } from './errors';
 import { parseFeed } from './feed-parser';
+import { generateId, isObject } from './utils';
 
 /** An interface representing options for {@link RequestURL} */
 export interface RequestURLOptions {
@@ -91,13 +90,15 @@ const queueJSONP: Record<string, (data: unknown) => void> = {};
 const fetchJSONP = async <T = unknown>(getUrl: JSONPGetUrl, scriptOptions?: Record<string, unknown>) => {
   (window as unknown as Record<string, unknown>)[JSONP_NAMESPACE] ??= queueJSONP;
 
-  const id = `callback_${generateId('xxxxxxxx_xxxx_4xxx_yxxx_xxxxxxxxxxxx')}`;
+  const id = `callback_${generateId()}`;
   const callback = `window.${JSONP_NAMESPACE}.${id}`;
   const url = getUrl({ callback, id });
 
   const script = document.createElement('script');
   script.async = true;
-  if (scriptOptions) Object.assign(script, scriptOptions);
+  if (scriptOptions) {
+    Object.assign(script, scriptOptions);
+  }
   script.src = String(url);
 
   return new Promise<T>((resolve, reject) => {

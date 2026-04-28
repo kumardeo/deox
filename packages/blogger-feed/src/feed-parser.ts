@@ -1,6 +1,5 @@
-import { isArray, isObject, isString } from '@deox/utils/predicate';
 import type { Author, Blog, Comment, Extended, Feed, Geo, Link, Links, Post, PostCommentInfo } from './types';
-import { getNested } from './utils';
+import { getNested, isArray, isObject, isString } from './utils';
 
 /** constants */
 const NULL = null;
@@ -27,7 +26,9 @@ const getLinks = (linkArray: unknown) => {
       const linkTitleLike = getNested(link, 'title');
 
       if (isString(linkRelLike) && isString(linkHrefLike)) {
-        if (!isArray(record[linkRelLike])) record[linkRelLike] = [];
+        if (!isArray(record[linkRelLike])) {
+          record[linkRelLike] = [];
+        }
         const result = {
           rel: linkRelLike,
           href: linkHrefLike,
@@ -38,7 +39,9 @@ const getLinks = (linkArray: unknown) => {
         record[linkRelLike]?.push(result);
         array.push(result);
 
-        if (linkRelLike === 'alternate' && linkTypeLike === 'text/html') href = linkHrefLike;
+        if (linkRelLike === 'alternate' && linkTypeLike === 'text/html') {
+          href = linkHrefLike;
+        }
       }
     }
   }

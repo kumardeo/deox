@@ -49,9 +49,6 @@
       }
     }
   },
-  "dependencies": {
-    "@deox/utils": "workspace:^"
-  },
   "devDependencies": {
     "tsdown": "catalog:default",
     "vite": "catalog:default"

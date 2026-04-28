@@ -11,16 +11,6 @@ export class SDKError extends Error {
 }
 
 /**
- * Represents a SDK type error
- */
-export class SDKTypeError extends SDKError {
-  constructor(message: string, options?: ErrorOptions) {
-    super(message, options);
-    this.name = 'SDKTypeError';
-  }
-}
-
-/**
  * Represents a error thrown while making an API request
  */
 export class SDKRequestError extends SDKError {

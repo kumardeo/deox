@@ -4,7 +4,7 @@
   "description": "Internal Packages for personal projects (Plus UI, Web Apps, etc)",
   "author": "Deo Kumar",
   "homepage": "https://github.com/kumardeo/deox",
-  "packageManager": "pnpm@10.33.0",
+  "packageManager": "pnpm@10.33.2",
   "scripts": {
     "format": "biome format --max-diagnostics=100 --log-kind=compact",
     "format:all": "pnpm run format .",

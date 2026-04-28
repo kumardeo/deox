@@ -1,13 +1,7 @@
-import { isString } from '@deox/utils/predicate';
 import { NOT_FOUND_ERRORS } from './constants';
 import { SDKInputNotFoundError } from './errors';
 import { type FetchFeedOptions, fetchFeed } from './request';
-
-const addSlash = (url: string) => (url.endsWith('/') ? url : `${url}/`);
-
-const getServiceBase = (id: string) => `https://www.blogger.com/feeds/${id}/`;
-
-const getDomainBase = (origin: string) => `${addSlash(origin)}feeds/`;
+import { isString } from './utils';
 
 /**
  * An interface representing options for {@link Client} constructor
@@ -75,7 +69,9 @@ export class Client {
     return (async () => {
       const { blog } = await this.req('./posts/summary', { params: { maxResults: 0 } });
 
-      if (!blog) throw new SDKInputNotFoundError(NOT_FOUND_ERRORS.blog);
+      if (!blog) {
+        throw new SDKInputNotFoundError(NOT_FOUND_ERRORS.blog);
+      }
 
       this._ ??= {
         id: blog.id,
@@ -113,4 +109,16 @@ export class Client {
   async req(path: string, options?: FetchFeedOptions) {
     return fetchFeed(path, { baseUrl: this.base, jsonp: this.jsonp, ...options });
   }
+}
+
+function addSlash(url: string): string {
+  return url.endsWith('/') ? url : `${url}/`;
+}
+
+function getServiceBase(id: string): string {
+  return `https://www.blogger.com/feeds/${id}/`;
+}
+
+function getDomainBase(origin: string): string {
+  return `${addSlash(origin)}feeds/`;
 }

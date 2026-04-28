@@ -1,8 +1,7 @@
-import { isUndefined } from '@deox/utils/predicate';
 import { NOT_FOUND_ERRORS } from './constants';
 import { SDKInputNotFoundError } from './errors';
 import { Methods } from './methods';
-import { validators } from './utils';
+import { assertNonBlankString, isUndefined } from './utils';
 
 /** Options for {@link Posts.list} */
 export type PostsListOptions = {
@@ -35,7 +34,9 @@ export class Posts extends Methods {
     const { label } = options;
 
     // validate label if provided
-    if (!isUndefined(label)) validators.nB(label, 'options.label');
+    if (!isUndefined(label)) {
+      assertNonBlankString(label, 'options.label');
+    }
 
     const result = await this.c.req(`./posts/${options.summary === true ? 'summary' : 'default'}${label ? `/-/${encodeURI(label)}` : ''}`, {
       params: options,
@@ -55,7 +56,7 @@ export class Posts extends Methods {
    * @returns On success, a Post
    */
   async get(postId: string, options: PostsGetOptions = {}, { signal }: { signal?: AbortSignal } = {}) {
-    validators.nB(postId, "Argument 'postId'");
+    assertNonBlankString(postId, "Argument 'postId'");
 
     const { posts } = await this.c.req(`./posts/${options.summary === true ? 'summary' : 'default'}/${encodeURIComponent(postId)}`, {
       exclude: ['query'],
@@ -79,7 +80,7 @@ export class Posts extends Methods {
    * @returns On success, an Array of Post
    */
   async query(query: string, options: PostsQueryOptions = {}, { signal }: { signal?: AbortSignal } = {}) {
-    validators.nB(query, "Argument 'query'");
+    assertNonBlankString(query, "Argument 'query'");
 
     const result = await this.c.req(`./posts/${options.summary === true ? 'summary' : 'default'}`, {
       params: {

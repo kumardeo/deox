@@ -1,7 +1,7 @@
 import { NOT_FOUND_ERRORS } from './constants';
 import { SDKInputNotFoundError } from './errors';
 import { Methods } from './methods';
-import { validators } from './utils';
+import { assertNonBlankString } from './utils';
 
 /** Options for {@link Pages.list} */
 export type PagesListOptions = {
@@ -48,7 +48,7 @@ export class Pages extends Methods {
    * @returns On success, a Post
    */
   async get(pageId: string, options: PagesGetOptions = {}, { signal }: { signal?: AbortSignal } = {}) {
-    validators.nB(pageId, "Argument 'pageId'");
+    assertNonBlankString(pageId, "Argument 'pageId'");
 
     const { posts } = await this.c.req(`./pages/${options.summary === true ? 'summary' : 'default'}/${encodeURI(pageId)}`, {
       exclude: ['query'],
