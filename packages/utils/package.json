@@ -1,7 +1,6 @@
 {
   "name": "@deox/utils",
   "version": "0.0.4",
-  "private": false,
   "description": "Utilities",
   "keywords": [
     "utils"
@@ -19,6 +18,10 @@
   },
   "bugs": {
     "url": "https://github.com/kumardeo/deox/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   },
   "scripts": {
     "lint": "biome lint ./src",

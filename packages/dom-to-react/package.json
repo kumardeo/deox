@@ -1,7 +1,6 @@
 {
   "name": "@deox/dom-to-react",
   "version": "0.0.4",
-  "private": false,
   "description": "DOM node to React node converter.",
   "keywords": [
     "react",
@@ -20,6 +19,10 @@
   },
   "bugs": {
     "url": "https://github.com/kumardeo/deox/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   },
   "scripts": {
     "lint": "biome lint ./src",

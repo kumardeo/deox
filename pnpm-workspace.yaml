@@ -3,11 +3,11 @@ packages:
   - __tests__
   - __tests__/*
 
-onlyBuiltDependencies:
-  - es5-ext
-  - esbuild
-  - sharp
-  - workerd
+allowBuilds:
+  es5-ext: true
+  esbuild: true
+  sharp: true
+  workerd: true
 
 catalog:
   "@cloudflare/workers-types": "^4.20260317.1"
@@ -17,3 +17,10 @@ catalog:
   tsdown: "^0.21.6"
   vite: "^6.4.1"
   wrangler: "^4.77.0"
+
+engineStrict: true
+strictPeerDependencies: true
+shellEmulator: true
+preferWorkspacePackages: true
+linkWorkspacePackages: true
+enablePrePostScripts: true

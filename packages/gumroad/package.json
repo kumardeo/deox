@@ -1,7 +1,6 @@
 {
   "name": "@deox/gumroad",
   "version": "0.0.13",
-  "private": false,
   "description": "API client for Gumroad",
   "keywords": [
     "gumroad",
@@ -20,6 +19,10 @@
   },
   "bugs": {
     "url": "https://github.com/kumardeo/deox/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   },
   "scripts": {
     "lint": "biome lint ./src",

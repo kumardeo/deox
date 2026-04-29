@@ -1,7 +1,6 @@
 {
   "name": "@deox/drizzle-d1-utils",
   "version": "0.0.3",
-  "private": false,
   "description": "Drizzle D1 utils",
   "keywords": [
     "drizzle-d1",
@@ -20,6 +19,10 @@
   },
   "bugs": {
     "url": "https://github.com/kumardeo/deox/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   },
   "scripts": {
     "lint": "biome lint ./src",
