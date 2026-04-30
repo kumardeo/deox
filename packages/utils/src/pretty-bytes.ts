@@ -16,12 +16,12 @@ const iecUnits = ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'] as con
  *
  * @returns Formatted string array.
  */
-export const prettyBytes = <SI extends boolean = false>(
+export function prettyBytes<SI extends boolean = false>(
   bytes: number,
   si: SI = false as SI,
   dp = 1,
   sDp = false,
-): [string, 'B' | (SI extends true ? typeof siUnits : typeof iecUnits)[number]] => {
+): [string, 'B' | (SI extends true ? typeof siUnits : typeof iecUnits)[number]] {
   if (!isValidNumber(bytes)) {
     throw new TypeError(`Argument 1: ${bytes} is not valid.`);
   }
@@ -47,4 +47,4 @@ export const prettyBytes = <SI extends boolean = false>(
     fixed = String(Number(fixed));
   }
   return [fixed, units[u]];
-};
+}

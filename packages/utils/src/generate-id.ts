@@ -5,7 +5,7 @@
  *
  * @returns Generated random string
  */
-export const generateId = (format = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'): string => {
+export function generateId(format = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'): string {
   // Timestamp
   let d1 = Date.now();
   // Time in microseconds since page-load or 0 if unsupported
@@ -24,4 +24,4 @@ export const generateId = (format = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'): str
     }
     return (c === 'x' ? r : (r & 0x3) | 0x8).toString(16);
   });
-};
+}

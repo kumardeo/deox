@@ -13,7 +13,7 @@ const units = ['K', 'M', 'B', 'T', 'Q', 'Qu', 'S', 'Se', 'O', 'N', 'D'] as const
  *
  * @returns Formatted string array
  */
-export const abbreviateNumber = (number: number, dp = 1, sDp = false): [string, '' | (typeof units)[number]] => {
+export function abbreviateNumber(number: number, dp = 1, sDp = false): [string, '' | (typeof units)[number]] {
   if (!isValidNumber(number)) {
     throw new TypeError(`Argument 1, ${number} is not valid`);
   }
@@ -38,4 +38,4 @@ export const abbreviateNumber = (number: number, dp = 1, sDp = false): [string, 
     fixed = String(Number(fixed));
   }
   return [fixed, units[u]];
-};
+}
