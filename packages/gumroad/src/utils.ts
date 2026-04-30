@@ -1,5 +1,5 @@
 import { isArray, isNumber, isPlainObject } from '@deox/utils/predicate';
-import { SDKRequestError, SDKTypeError } from './errors';
+import { SDKRequestError } from './errors';
 
 const getConfigurations = <M extends Record<string | number, unknown>>(properties: M) =>
   Object.keys(properties).reduce((acc, key) => {
@@ -28,7 +28,7 @@ export const addProperties = <O extends NonNullable<unknown>, I extends NonNulla
 export const validators = {
   string(data: unknown, name: string) {
     if (typeof data !== 'string') {
-      throw new SDKTypeError(`${name} must be of type string, current type is ${typeof data}`);
+      throw new TypeError(`${name} must be of type string, current type is ${typeof data}`);
     }
   },
 
@@ -36,7 +36,7 @@ export const validators = {
     this.string(data, name);
 
     if ((data as string).length === 0) {
-      throw new SDKTypeError(`${name} cannot be an empty string`);
+      throw new TypeError(`${name} cannot be an empty string`);
     }
   },
 
@@ -44,7 +44,7 @@ export const validators = {
     this.string(data, name);
 
     if ((data as string).trim().length === 0) {
-      throw new SDKTypeError(`${name} cannot be a blank string`);
+      throw new TypeError(`${name} cannot be a blank string`);
     }
   },
 };

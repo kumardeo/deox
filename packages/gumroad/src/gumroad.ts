@@ -1,6 +1,6 @@
 import { API, type APIOptions } from './api';
 import { UPDATE_NAMES } from './constants';
-import { SDKError, SDKTypeError } from './errors';
+import { SDKError } from './errors';
 import type { MayBePromise, UpdateMap } from './types';
 import { parseDeepFormData, validators } from './utils';
 
@@ -77,7 +77,7 @@ export class Gumroad extends API {
    */
   onError(handler: ErrorHandler) {
     if (typeof handler !== 'function') {
-      throw new SDKTypeError(`Argument 'handler' must be of type function, provided type is ${typeof handler}`);
+      throw new TypeError(`Argument 'handler' must be of type function, provided type is ${typeof handler}`);
     }
     this._errorHandler = handler;
 
@@ -108,7 +108,7 @@ export class Gumroad extends API {
     validators.notBlank(update_name, "Argument 'update_name'");
 
     if (!UPDATE_NAMES.includes(update_name)) {
-      throw new SDKTypeError(
+      throw new TypeError(
         `Argument 'update_name' should be one of ${UPDATE_NAMES.map((name) => `"${name}"`).join(', ')} but provided: ${update_name}`,
       );
     }
@@ -122,7 +122,7 @@ export class Gumroad extends API {
         if (typeof handler === 'function') {
           return handler;
         }
-        throw new SDKTypeError(`Argument at position ${i + 2} must of type function, provided type is ${typeof handler}`);
+        throw new TypeError(`Argument at position ${i + 2} must of type function, provided type is ${typeof handler}`);
       }),
     );
 
@@ -238,7 +238,7 @@ export class Gumroad extends API {
    */
   async handle<T extends keyof UpdateMap>(request: Request, update_name: T) {
     if (!(request instanceof Request)) {
-      throw new SDKTypeError("Argument 'request' must be an instance of Request");
+      throw new TypeError("Argument 'request' must be an instance of Request");
     }
 
     if (request.bodyUsed) {
@@ -256,7 +256,7 @@ export class Gumroad extends API {
     validators.notBlank(update_name, "Argument 'update_name'");
 
     if (!UPDATE_NAMES.includes(update_name)) {
-      throw new SDKTypeError(
+      throw new TypeError(
         `Argument 'update_name' should be one of ${UPDATE_NAMES.map((name) => `"${name}"`).join(', ')} but provided: ${update_name}`,
       );
     }

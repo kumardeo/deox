@@ -1,5 +1,4 @@
 import { RESOURCE_SUBSCRIPTION_NAMES } from './constants';
-import { SDKTypeError } from './errors';
 import { Methods } from './methods';
 import type { ResourceSubscription, ResourceSubscriptionName } from './types';
 import { addProperties, validators } from './utils';
@@ -76,7 +75,7 @@ export class ResourceSubscriptions extends Methods {
       validators.notBlank(resource_name, "Argument 'resource_name'");
 
       if (!RESOURCE_SUBSCRIPTION_NAMES.includes(resource_name)) {
-        throw new SDKTypeError(`'${resource_name}' is not a valid 'resource_name'`);
+        throw new TypeError(`'${resource_name}' is not a valid 'resource_name'`);
       }
 
       return this._bind_resource_subscription(

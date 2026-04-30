@@ -7,7 +7,6 @@ export {
   SDKNotFoundError,
   SDKRequestError,
   SDKRequestFailedError,
-  SDKTypeError,
   SDKUnauthorizedError,
 } from './errors';
 export {

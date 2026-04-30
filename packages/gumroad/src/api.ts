@@ -9,7 +9,6 @@ import {
   SDKNotFoundError,
   SDKRequestError,
   SDKRequestFailedError,
-  SDKTypeError,
   SDKUnauthorizedError,
 } from './errors';
 import { Licenses } from './licenses';
@@ -49,7 +48,6 @@ export class API {
   static readonly SDKNotFoundError = SDKNotFoundError;
   static readonly SDKRequestError = SDKRequestError;
   static readonly SDKRequestFailedError = SDKRequestFailedError;
-  static readonly SDKTypeError = SDKTypeError;
   static readonly SDKUnauthorizedError = SDKUnauthorizedError;
 
   /**
