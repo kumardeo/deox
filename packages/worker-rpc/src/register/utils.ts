@@ -1,7 +1,8 @@
+/// <reference lib="WebWorker" />
+
 import { WORKER_NAMESPACE } from '../constants';
 import type { Await, AwaitReturn, MayBePromise, MessageMain, MessageMainInput, MethodsMap, WithOptionsInstance } from '../types';
 
-/// <reference lib="WebWorker" />
 declare let self: DedicatedWorkerGlobalScope;
 
 export class WithOptions<T> implements WithOptionsInstance<T> {
@@ -14,7 +15,9 @@ export class WithOptions<T> implements WithOptionsInstance<T> {
   }
 }
 
-export const withOptions = <T>(result: T, options: StructuredSerializeOptions | Transferable[]) => new WithOptions(result, options);
+export function withOptions<T>(result: T, options: StructuredSerializeOptions | Transferable[]): WithOptions<T> {
+  return new WithOptions(result, options);
+}
 
 /**
  * A helper function to get Error object from any data type
@@ -23,7 +26,9 @@ export const withOptions = <T>(result: T, options: StructuredSerializeOptions | 
  *
  * @returns An Error instance
  */
-export const toError = (data: unknown) => (data instanceof Error ? data : new Error(String(data)));
+export function toError(data: unknown): Error {
+  return data instanceof Error ? data : new Error(String(data));
+}
 
 /**
  * An object containing methods for sending message to main thread
@@ -134,19 +139,19 @@ export const respond = {
 };
 
 /** utility to convert data to promise */
-export const toPromise = <T = any>(data: T): Promise<Await<T>> => {
+export function toPromise<T = any>(data: T): Promise<Await<T>> {
   if (data instanceof Promise) {
     return data as Promise<Await<T>>;
   }
   return Promise.resolve(data);
-};
+}
 
 /** checks if message event is request */
-export const isRequestEvent = (event: MessageEvent<unknown>) => {
+export function isRequestEvent(event: MessageEvent<unknown>): boolean {
   const request = event.data;
 
   return !!request && typeof request === 'object' && Object.hasOwn(request, WORKER_NAMESPACE);
-};
+}
 
 export type HandlerType<F extends (ctx?: any) => MayBePromise<NonNullable<object>>> = {
   __resolved: AwaitReturn<F> | undefined;
@@ -157,7 +162,7 @@ export type HandlerType<F extends (ctx?: any) => MayBePromise<NonNullable<object
   ) => Promise<Await<MethodsMap<AwaitReturn<F>>[N][1]>>;
 };
 
-export const handle = <F extends (ctx?: any) => MayBePromise<NonNullable<object>>>(input: F, context: Parameters<F>[0]): HandlerType<F> => {
+export function handle<F extends (ctx?: any) => MayBePromise<NonNullable<object>>>(input: F, context: Parameters<F>[0]): HandlerType<F> {
   const result: HandlerType<F> = {
     __resolved: undefined,
     async getObject(): Promise<AwaitReturn<F>> {
@@ -188,22 +193,28 @@ export const handle = <F extends (ctx?: any) => MayBePromise<NonNullable<object>
   };
 
   return result;
-};
+}
 
 export type MessageHandler<T = any> = (event: MessageEvent<T>) => void;
 
-/** utility function for attaching or detaching message handler */
-export const messageHandler = <T = any>() => ({
-  current: undefined as MessageHandler<T> | undefined,
-  remove() {
+/** utility for attaching or detaching message handler */
+export class MessageEventHandler<T = any> {
+  current: MessageHandler<T> | undefined;
+
+  constructor() {
+    this.current = undefined;
+  }
+
+  remove(): void {
     if (this.current) {
       self.removeEventListener('message', this.current);
     }
     this.current = undefined;
-  },
-  set(handler: MessageHandler<T>) {
+  }
+
+  set(handler: MessageHandler<T>): void {
     this.remove();
     this.current = handler;
     self.addEventListener('message', this.current);
-  },
-});
+  }
+}

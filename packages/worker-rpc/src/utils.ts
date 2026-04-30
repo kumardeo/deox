@@ -7,18 +7,18 @@ import { WORKER_NAMESPACE } from './constants';
  *
  * @returns Javascript content for worker
  */
-export const getBlobContent = (entry: string, type?: 'module' | 'classic') => {
+export function getBlobContent(entry: string, type?: 'module' | 'classic'): string {
   const scriptUrl = encodeURI(entry);
   return `Object.defineProperties((typeof globalThis!== "undefined"?globalThis:self).location,{__entry__:{value:"${scriptUrl}"},toString:{value:function toString(){return this.__entry__;}}});\n${
     type === 'module' ? `import "${scriptUrl}";` : 'importScripts(self.location.toString());'
   }`;
-};
+}
 
 /** Checks whether a message event is a response which was received from worker thread */
-export const eventIsResponse = (event: MessageEvent<unknown>) => {
+export function eventIsResponse(event: MessageEvent<unknown>): boolean {
   const response = event.data;
   if (typeof response === 'object' && response && Object.hasOwn(response, WORKER_NAMESPACE)) {
     return true;
   }
   return false;
-};
+}

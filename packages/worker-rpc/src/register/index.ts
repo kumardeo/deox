@@ -1,8 +1,8 @@
 import { DeferredPromise } from '@deox/utils/deferred-promise';
 import type { MayBePromise, MessageWorker, Params, RegisterOutput } from '../types';
-import { type HandlerType, handle, isRequestEvent, messageHandler, respond, WithOptions } from './utils';
+import { type HandlerType, handle, isRequestEvent, MessageEventHandler, respond, WithOptions } from './utils';
 
-const eventHandler = messageHandler<MessageWorker>();
+const eventHandler = new MessageEventHandler<MessageWorker>();
 
 /**
  * Attach handlers to worker thread
@@ -11,7 +11,7 @@ const eventHandler = messageHandler<MessageWorker>();
  *
  * @returns An object which has a `call` method
  */
-export const register = <F extends (ctx?: any) => MayBePromise<NonNullable<object>>>(input: F): RegisterOutput<F> => {
+export function register<F extends (ctx?: any) => MayBePromise<NonNullable<object>>>(input: F): RegisterOutput<F> {
   // throw an error if input argument is not a function
   if (typeof input !== 'function') {
     throw new TypeError('Argument 1 must be of type function.');
@@ -90,7 +90,7 @@ export const register = <F extends (ctx?: any) => MayBePromise<NonNullable<objec
   };
 
   return result;
-};
+}
 
 export type { MessageMain, MessageWorker } from '../types';
 export { withOptions } from './utils';

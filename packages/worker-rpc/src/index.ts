@@ -97,7 +97,7 @@ export class Worker<
   private _setup: Promise<void>;
 
   /** A map of pending requests containing functions to resolve or reject */
-  private _queue: Record<string, [(value: any) => void, (error: any) => void] | undefined>;
+  private _queue: Map<string, [(value: any) => void, (error: any) => void]>;
 
   /** A proxy which can to used as an alternative for `call` method */
   private _proxy: InferProxyType<R> | undefined;
@@ -115,7 +115,7 @@ export class Worker<
    *
    * @returns The response message object
    */
-  private _request(message: MessageWorkerInput, options?: StructuredSerializeOptions | Transferable[]) {
+  private _request(message: MessageWorkerInput, options?: StructuredSerializeOptions | Transferable[]): Promise<MessageMain> {
     const requestId = this._generate(message);
     const messageData: MessageWorker = {
       ...message,
@@ -123,7 +123,7 @@ export class Worker<
     };
     Object.assign(messageData, { [WORKER_NAMESPACE]: true });
     return new Promise<MessageMain>((resolve, reject) => {
-      this._queue[requestId] = [resolve, reject];
+      this._queue.set(requestId, [resolve, reject]);
       if (options) {
         this.postMessage(messageData, Array.isArray(options) ? { transfer: options } : options);
       } else {
@@ -152,13 +152,13 @@ export class Worker<
       super(URL.createObjectURL(blob), workerOptions);
     }
 
-    this._queue = {};
+    this._queue = new Map();
 
     this._generate = (message) => {
       let id: string;
       do {
         id = typeof workerOptions.generate === 'function' ? workerOptions.generate(message) : `worker_${message.type}_${generateId()}`;
-      } while (Object.hasOwn(this._queue, id));
+      } while (this._queue.has(id));
       return id;
     };
 
@@ -174,37 +174,31 @@ export class Worker<
         const { type: responseType, id: responseId } = response;
 
         // pending request corresponding with the response id
-        const pendingData = this._queue[responseId];
+        const pendingData = this._queue.get(responseId);
 
         if (['response', 'context'].includes(responseType) && typeof pendingData !== 'undefined') {
           // resolve the request with response data from worker
           pendingData[0](response);
 
           // remove the pending request form queue
-          delete this._queue[responseId];
+          this._queue.delete(responseId);
         }
       }
     });
 
     this._context = workerOptions.context;
 
-    this._setup = new Promise((resolve, reject) => {
-      this._request({
-        type: 'context',
-        context: this._context,
-      })
-        .then((data) => {
-          if (data.type === 'context') {
-            if (data.status === 'success') {
-              resolve();
-            } else {
-              reject(data.error);
-            }
-          } else {
-            reject(new Error(`Requested 'context' type but got '${String(data.type)}'`));
-          }
-        })
-        .catch(reject);
+    this._setup = this._request({
+      type: 'context',
+      context: this._context,
+    }).then((data) => {
+      if (data.type !== 'context') {
+        throw new Error(`Requested 'context' type but got '${String(data.type)}'`);
+      }
+
+      if (data.status !== 'success') {
+        throw data.error;
+      }
     });
   }
 
@@ -283,7 +277,7 @@ export class Worker<
   }
 
   /** A proxy which can to used as an alternative for `call` method */
-  get proxy() {
+  get proxy(): InferProxyType<R> {
     if (typeof Proxy === 'undefined') {
       throw new Error("'Proxy' is not supported.");
     }
