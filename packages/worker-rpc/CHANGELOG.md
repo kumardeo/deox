@@ -1,5 +1,14 @@
 # @deox/worker-rpc
 
+## 0.0.19
+
+### Patch Changes
+
+- [`af49e06`](https://github.com/kumardeo/deox/commit/af49e067d5db83b4c834a8abb03286d22f40a934) Thanks [@kumardeo](https://github.com/kumardeo)! - chore: migrate from `tsup` to `tsdown`
+
+- Updated dependencies [[`dd26f9e`](https://github.com/kumardeo/deox/commit/dd26f9e500af74ef74e8819d6580fe501a8c5345), [`4cf7af1`](https://github.com/kumardeo/deox/commit/4cf7af159da43f5a08799f31d594c6b1a8c8d630), [`1422ea0`](https://github.com/kumardeo/deox/commit/1422ea07e61cd224205973b5f6a7e3fcef7c24d4)]:
+  - @deox/utils@0.0.5
+
 ## 0.0.18
 
 ### Patch Changes
