@@ -1,5 +1,11 @@
 # @deox/dom-to-react
 
+## 0.0.5
+
+### Patch Changes
+
+- [`af49e06`](https://github.com/kumardeo/deox/commit/af49e067d5db83b4c834a8abb03286d22f40a934) Thanks [@kumardeo](https://github.com/kumardeo)! - chore: migrate from `tsup` to `tsdown`
+
 ## 0.0.4
 
 ### Patch Changes

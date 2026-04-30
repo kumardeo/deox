@@ -1,5 +1,16 @@
 # @deox/utils
 
+## 0.0.5
+
+### Patch Changes
+
+- [`dd26f9e`](https://github.com/kumardeo/deox/commit/dd26f9e500af74ef74e8819d6580fe501a8c5345) Thanks [@kumardeo](https://github.com/kumardeo)! - fix: fix types
+
+- [`4cf7af1`](https://github.com/kumardeo/deox/commit/4cf7af159da43f5a08799f31d594c6b1a8c8d630) Thanks [@kumardeo](https://github.com/kumardeo)! - feat(utils): add `children` argument to `createElement` function
+  feat(utils): add `listeners` option in `createElement` function
+
+- [`1422ea0`](https://github.com/kumardeo/deox/commit/1422ea07e61cd224205973b5f6a7e3fcef7c24d4) Thanks [@kumardeo](https://github.com/kumardeo)! - refactor: refactor `createElement` function
+
 ## 0.0.4
 
 ### Patch Changes
