@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo",
     "module": "es2020",
     "target": "es2018",
     "lib": ["ES2020"],
@@ -13,8 +14,9 @@
     "skipLibCheck": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "outDir": "./dist"
+    "rootDir": "src",
+    "outDir": "dist"
   },
   "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.mts", "src/**/*.test.ts", "src/**/*.test.tsx", "src/**/*.js"],
-  "exclude": ["node_modules"]
+  "exclude": ["dist"]
 }
