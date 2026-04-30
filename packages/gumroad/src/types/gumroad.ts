@@ -1,5 +1,5 @@
 /**
- * TODO: These types are not yet finalized since there is no reference for conditional data in gumroad api docs
+ * TODO: These types are not yet finalized since there is no reference for conditional data in Gumroad API docs
  * * So I read the docs and wrote the expected types but not yet tested
  * * Sorry for my bad English!
  */

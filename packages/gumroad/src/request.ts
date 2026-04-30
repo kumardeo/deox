@@ -94,7 +94,7 @@ export interface RequestOptions {
   signal?: AbortSignal;
 }
 
-const getResponseError = (response: Response, message?: string, defaultMessage?: string) => {
+function getResponseError(response: Response, message?: string, defaultMessage?: string): Error {
   switch (response.status) {
     case 400:
       return new SDKBadRequestError(message || `Server responded with '${response.statusText}' status text`, response);
@@ -121,7 +121,7 @@ const getResponseError = (response: Response, message?: string, defaultMessage?:
     default:
       return new SDKRequestError(defaultMessage || message || 'Response error', response);
   }
-};
+}
 
 /**
  * Requests to Gumroad API
@@ -132,11 +132,11 @@ const getResponseError = (response: Response, message?: string, defaultMessage?:
  *
  * @returns An object containing `data` and `response`
  */
-export const request = async <T extends NonNullable<unknown> = NonNullable<unknown>>(
+export async function request<T extends NonNullable<unknown> = NonNullable<unknown>>(
   path: string | RequestURL,
   accessToken?: string | null,
   { method = 'GET', params = {}, body, debug = false, baseUrl = 'https://api.gumroad.com/v2/', signal }: RequestOptions = {},
-): Promise<{ data: T & { success: true }; response: Response }> => {
+): Promise<{ data: T & { success: true }; response: Response }> {
   try {
     const endpoint = new RequestURL(path, baseUrl, {
       params: {
@@ -211,4 +211,4 @@ export const request = async <T extends NonNullable<unknown> = NonNullable<unkno
 
     throw e;
   }
-};
+}

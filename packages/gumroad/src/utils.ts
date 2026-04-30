@@ -1,29 +1,28 @@
 import { isArray, isNumber, isPlainObject } from '@deox/utils/predicate';
 import { SDKRequestError } from './errors';
 
-const getConfigurations = <M extends Record<string | number, unknown>>(properties: M) =>
-  Object.keys(properties).reduce((acc, key) => {
-    const value = properties[key as keyof M];
-
+function getConfigurations<M extends Record<string | number, unknown>>(properties: M): PropertyDescriptorMap {
+  return Object.entries(properties).reduce<PropertyDescriptorMap>((acc, [key, value]) => {
     acc[key] = {
       value,
     };
 
     return acc;
-  }, {} as PropertyDescriptorMap);
+  }, {});
+}
 
-export const addProperties = <O extends NonNullable<unknown>, I extends NonNullable<unknown>, M extends NonNullable<unknown>>(
+export function addProperties<O extends NonNullable<unknown>, I extends NonNullable<unknown>, M extends NonNullable<unknown>>(
   object: O,
   immutable: I,
   mutable?: M,
-) => {
+): O & M & I {
   if (mutable) {
     Object.assign(object, mutable);
   }
   Object.defineProperties(object, getConfigurations(immutable));
 
   return object as O & M & I;
-};
+}
 
 export const validators = {
   string(data: unknown, name: string) {
@@ -136,7 +135,7 @@ export const error = {
  *
  * @returns The converted number otherwise undefined
  */
-export const convertToNumber = (input: unknown) => {
+export function convertToNumber(input: unknown): number | undefined {
   if (typeof input === 'string' && /^-?\d+$/.test(input)) {
     const numbered = Number(input);
     if (isNumber(numbered)) {
@@ -146,7 +145,7 @@ export const convertToNumber = (input: unknown) => {
     return input;
   }
   return undefined;
-};
+}
 
 export type ParseValueOptions = {
   parseBoolean?: boolean;
@@ -162,7 +161,7 @@ export type ParseValueOptions = {
  *
  * @returns The parsed value
  */
-export const parseValue = <T = unknown>(input: T, options: ParseValueOptions = {}) => {
+export function parseValue<T = unknown>(input: T, options: ParseValueOptions = {}): number | boolean | T | null {
   if (typeof input === 'string' && input.trim().length !== 0) {
     const lowered = input.toLowerCase();
     if (options.parseNull && lowered === 'null') {
@@ -181,13 +180,13 @@ export const parseValue = <T = unknown>(input: T, options: ParseValueOptions = {
     }
   }
   return input;
-};
+}
 
 export type ParsedFormDataValue = string | File | (string | File)[];
 
 export type ParsedFormData = Record<string, ParsedFormDataValue>;
 
-export const parseFormData = <T extends ParsedFormData = ParsedFormData>(formData: FormData, options: { all?: boolean } = {}): T => {
+export function parseFormData<T extends ParsedFormData = ParsedFormData>(formData: FormData, options: { all?: boolean } = {}): T {
   const result: ParsedFormData = {};
 
   formData.forEach((value, key) => {
@@ -206,7 +205,7 @@ export const parseFormData = <T extends ParsedFormData = ParsedFormData>(formDat
   });
 
   return result as T;
-};
+}
 
 export type ParsedDeepFormDataValue = ParsedFormDataValue | number | boolean | null;
 
@@ -214,7 +213,7 @@ export type ParsedDeepFormData = Record<string, ParsedDeepFormDataValue | Record
 
 export type ParseDeepFormDataOptions = ParseValueOptions;
 
-export const parseDeepFormData = <T extends ParsedDeepFormData = ParsedDeepFormData>(formData: FormData, options?: ParseDeepFormDataOptions) => {
+export function parseDeepFormData<T extends ParsedDeepFormData = ParsedDeepFormData>(formData: FormData, options?: ParseDeepFormDataOptions): T {
   const parsedData = parseFormData(formData);
 
   return Object.keys(parsedData).reduce((result, e) => {
@@ -249,9 +248,9 @@ export const parseDeepFormData = <T extends ParsedDeepFormData = ParsedDeepFormD
 
     return result;
   }, {} as ParsedDeepFormData) as T;
-};
+}
 
-export const formatCustomField = <T extends { custom_fields: unknown }>(input: T) => {
+export function formatCustomField<T extends { custom_fields: unknown }>(input: T): T {
   if (isArray(input.custom_fields)) {
     input.custom_fields = (input.custom_fields as string[]).reduce(
       (acc, field) => {
@@ -269,4 +268,4 @@ export const formatCustomField = <T extends { custom_fields: unknown }>(input: T
   }
 
   return input;
-};
+}
