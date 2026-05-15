@@ -55,6 +55,6 @@
     "@deox/utils": "workspace:^"
   },
   "devDependencies": {
-    "tsdown": "catalog:default"
+    "tsdown": "catalog:"
   }
 }

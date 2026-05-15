@@ -58,8 +58,8 @@
     "style-to-js": "^1.1.21"
   },
   "devDependencies": {
-    "@types/react": "catalog:default",
-    "react": "catalog:default",
-    "tsdown": "catalog:default"
+    "@types/react": "catalog:",
+    "react": "catalog:",
+    "tsdown": "catalog:"
   }
 }

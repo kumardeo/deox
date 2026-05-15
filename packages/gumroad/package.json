@@ -57,9 +57,9 @@
     "@deox/utils": "workspace:^"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "catalog:default",
-    "hono": "^4.12.9",
-    "tsdown": "catalog:default",
-    "wrangler": "catalog:default"
+    "@cloudflare/workers-types": "catalog:",
+    "hono": "^4.12.18",
+    "tsdown": "catalog:",
+    "wrangler": "catalog:"
   }
 }
