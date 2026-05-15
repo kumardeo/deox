@@ -11,6 +11,7 @@ allowBuilds:
 
 catalog:
   "@cloudflare/workers-types": "^4.20260515.1"
+  "@types/node": "^25.8.0"
   "@types/react": "^19.2.14"
   react: "^19.2.6"
   react-dom: "^19.2.6"
