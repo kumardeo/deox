@@ -1,6 +1,6 @@
 import { DeferredPromise } from '@deox/utils/deferred-promise';
-import type { MayBePromise, MessageWorker, Params, RegisterOutput } from '../types';
-import { type HandlerType, handle, isRequestEvent, MessageEventHandler, respond, WithOptions } from './utils';
+import type { MessageWorker, RegisterInput, RegisterOutput } from '../types';
+import { createMethodsResolver, InternalWithOptions, isRequestEvent, MessageEventHandler, type MethodsResolver, respond } from './utils';
 
 const eventHandler = new MessageEventHandler<MessageWorker>();
 
@@ -11,86 +11,86 @@ const eventHandler = new MessageEventHandler<MessageWorker>();
  *
  * @returns An object which has a `call` method
  */
-export function register<F extends (ctx?: any) => MayBePromise<NonNullable<object>>>(input: F): RegisterOutput<F> {
+export function register<M extends NonNullable<object>, C>(input: RegisterInput<M, C>): RegisterOutput<M, C> {
   // throw an error if input argument is not a function
   if (typeof input !== 'function') {
     throw new TypeError('Argument 1 must be of type function.');
   }
 
-  const contextPromise = new DeferredPromise<HandlerType<F>>();
+  const contextPromise = new DeferredPromise<MethodsResolver<M>>();
 
-  eventHandler.set((event) => {
-    // Check if valid request
-    if (isRequestEvent(event)) {
-      // Stop propagation
-      event.stopImmediatePropagation();
+  eventHandler.attach((event) => {
+    // Ensure valid request
+    if (!isRequestEvent(event)) {
+      return;
+    }
 
-      const request = event.data;
+    // Stop propagation
+    event.stopImmediatePropagation();
 
-      if (request.type === 'context') {
-        try {
-          const result = handle(input, request.context);
-          contextPromise.resolve(result);
-        } catch (error) {
-          contextPromise.reject(error);
-        }
+    const request = event.data;
 
-        contextPromise
-          .then(() => {
-            respond.contextSuccess(request.id);
-          })
-          .catch((error) => {
-            respond.contextError(request.id, error);
-          });
-      } else if (request.type === 'request') {
-        if (['string', 'number'].includes(typeof request.handler)) {
-          const handleData = (data: unknown) => {
-            if (data instanceof WithOptions) {
-              respond.handlerSuccess(request.id, request.handler, data.result, data.options);
-            } else {
-              respond.handlerSuccess(request.id, request.handler, data);
-            }
-          };
+    if (request.type === 'context') {
+      const resolver = createMethodsResolver(input, request.context as C);
+      contextPromise.resolve(resolver);
 
-          const handleError = (error: unknown) => {
-            respond.handlerError(request.id, request.handler, error);
-          };
+      contextPromise
+        .then(() => {
+          respond.contextSuccess(request.id);
+        })
+        .catch((error) => {
+          respond.contextError(request.id, error);
+        });
 
-          contextPromise
-            .then(async (result) => {
-              const object = await result.getObject();
-              if (request.handler in object) {
-                try {
-                  result
-                    // @ts-expect-error it will throw error if handler is not there
-                    .call(request.handler, ...request.arguments)
-                    .then(handleData)
-                    .catch(handleError);
-                } catch (error) {
-                  handleError(error);
-                }
-              } else {
-                respond.handlerNotFound(request.id, request.handler);
-              }
-            })
-            .catch(handleError);
-        }
+      return;
+    }
+
+    if (request.type === 'request') {
+      if (!['string', 'number'].includes(typeof request.handler)) {
+        return;
       }
+
+      const handleData = (data: unknown) => {
+        if (data instanceof InternalWithOptions) {
+          respond.handlerSuccess(request.id, request.handler, data.result, data.options);
+        } else {
+          respond.handlerSuccess(request.id, request.handler, data);
+        }
+      };
+
+      const handleError = (error: unknown) => {
+        respond.handlerError(request.id, request.handler, error);
+      };
+
+      contextPromise
+        .then(async (resolver) => {
+          const methods = await resolver.get();
+          if (request.handler in methods) {
+            resolver
+              // @ts-expect-error it will throw error if handler is not there
+              .call(request.handler, ...request.arguments)
+              .then(handleData)
+              .catch(handleError);
+          } else {
+            respond.handlerNotFound(request.id, request.handler);
+          }
+        })
+        .catch(handleError);
+
+      return;
     }
   });
 
-  const result: RegisterOutput<F> = (context: Params<F>[0]) => {
-    const handler = handle(input, context);
+  return (ctx) => {
+    const resolver = createMethodsResolver(input, ctx);
 
     return {
       call(name, ...args) {
-        return handler.call(name, ...args);
+        return resolver.call(name, ...args);
       },
     };
   };
-
-  return result;
 }
 
-export type { MessageMain, MessageWorker } from '../types';
+export type { CallerType, MessageMain, MessageWorker, RegisterInput, RegisterOutput, WithOptions } from '../types';
 export { withOptions } from './utils';
