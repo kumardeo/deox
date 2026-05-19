@@ -1,5 +1,11 @@
 # @deox/worker-rpc
 
+## 0.0.20
+
+### Patch Changes
+
+- [#35](https://github.com/kumardeo/deox/pull/35) [`7ae7f15`](https://github.com/kumardeo/deox/commit/7ae7f15d11b528a01645b9b609c69d8bf203f29c) Thanks [@kumardeo](https://github.com/kumardeo)! - Improve TypeScript type inference and export additional internal types to help bundlers and tooling generate more accurate type annotations.
+
 ## 0.0.19
 
 ### Patch Changes
