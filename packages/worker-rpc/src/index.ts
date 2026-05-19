@@ -339,10 +339,12 @@ export type {
   CallerType,
   InferContext,
   InferMethods,
+  InferProxyType,
   InferWorkerOptions,
   IWorkerOptions as WorkerOptions,
   MessageMain,
   MessageWorker,
   RegisterInput,
   RegisterOutput,
+  RequestOptions,
 } from './types';
