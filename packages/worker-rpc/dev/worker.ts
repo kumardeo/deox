@@ -5,7 +5,7 @@ declare let self: DedicatedWorkerGlobalScope;
 const registered = register((ctx: { info: string }) => {
   const bytes = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8]);
 
-  return {
+  const methods = {
     thisError: new Error('Custom error!'),
     hello: () => 'Hello from worker',
     sum: (...numbers: number[]) => numbers.reduce((p, c) => p + c),
@@ -23,7 +23,12 @@ const registered = register((ctx: { info: string }) => {
     getByteLength() {
       return bytes.byteLength;
     },
+    async wait(seconds: number) {
+      await new Promise((res) => setTimeout(res, seconds * 1000));
+    },
   };
+
+  return methods;
 });
 
 // This should not log any event

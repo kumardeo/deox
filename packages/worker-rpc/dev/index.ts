@@ -63,6 +63,8 @@ worker.addEventListener('message', (event) => {
   console.log('(thread:main)', await worker.call('transferToMain'));
 
   console.log('(thread:main)', await worker.call('getByteLength'));
+
+  worker.call({ signal: AbortSignal.timeout(5000) }, 'wait', 10000);
 })().catch(console.error);
 
 // Expose to window for external uses
