@@ -17,6 +17,7 @@ catalog:
   react-dom: "^19.2.6"
   tsdown: "^0.22.0"
   vite: "^8.0.13"
+  vitest: "^4.1.6"
   wrangler: "^4.92.0"
 
 engineStrict: true

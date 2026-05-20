@@ -16,17 +16,10 @@ jobs:
       os: '["ubuntu-latest"]'
     secrets: inherit
 
-  # test-dev:
-  #   name: ⚫️ Run Vitest (development mode) tests
-  #   uses: ./.github/workflows/build-reusable.yml
-  #   with:
-  #     afterBuild: TEST_MODE=dev pnpm run test --filter='./__tests__'
-  #     os: '["ubuntu-latest"]'
-  #   secrets: inherit
-
-  # test-prod:
-  #   name: ⚫️ Run Vitest (production mode) tests
-  #   uses: ./.github/workflows/build-reusable.yml
-  #   with:
-  #     afterBuild: TEST_MODE=start pnpm test --filter='./__tests__'
-  #   secrets: inherit
+  test:
+    name: ⚫️ Run Vitest tests
+    uses: ./.github/workflows/build-reusable.yml
+    with:
+      afterBuild: pnpm run test
+      os: '["ubuntu-latest"]'
+    secrets: inherit

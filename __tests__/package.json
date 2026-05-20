@@ -9,11 +9,9 @@
   "scripts": {
     "lint": "biome lint .",
     "check": "biome check .",
-    "test": "vitest run",
     "check:types": "tsc --noEmit"
   },
-  "dependencies": {},
   "devDependencies": {
-    "vitest": "^4.1.6"
+    "vitest": "catalog:"
   }
 }

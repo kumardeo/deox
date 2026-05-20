@@ -29,7 +29,9 @@
     "check": "biome check ./src",
     "check:types": "tsc --noEmit",
     "build": "NODE_ENV=production tsdown",
-    "dev": "NODE_ENV=development tsdown --watch"
+    "dev": "NODE_ENV=development tsdown --watch",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "files": [
     "dist"
@@ -55,6 +57,7 @@
     "@deox/utils": "workspace:^"
   },
   "devDependencies": {
-    "tsdown": "catalog:"
+    "tsdown": "catalog:",
+    "vitest": "catalog:"
   }
 }
