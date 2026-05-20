@@ -2,7 +2,8 @@ name: Release
 
 on:
   push:
-    branches: [main, preview]
+    branches:
+      - main
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -29,7 +30,7 @@ jobs:
       id-token: write
       pull-requests: write
     if: |
-      ${{ github.repository_owner == 'kumardeo' && (contains(github.event.head_commit.message, '[bump]') || contains(github.event.head_commit.message, '[ci] release')) && !cancelled() && (success() || failure() || needs.test.result == 'skipped') }}
+      ${{ github.repository_owner == 'kumardeo' && !cancelled() && (success() || failure() || needs.test.result == 'skipped') }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
