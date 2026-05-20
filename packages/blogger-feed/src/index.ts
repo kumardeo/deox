@@ -6,7 +6,7 @@ export {
 } from './errors';
 
 export { parseFeed } from './feed-parser';
-
+export type { WithPagination } from './methods';
 export type {
   Author,
   Blog,

@@ -39,11 +39,11 @@ export interface Link {
   title: string | null;
 }
 
-export type Geo = {
+export interface Geo {
   box: string | null;
   featureName: string | null;
   point: string | null;
-};
+}
 
 export interface Blog {
   /**
