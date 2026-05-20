@@ -30,7 +30,9 @@
     "check:types": "tsc --noEmit",
     "build": "NODE_ENV=production tsdown",
     "dev": "NODE_ENV=development tsdown --watch",
-    "playground": "vite ./dev"
+    "playground": "vite ./dev",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "files": [
     "dist"
@@ -54,6 +56,7 @@
   },
   "devDependencies": {
     "tsdown": "catalog:",
-    "vite": "catalog:"
+    "vite": "catalog:",
+    "vitest": "catalog:"
   }
 }
