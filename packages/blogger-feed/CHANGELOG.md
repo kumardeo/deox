@@ -1,5 +1,11 @@
 # @deox/blogger-feed
 
+## 0.1.1
+
+### Patch Changes
+
+- [#41](https://github.com/kumardeo/deox/pull/41) [`2822865`](https://github.com/kumardeo/deox/commit/2822865f07940c8ade9bcc7b78ec7711c9dd5bfa) Thanks [@kumardeo](https://github.com/kumardeo)! - feat: support `signal` when using `jsonp: true`
+
 ## 0.1.0
 
 ### Minor Changes
