@@ -13,11 +13,6 @@ export interface Author {
    * The image url of the author if available otherwise null
    */
   image: string | null;
-
-  /**
-   * Indicates whether author profile is publicly accessible
-   */
-  public: boolean;
 }
 
 export interface Extended {
@@ -43,8 +38,6 @@ export interface Link {
   type: string | null;
   title: string | null;
 }
-
-export type Links = Record<string, Link[] | undefined>;
 
 export type Geo = {
   box: string | null;
@@ -74,7 +67,7 @@ export interface Blog {
    */
   url: string;
 
-  links: Links;
+  links: Link[];
 
   /**
    * The id of the blog
@@ -125,7 +118,7 @@ export interface Post {
    */
   url: string;
 
-  links: Links;
+  links: Link[];
 
   /**
    * The id of the post
@@ -191,7 +184,7 @@ export interface Comment {
    */
   url: string;
 
-  links: Links;
+  links: Link[];
 
   id: string;
 
@@ -240,7 +233,7 @@ export interface Comment {
 
 export interface Feed {
   blog: Blog | null;
-  links: Links;
+  links: Link[];
   posts: Post[] | null;
   comments: Comment[] | null;
   itemsPerPage: number | null;

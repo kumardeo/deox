@@ -1,10 +1,9 @@
-import { NOT_FOUND_ERRORS } from './constants';
-import { SDKInputNotFoundError } from './errors';
-import { Methods } from './methods';
+import { Methods, type WithPagination } from './methods';
+import type { Post } from './types';
 import { assertNonBlankString } from './utils';
 
 /** Options for {@link Pages.list} */
-export type PagesListOptions = {
+export interface PagesListOptions {
   maxResults?: number;
   startIndex?: number;
   orderBy?: 'published' | 'updated';
@@ -13,15 +12,17 @@ export type PagesListOptions = {
   updatedMin?: Date | string;
   updatedMax?: Date | string;
   summary?: boolean;
-};
+}
 
 /** Options for {@link Pages.get} */
-export type PagesGetOptions = { summary?: boolean };
+export interface PagesGetOptions {
+  summary?: boolean;
+}
 
 /**
  * A class having methods related to Pages
  */
-export class Pages extends Methods {
+export class PagesMethods extends Methods {
   /**
    * Retrieves all the pages of the blog
    *
@@ -29,14 +30,14 @@ export class Pages extends Methods {
    *
    * @returns On success, an Array of Post
    */
-  async list(options: PagesListOptions = {}, { signal }: { signal?: AbortSignal } = {}) {
+  async list(options: PagesListOptions = {}, { signal }: { signal?: AbortSignal } = {}): Promise<WithPagination<'posts'>> {
     const result = await this.c.req(`./pages/${options.summary === true ? 'summary' : 'default'}`, {
       params: options,
       exclude: ['query'],
       signal,
     });
 
-    return this._p('posts', result);
+    return this._paginate('posts', result);
   }
 
   /**
@@ -47,7 +48,7 @@ export class Pages extends Methods {
    *
    * @returns On success, a Post
    */
-  async get(pageId: string, options: PagesGetOptions = {}, { signal }: { signal?: AbortSignal } = {}) {
+  async get(pageId: string, options: PagesGetOptions = {}, { signal }: { signal?: AbortSignal } = {}): Promise<Post | null> {
     assertNonBlankString(pageId, "Argument 'pageId'");
 
     const { posts } = await this.c.req(`./pages/${options.summary === true ? 'summary' : 'default'}/${encodeURI(pageId)}`, {
@@ -55,11 +56,6 @@ export class Pages extends Methods {
       signal,
     });
 
-    const page = posts?.find((p) => p.id === pageId);
-
-    // Throw an error if the page was not found
-    if (!page) throw new SDKInputNotFoundError(NOT_FOUND_ERRORS.page);
-
-    return page;
+    return posts?.find((p) => p.id === pageId) ?? null;
   }
 }

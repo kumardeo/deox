@@ -1,29 +1,23 @@
-import { NOT_FOUND_ERRORS } from './constants';
-import { SDKInputNotFoundError } from './errors';
 import { Methods } from './methods';
+import type { Blog } from './types';
 
 /**
  * A class having methods related to Blog
  */
-export class Blog extends Methods {
+export class BlogMethods extends Methods {
   /**
    * Retrieve blog information
    *
    * @returns The blog info
    */
-  async get({ signal }: { signal?: AbortSignal } = {}) {
+  async get({ signal }: { signal?: AbortSignal } = {}): Promise<Blog | null> {
     const { blog } = await this.c.req('./posts/summary', {
       params: {
-        // Do not load entries since we only need blog info
+        // do not load entries since we only need blog info
         maxResults: 0,
       },
       signal,
     });
-
-    // Throw an error if feed doesn't contain blog info
-    if (!blog) {
-      throw new SDKInputNotFoundError(NOT_FOUND_ERRORS.blog);
-    }
 
     return blog;
   }

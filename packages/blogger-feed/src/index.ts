@@ -2,7 +2,6 @@ export { BloggerFeed, type BloggerFeedOptions } from './blogger-feed';
 
 export {
   SDKError,
-  SDKInputNotFoundError,
   SDKRequestError,
 } from './errors';
 
@@ -16,7 +15,6 @@ export type {
   Feed,
   Geo,
   Link,
-  Links,
   Post,
   PostCommentInfo,
 } from './types';

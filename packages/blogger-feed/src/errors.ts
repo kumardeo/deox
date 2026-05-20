@@ -1,5 +1,3 @@
-import type { NOT_FOUND_ERRORS } from './constants';
-
 /**
  * Represents a SDK error
  */
@@ -20,28 +18,5 @@ export class SDKRequestError extends SDKError {
     super(message, options);
     this.name = 'SDKRequestError';
     this.url = String(url);
-  }
-}
-
-/**
- * Represents a error thrown when client is requesting for some resources which does not exists.
- * For example requesting for a post with specific `post_id` but that doesn't exists.
- */
-export class SDKInputNotFoundError<
-  T extends {
-    error: string;
-    code: (typeof NOT_FOUND_ERRORS)[keyof typeof NOT_FOUND_ERRORS]['code'];
-  },
-> extends SDKError {
-  readonly error: T['error'];
-
-  readonly code: T['code'];
-
-  constructor(result: T, options?: ErrorOptions) {
-    super(result.error, options);
-    this.name = 'SDKInputNotFoundError';
-
-    this.error = result.error;
-    this.code = result.code;
   }
 }

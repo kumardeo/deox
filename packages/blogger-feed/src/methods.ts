@@ -1,34 +1,34 @@
 import type { Client } from './client';
 import type { Comment, Feed, Post } from './types';
-import { addProperties } from './utils';
 
-type PaginationMap = {
+interface PaginationItemsMap {
   posts: Post[];
   comments: Comment[];
-};
+}
 
-/** Pagination props */
-export interface PaginationProps<T extends keyof PaginationMap> {
+export interface WithPagination<T extends keyof PaginationItemsMap> {
+  readonly items: PaginationItemsMap[T];
   readonly itemsPerPage: number | null;
   readonly startIndex: number | null;
   readonly totalResults: number | null;
   readonly selfUrl: string | null;
   readonly previousUrl: string | null;
   readonly nextUrl: string | null;
-  next(requestOptions?: { signal?: AbortSignal }): Promise<(PaginationMap[T] & PaginationProps<T>) | null>;
-  previous(requestOptions?: { signal?: AbortSignal }): Promise<(PaginationMap[T] & PaginationProps<T>) | null>;
+  readonly next: (requestOptions?: { signal?: AbortSignal }) => Promise<WithPagination<T> | null>;
+  readonly previous: (requestOptions?: { signal?: AbortSignal }) => Promise<WithPagination<T> | null>;
 }
 
 export class Methods {
-  protected c: Client;
+  protected readonly c: Client;
 
   constructor(client: Client) {
     this.c = client;
   }
 
   /** Adds pagination properties and methods to feed entries array */
-  protected _p<T extends keyof PaginationMap>(type: T, feed: Feed) {
-    const properties: PaginationProps<T> = {
+  protected _paginate<T extends keyof PaginationItemsMap>(type: T, feed: Feed): WithPagination<T> {
+    return {
+      items: ((type === 'comments' ? feed.comments : feed.posts) ?? []) as PaginationItemsMap[T],
       itemsPerPage: feed.itemsPerPage,
       startIndex: feed.startIndex,
       totalResults: feed.totalResults,
@@ -36,25 +36,21 @@ export class Methods {
       previousUrl: feed.previousUrl,
       nextUrl: feed.nextUrl,
       previous: async ({ signal } = {}) => {
-        if (properties.previousUrl) {
-          const result = await this.c.req(properties.previousUrl, {
-            signal,
-          });
-          return this._p(type, result);
+        if (!feed.previousUrl) {
+          return null;
         }
-        return null;
+        const result = await this.c.req(feed.previousUrl, { signal });
+        return this._paginate(type, result);
       },
       next: async ({ signal } = {}) => {
-        if (properties.nextUrl) {
-          const result = await this.c.req(properties.nextUrl, {
-            signal,
-          });
-          return this._p(type, result);
+        if (!feed.nextUrl) {
+          return null;
         }
-        return null;
+        const result = await this.c.req(feed.nextUrl, {
+          signal,
+        });
+        return this._paginate(type, result);
       },
     };
-
-    return addProperties(((type === 'comments' ? feed.comments : feed.posts) ?? []) as PaginationMap[T], properties);
   }
 }

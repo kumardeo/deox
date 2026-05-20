@@ -1,10 +1,10 @@
-import { Blog } from './blog';
+import { BlogMethods } from './blog';
 import { Client } from './client';
-import { Comments } from './comments';
-import { SDKError, SDKInputNotFoundError, SDKRequestError } from './errors';
+import { CommentsMethods } from './comments';
+import { SDKError, SDKRequestError } from './errors';
 import { parseFeed } from './feed-parser';
-import { Pages } from './pages';
-import { Posts } from './posts';
+import { PagesMethods } from './pages';
+import { PostsMethods } from './posts';
 
 /**
  * An interface representing options for {@link BloggerFeed}
@@ -23,14 +23,13 @@ export interface BloggerFeedOptions {
 
 export class BloggerFeed {
   static readonly SDKError = SDKError;
-  static readonly SDKInputNotFoundError = SDKInputNotFoundError;
   static readonly SDKRequestError = SDKRequestError;
   static readonly parseFeed = parseFeed;
 
-  readonly posts: Posts;
-  readonly pages: Pages;
-  readonly comments: Comments;
-  readonly blog: Blog;
+  readonly posts: PostsMethods;
+  readonly pages: PagesMethods;
+  readonly comments: CommentsMethods;
+  readonly blog: BlogMethods;
 
   /**
    * Creates an instance of {@link BloggerFeed}
@@ -40,9 +39,9 @@ export class BloggerFeed {
    */
   constructor(urlOrId: string | URL, options: BloggerFeedOptions = {}) {
     const client = new Client(urlOrId, options);
-    this.posts = new Posts(client);
-    this.pages = new Pages(client);
-    this.comments = new Comments(client);
-    this.blog = new Blog(client);
+    this.posts = new PostsMethods(client);
+    this.pages = new PagesMethods(client);
+    this.comments = new CommentsMethods(client);
+    this.blog = new BlogMethods(client);
   }
 }

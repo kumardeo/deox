@@ -1,10 +1,9 @@
-import { NOT_FOUND_ERRORS } from './constants';
-import { SDKInputNotFoundError } from './errors';
-import { Methods } from './methods';
+import { Methods, type WithPagination } from './methods';
+import type { Comment } from './types';
 import { assertNonBlankString, isUndefined } from './utils';
 
 /** Options for {@link Comments.list} */
-export type CommentsListOptions = {
+export interface CommentsListOptions {
   maxResults?: number;
   startIndex?: number;
   orderBy?: 'published' | 'updated';
@@ -14,17 +13,17 @@ export type CommentsListOptions = {
   updatedMax?: Date | string;
   summary?: boolean;
   postId?: string;
-};
+}
 
 /** Options for {@link Comments.get} */
-export type CommentsGetOptions = {
+export interface CommentsGetOptions {
   summary?: boolean;
-};
+}
 
 /**
  * A class having methods related to Comments
  */
-export class Comments extends Methods {
+export class CommentsMethods extends Methods {
   /**
    * Retrieves all the comments of the blog or a post
    *
@@ -32,7 +31,7 @@ export class Comments extends Methods {
    *
    * @returns On success, an Array of Comment
    */
-  async list(options: CommentsListOptions = {}, { signal }: { signal?: AbortSignal } = {}) {
+  async list(options: CommentsListOptions = {}, { signal }: { signal?: AbortSignal } = {}): Promise<WithPagination<'comments'>> {
     const { postId } = options;
 
     // validate post_id if provided
@@ -51,7 +50,7 @@ export class Comments extends Methods {
       result.comments = result.comments.filter((c) => c.post.id === postId);
     }
 
-    return this._p('comments', result);
+    return this._paginate('comments', result);
   }
 
   /**
@@ -63,7 +62,7 @@ export class Comments extends Methods {
    *
    * @returns On success, a Comment
    */
-  async get(postId: string, commentId: string, options: CommentsGetOptions = {}, { signal }: { signal?: AbortSignal } = {}) {
+  async get(postId: string, commentId: string, options: CommentsGetOptions = {}, { signal }: { signal?: AbortSignal } = {}): Promise<Comment | null> {
     assertNonBlankString(postId, "Argument 'postId'");
     assertNonBlankString(commentId, "Argument 'commentId'");
 
@@ -71,18 +70,12 @@ export class Comments extends Methods {
       `./${encodeURI(postId)}/comments/${options.summary === true ? 'summary' : 'default'}/${encodeURI(commentId)}`,
       {
         // We need to use blogger service base url since comments by id through domain is not available
-        baseUrl: await this.c.serviceBase,
+        base: await this.c.getServiceBase(),
         exclude: ['query'],
         signal,
       },
     );
 
-    const comment = comments?.find((c) => c.id === commentId);
-
-    if (!comment) {
-      throw new SDKInputNotFoundError(NOT_FOUND_ERRORS.comment);
-    }
-
-    return comment;
+    return comments?.find((c) => c.id === commentId) ?? null;
   }
 }
