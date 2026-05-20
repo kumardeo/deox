@@ -21,7 +21,7 @@ jobs:
     secrets: inherit
 
   publish:
-    name: 🚀 Publish packages / Create PR for publishing packages
+    name: 🚀 Changelog PR or Release
     needs: [test]
     runs-on: ubuntu-latest
     permissions:
@@ -29,7 +29,7 @@ jobs:
       id-token: write
       pull-requests: write
     if: |
-      ${{ (contains(github.event.head_commit.message, '[bump]') || contains(github.event.head_commit.message, '[ci] release')) && !cancelled() && (success() || failure() || needs.test.result == 'skipped') }}
+      ${{ github.repository_owner == 'kumardeo' && (contains(github.event.head_commit.message, '[bump]') || contains(github.event.head_commit.message, '[ci] release')) && !cancelled() && (success() || failure() || needs.test.result == 'skipped') }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -46,13 +46,14 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Publish to npm
+      - name: Create Release Pull Request or Publish
         uses: changesets/action@63a615b9cd06ba9a3e6d13796c7fbcb080a60a0b # v1.8.0
         with:
           commit: "[ci] release"
           title: "[ci] release"
           publish: pnpm publish-packages
           version: pnpm version-packages
+          commitMode: github-api
         env:
           GITHUB_TOKEN: ${{ secrets.FDBOT_GITHUB_TOKEN }}
           # Use OIDC for npm authentication instead of NPM_TOKEN

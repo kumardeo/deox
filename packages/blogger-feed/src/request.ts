@@ -28,7 +28,7 @@ async function fetchJSON<T = unknown>(url: string | URL, { signal }: { signal?: 
   const contentType = response.headers.get('Content-Type')?.includes('application/json');
   if (!contentType) {
     await response.body?.cancel();
-    throw new SDKRequestError(`Response was success but Content-Type '${contentType}' is not supported`, response.url);
+    throw new SDKRequestError(`Request was success but Content-Type '${contentType}' is not supported`, response.url);
   }
 
   return (await response.json()) as T;
@@ -38,7 +38,7 @@ async function fetchJSON<T = unknown>(url: string | URL, { signal }: { signal?: 
 type JSONPGetUrl = (data: { callback: string; id: string }) => string | URL;
 
 /** Pending jsonp requests */
-const queueJSONP: Record<string, (data: unknown) => void> = {};
+const jsonpQueue: Record<string, (data: unknown) => void> = {};
 
 /**
  * Fetches JSONP data through callback using script element
@@ -48,29 +48,66 @@ const queueJSONP: Record<string, (data: unknown) => void> = {};
  *
  * @returns The data which was sent to the callback
  */
-async function fetchJSONP<T = unknown>(getUrl: JSONPGetUrl, scriptOptions?: Record<string, unknown>): Promise<T> {
-  (window as unknown as Record<string, unknown>)[JSONP_NAMESPACE] ??= queueJSONP;
+async function fetchJSONP<T = unknown>(getUrl: JSONPGetUrl, { signal }: { signal?: AbortSignal } = {}): Promise<T> {
+  return new Promise<T>((res, rej) => {
+    let settled = false;
+    const resolve = (value: T) => {
+      if (!settled) {
+        settled = true;
+        res(value);
+      }
+    };
+    const reject = (error: unknown) => {
+      if (!settled) {
+        settled = true;
+        rej(error);
+      }
+    };
 
-  const id = `callback_${generateId()}`;
-  const callback = `window.${JSONP_NAMESPACE}.${id}`;
-  const url = getUrl({ callback, id });
+    if (signal?.aborted) {
+      reject(signal.reason ?? new DOMException('Aborted', 'AbortError'));
+      return;
+    }
 
-  const script = document.createElement('script');
-  script.async = true;
-  if (scriptOptions) {
-    Object.assign(script, scriptOptions);
-  }
-  script.src = String(url);
+    const id = `callback_${generateId()}`;
+    const callback = `window.${JSONP_NAMESPACE}.${id}`;
+    const url = getUrl({ callback, id });
 
-  return new Promise<T>((resolve, reject) => {
-    queueJSONP[id] = (data) => {
-      delete queueJSONP[id];
+    const script = document.createElement('script');
+    script.async = true;
+    script.src = String(url);
+
+    const cleanup = () => {
+      delete jsonpQueue[id];
+      signal?.removeEventListener('abort', onAbort);
+      script.onerror = null;
+      script.onload = null;
+      script.remove();
+    };
+
+    const onAbort = () => {
+      // use noop function for late JSONP calls
+      jsonpQueue[id] = () => {};
+      reject(signal?.reason ?? new DOMException('Aborted', 'AbortError'));
+    };
+    signal?.addEventListener('abort', onAbort, { once: true });
+
+    jsonpQueue[id] = (data) => {
       resolve(data as T);
     };
-    script.onerror = (event) => {
-      delete queueJSONP[id];
-      reject(new SDKError(typeof event === 'string' ? event : `Failed to load script from ${script.src}`));
+    script.onload = () => {
+      cleanup();
+
+      if (!settled) {
+        reject(new SDKError(`JSONP callback \`${callback}\` was not invoked for '${script.src}'`));
+      }
     };
+    script.onerror = (event) => {
+      cleanup();
+      reject(new SDKError(typeof event === 'string' ? event : `Failed to load script from '${script.src}'`));
+    };
+
+    (window as unknown as Record<string, unknown>)[JSONP_NAMESPACE] ??= jsonpQueue;
     document.head.appendChild(script);
   });
 }
@@ -155,11 +192,14 @@ export async function fetchFeed(path: string | URL, { params, include, exclude, 
   }
 
   if (jsonp) {
-    const data = await fetchJSONP(({ callback }) => {
-      const url = new URL(endpoint);
-      url.searchParams.append('callback', callback);
-      return url;
-    });
+    const data = await fetchJSONP(
+      ({ callback }) => {
+        const url = new URL(endpoint);
+        url.searchParams.append('callback', callback);
+        return url;
+      },
+      { signal },
+    );
     return parseFeed(data);
   }
 

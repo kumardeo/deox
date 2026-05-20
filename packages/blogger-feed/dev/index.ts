@@ -14,7 +14,6 @@ const feed = new BloggerFeed('fineshopdesign.com', {
     maxResults: 4,
     startIndex: 2,
     orderBy: 'updated',
-    summary: true,
   });
   console.info('.posts.list():', _posts_list);
 
