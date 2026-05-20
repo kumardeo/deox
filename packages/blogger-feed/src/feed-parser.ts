@@ -1,8 +1,5 @@
-import type { Author, Blog, Comment, Extended, Feed, Geo, Link, Links, Post, PostCommentInfo } from './types';
+import type { Author, Blog, Comment, Extended, Feed, Geo, Link, Post, PostCommentInfo } from './types';
 import { getNested, isArray, isObject, isString } from './utils';
-
-/** constants */
-const NULL = null;
 
 /**
  * Gets the links details from link array
@@ -11,10 +8,9 @@ const NULL = null;
  *
  * @returns An object containing link and links
  */
-const getLinks = (linkArray: unknown) => {
-  const record: Links = {};
-  const array: Link[] = [];
-  let href: string | null = NULL;
+function getLinks(linkArray: unknown): { alternate: string | null; links: Link[] } {
+  const links: Link[] = [];
+  let href: string | null = null;
 
   if (isArray(linkArray) && linkArray.length > 0) {
     for (let i = 0; i < linkArray.length; i += 1) {
@@ -26,18 +22,12 @@ const getLinks = (linkArray: unknown) => {
       const linkTitleLike = getNested(link, 'title');
 
       if (isString(linkRelLike) && isString(linkHrefLike)) {
-        if (!isArray(record[linkRelLike])) {
-          record[linkRelLike] = [];
-        }
-        const result = {
+        links.push({
           rel: linkRelLike,
           href: linkHrefLike,
-          type: isString(linkTypeLike) ? linkTypeLike : NULL,
-          title: isString(linkTitleLike) ? linkTitleLike : NULL,
-        };
-
-        record[linkRelLike]?.push(result);
-        array.push(result);
+          type: isString(linkTypeLike) ? linkTypeLike : null,
+          title: isString(linkTitleLike) ? linkTitleLike : null,
+        });
 
         if (linkRelLike === 'alternate' && linkTypeLike === 'text/html') {
           href = linkHrefLike;
@@ -46,8 +36,8 @@ const getLinks = (linkArray: unknown) => {
     }
   }
 
-  return { alternate: href, links: record, array };
-};
+  return { alternate: href, links };
+}
 
 /**
  * Gets pagination urls from feed
@@ -56,33 +46,27 @@ const getLinks = (linkArray: unknown) => {
  *
  * @returns An object containing `self`, `previous` and `next` url
  */
-const getPagination = (feed: unknown) => {
-  const result: {
-    self: string | null;
-    previous: string | null;
-    next: string | null;
-  } = {
-    self: NULL,
-    previous: NULL,
-    next: NULL,
-  };
-  const keys = Object.keys(result) as (keyof typeof result)[];
+function getPagination(feed: unknown): Record<'self' | 'previous' | 'next', string | null> {
+  const result: Record<'self' | 'previous' | 'next', string | null> = { self: null, previous: null, next: null };
 
-  const { array } = getLinks(getNested(feed, 'link'));
+  const { links } = getLinks(getNested(feed, 'link'));
 
-  for (let i = 0; i < array.length; i += 1) {
-    const { rel, href, type } = array[i];
-    if (type !== 'text/html') {
-      for (const key of keys) {
-        if (rel === key) {
-          result[key] = href;
-        }
-      }
+  for (let i = 0; i < links.length; i += 1) {
+    const { rel, href, type } = links[i];
+    if (type === 'text/html') {
+      continue;
+    }
+    if (rel === 'self') {
+      result.self = href;
+    } else if (rel === 'previous') {
+      result.previous = href;
+    } else if (rel === 'next') {
+      result.next = href;
     }
   }
 
   return result;
-};
+}
 
 /**
  * Gets category from category array
@@ -91,7 +75,7 @@ const getPagination = (feed: unknown) => {
  *
  * @returns An Array of string representing categories
  */
-const getLabels = (categoryArray: unknown) => {
+function getLabels(categoryArray: unknown): string[] {
   const labels: string[] = [];
 
   if (isArray(categoryArray) && categoryArray.length > 0) {
@@ -106,7 +90,7 @@ const getLabels = (categoryArray: unknown) => {
   }
 
   return labels;
-};
+}
 
 /**
  * Gets Geo details from post entry
@@ -115,17 +99,17 @@ const getLabels = (categoryArray: unknown) => {
  *
  * @returns An object containing `box`, `featureName` and `point`
  */
-const getGeo = (postEntry: unknown): Geo => {
+function getGeo(postEntry: unknown): Geo {
   const [box, featureName, point] = ['georss$box', 'georss$featurename', 'georss$point'].map((key) => {
     const valueLike = getNested(postEntry, key, '$t');
     if (isString(valueLike)) {
       return valueLike;
     }
-    return NULL;
+    return null;
   });
 
   return { box, featureName, point };
-};
+}
 
 /**
  * Gets comments details from link array of a post entry object
@@ -134,16 +118,10 @@ const getGeo = (postEntry: unknown): Geo => {
  *
  * @returns An object containing `feed`, `number` and `title`
  */
-const getPostComments = (linkArray: unknown): PostCommentInfo => {
-  const result: PostCommentInfo = {
-    feed: NULL,
-    number: NULL,
-    title: NULL,
-  };
+function getPostComments(linkArray: unknown): PostCommentInfo {
+  const result: PostCommentInfo = { feed: null, number: null, title: null };
 
-  const {
-    links: { replies },
-  } = getLinks(linkArray);
+  const replies = getLinks(linkArray).links.filter((link) => link.rel === 'replies');
   if (replies) {
     for (const { title, type, href } of replies) {
       if (type === 'text/html' && isString(title)) {
@@ -157,7 +135,7 @@ const getPostComments = (linkArray: unknown): PostCommentInfo => {
   }
 
   return result;
-};
+}
 
 /**
  * Gets authors from author array
@@ -166,7 +144,7 @@ const getPostComments = (linkArray: unknown): PostCommentInfo => {
  *
  * @returns An object containing `name`, `url`, `image` and `public`
  */
-const getAuthors = (authorArray: unknown) => {
+function getAuthors(authorArray: unknown): Author[] {
   const authors: Author[] = [];
 
   if (isArray(authorArray) && authorArray.length > 0) {
@@ -180,15 +158,15 @@ const getAuthors = (authorArray: unknown) => {
       const image =
         isString(authorImageLike) && authorImageLike.trim().toLowerCase() !== 'https://img1.blogblog.com/img/b16-rounded.gif'
           ? authorImageLike
-          : NULL;
-      const url = isString(authorUriLike) ? authorUriLike : NULL;
+          : null;
+      const url = isString(authorUriLike) ? authorUriLike : null;
 
-      authors.push({ name, url, image, public: url !== NULL });
+      authors.push({ name, url, image });
     }
   }
 
   return authors;
-};
+}
 
 /**
  * Gets extended details from a comment entry object
@@ -197,12 +175,8 @@ const getAuthors = (authorArray: unknown) => {
  *
  * @returns An object containing `class`, `time`, `removed`
  */
-const getExtended = (commentEntry: unknown): Extended => {
-  const result: Extended = {
-    class: NULL,
-    time: NULL,
-    removed: false,
-  };
+function getExtended(commentEntry: unknown): Extended {
+  const result: Extended = { class: null, time: null, removed: false };
 
   const extendedArray = getNested(commentEntry, 'gd$extendedProperty');
 
@@ -211,9 +185,7 @@ const getExtended = (commentEntry: unknown): Extended => {
       const extended = (extendedArray[i] || {}) as Record<string, unknown>;
       const { name, value } = extended;
       if (isString(name) && isString(value)) {
-        const data: {
-          [key: string]: ['class' | 'time' | 'removed', string | boolean];
-        } = {
+        const data: Record<string, ['class' | 'time' | 'removed', string | boolean]> = {
           'blogger.itemClass': ['class', value],
           'blogger.displayTime': ['time', value],
           'blogger.contentRemoved': ['removed', value === 'true'],
@@ -230,7 +202,7 @@ const getExtended = (commentEntry: unknown): Extended => {
   }
 
   return result;
-};
+}
 
 /**
  * Gets thumbnail urls from a post entry object
@@ -241,34 +213,35 @@ const getExtended = (commentEntry: unknown): Extended => {
  * Element at index 0 will be thumbnail url or null from post entry.
  * Element at index 1 will be thumbnail url or null from post content otherwise post entry
  */
-const getThumbnail = (postEntry: unknown) => {
-  const postContentLike = getNested(postEntry, 'content', '$t');
-  const postSummaryLike = getNested(postEntry, 'summary', '$t');
+function getThumbnail(postEntry: unknown): [string | null, string | null] {
   const postMediaThumbnailLike = getNested(postEntry, 'media$thumbnail', 'url');
 
-  let content: string | null = NULL;
+  const thumbnail: string | null = isString(postMediaThumbnailLike) ? postMediaThumbnailLike : null;
+
+  const result: [string | null, string | null] = [thumbnail, thumbnail];
+
+  if (thumbnail !== null) {
+    return result;
+  }
+
+  const postContentLike = getNested(postEntry, 'content', '$t');
+  const postSummaryLike = getNested(postEntry, 'summary', '$t');
+
+  let content: string | null = null;
   if (isString(postContentLike)) {
     content = postContentLike;
   } else if (isString(postSummaryLike)) {
     content = postSummaryLike;
   }
 
-  const thumb: string | null = isString(postMediaThumbnailLike) ? postMediaThumbnailLike : NULL;
-
-  const result = [thumb, thumb] as [string | null, string | null];
-
-  if (thumb !== NULL) {
-    return result;
-  }
-
-  const matches = content ? /<img +(.*?)src=([""])([^""]+?)([""])(.*?) *\/?>/i.exec(content) : NULL;
+  const matches = content ? /<img +(.*?)src=([""])([^""]+?)([""])(.*?) *\/?>/i.exec(content) : null;
 
   if (matches?.[3]) {
     result[1] = matches[3];
   }
 
   return result;
-};
+}
 
 /**
  * Gets items per page number from feed object
@@ -277,15 +250,15 @@ const getThumbnail = (postEntry: unknown) => {
  *
  * @returns The items per page number or `null`
  */
-const getItemsPerPage = (feedObject: unknown): number | null => {
+function getItemsPerPage(feedObject: unknown): number | null {
   const resultString = getNested(feedObject, 'openSearch$itemsPerPage', '$t');
 
   if (isString(resultString)) {
     return Number(resultString);
   }
 
-  return NULL;
-};
+  return null;
+}
 
 /**
  * Gets start index number from feed object
@@ -294,15 +267,15 @@ const getItemsPerPage = (feedObject: unknown): number | null => {
  *
  * @returns The start index or `null`
  */
-const getStartIndex = (feedObject: unknown): number | null => {
+function getStartIndex(feedObject: unknown): number | null {
   const resultString = getNested(feedObject, 'openSearch$startIndex', '$t');
 
   if (isString(resultString)) {
     return Number(resultString);
   }
 
-  return NULL;
-};
+  return null;
+}
 
 /**
  * Gets total result number from feed object
@@ -311,15 +284,15 @@ const getStartIndex = (feedObject: unknown): number | null => {
  *
  * @returns The total result or `null`
  */
-const getTotalResult = (feedObject: unknown): number | null => {
+function getTotalResult(feedObject: unknown): number | null {
   const resultString = getNested(feedObject, 'openSearch$totalResults', '$t');
 
   if (isString(resultString)) {
     return Number(resultString);
   }
 
-  return NULL;
-};
+  return null;
+}
 
 /**
  * Gets blog details from feed object
@@ -328,7 +301,7 @@ const getTotalResult = (feedObject: unknown): number | null => {
  *
  * @returns The {@link Blog} if available otherwise `null`
  */
-const getBlog = (feedObject: unknown): Blog | null => {
+function getBlog(feedObject: unknown): Blog | null {
   const feedIdLike = getNested(feedObject, 'id', '$t');
   const feedTitleLike = getNested(feedObject, 'title', '$t');
   const feedSubtitleLike = getNested(feedObject, 'subtitle', '$t');
@@ -339,22 +312,20 @@ const getBlog = (feedObject: unknown): Blog | null => {
   if (isObject(feedObject) && isString(feedIdLike) && isString(feedTitleLike) && isString(feedUpdatedLike) && isString(alternate)) {
     const feedCategoryLike = getNested(feedObject, 'category');
 
-    const blog = {
+    return {
       id: feedIdLike.replace(/^.*blog-(\d+).*$/, '$1'),
       title: feedTitleLike,
-      subtitle: isString(feedSubtitleLike) ? feedSubtitleLike : NULL,
+      subtitle: isString(feedSubtitleLike) ? feedSubtitleLike : null,
       labels: getLabels(feedCategoryLike),
       url: alternate,
       links,
       updated: feedUpdatedLike,
       author: getAuthors(getNested(feedObject, 'author'))[0],
     };
-
-    return blog;
   }
 
-  return NULL;
-};
+  return null;
+}
 
 /**
  * Gets post details from post entry object
@@ -363,7 +334,7 @@ const getBlog = (feedObject: unknown): Blog | null => {
  *
  * @returns The {@link Post} if available otherwise `null`
  */
-const getPost = (postEntry: unknown): Post | null => {
+function getPost(postEntry: unknown): Post | null {
   const postIdLike = getNested(postEntry, 'id', '$t');
   const postTitleLike = getNested(postEntry, 'title', '$t');
   const postPublishedLike = getNested(postEntry, 'published', '$t');
@@ -383,7 +354,7 @@ const getPost = (postEntry: unknown): Post | null => {
   ) {
     const [thumbnail, thumbnailAlt] = getThumbnail(postEntry);
 
-    const post: Post = {
+    return {
       id: postIdLike.replace(/^.*(?:page|post)-(\d+)$/, '$1'),
       title: postTitleLike,
       published: postPublishedLike,
@@ -394,17 +365,15 @@ const getPost = (postEntry: unknown): Post | null => {
       author: getAuthors(getNested(postEntry, 'author'))[0],
       thumbnail,
       thumbnailAlt,
-      summary: isString(postSummaryLike) ? postSummaryLike : NULL,
-      content: isString(postContentLike) ? postContentLike : NULL,
+      summary: isString(postSummaryLike) ? postSummaryLike : null,
+      content: isString(postContentLike) ? postContentLike : null,
       comments: getPostComments(postLinkLike),
       geo: getGeo(postEntry),
     };
-
-    return post;
   }
 
-  return NULL;
-};
+  return null;
+}
 
 /**
  * Gets comment details from comment entry object
@@ -413,7 +382,7 @@ const getPost = (postEntry: unknown): Post | null => {
  *
  * @returns The {@link Comment} if available otherwise `null`
  */
-const getComment = (commentEntry: unknown): Comment | null => {
+function getComment(commentEntry: unknown): Comment | null {
   const commentIdLike = getNested(commentEntry, 'id', '$t');
   const commentTitleLike = getNested(commentEntry, 'title', '$t');
   const commentPublishedLike = getNested(commentEntry, 'published', '$t');
@@ -436,31 +405,29 @@ const getComment = (commentEntry: unknown): Comment | null => {
     isString(commentInReplyToHrefLike) &&
     isString(commentInReplyToRefLike)
   ) {
-    const inReplyToMatches = links.related?.[0].href.match(/\/feeds\/(.*)\/comments\/[^/]+\/(\d+)/);
+    const inReplyToMatches = links.find((link) => link.rel === 'related')?.href.match(/\/feeds\/(.*)\/comments\/[^/]+\/(\d+)/);
 
-    const comment: Comment = {
+    return {
       title: commentTitleLike,
       published: commentPublishedLike,
       updated: commentUpdatedLike,
       url: alternate,
       links,
       author: getAuthors(getNested(commentEntry, 'author'))[0],
-      summary: isString(commentSummaryLike) ? commentSummaryLike : NULL,
-      content: isString(commentContentLike) ? commentContentLike : NULL,
+      summary: isString(commentSummaryLike) ? commentSummaryLike : null,
+      content: isString(commentContentLike) ? commentContentLike : null,
       extended: getExtended(commentEntry),
       id: commentIdLike.replace(/^.*(?:page|post)-(\d+)$/, '$1'),
       post: {
         id: commentInReplyToRefLike.replace(/^.*(?:page|post)-(\d+)$/, '$1'),
         url: commentInReplyToHrefLike.split('?')[0],
       },
-      inReplyTo: inReplyToMatches?.[2] ?? NULL,
+      inReplyTo: inReplyToMatches?.[2] ?? null,
     };
-
-    return comment;
   }
 
-  return NULL;
-};
+  return null;
+}
 
 /**
  * Gets the posts and comments from entry array
@@ -469,9 +436,9 @@ const getComment = (commentEntry: unknown): Comment | null => {
  *
  * @returns An object containing `posts` and `comments`
  */
-const getEntries = (entryArray: unknown) => {
-  let posts: Post[] | null = NULL;
-  let comments: Comment[] | null = NULL;
+function getEntries(entryArray: unknown): { posts: Post[] | null; comments: Comment[] | null } {
+  let posts: Post[] | null = null;
+  let comments: Comment[] | null = null;
 
   if (isArray(entryArray)) {
     posts = [];
@@ -498,7 +465,7 @@ const getEntries = (entryArray: unknown) => {
   }
 
   return { posts, comments };
-};
+}
 
 /**
  * Gets all possible information from entry object and feed object
@@ -508,12 +475,12 @@ const getEntries = (entryArray: unknown) => {
  *
  * @returns An object
  */
-const getFeedFromEntry = (entryArray: unknown, feedObject?: unknown) => {
+function getFeedFromEntry(entryArray: unknown, feedObject?: unknown): Feed {
   const { posts, comments } = getEntries(entryArray);
 
   const pagination = getPagination(feedObject);
 
-  const feed: Feed = {
+  return {
     blog: getBlog(feedObject),
     links: getLinks(getNested(feedObject, 'link')).links,
     posts,
@@ -525,9 +492,7 @@ const getFeedFromEntry = (entryArray: unknown, feedObject?: unknown) => {
     previousUrl: pagination.previous,
     nextUrl: pagination.next,
   };
-
-  return feed;
-};
+}
 
 /**
  * Get entry array from input
@@ -540,15 +505,15 @@ const getFeedFromEntry = (entryArray: unknown, feedObject?: unknown) => {
  *
  * @returns Array of entry object
  */
-const getEntryArray = (input: unknown) => {
+function getEntryArray(input: unknown): unknown[] | null {
   if (isArray(input)) {
     return input as unknown[];
   }
   if (isObject(input)) {
     return [input];
   }
-  return NULL;
-};
+  return null;
+}
 
 /**
  * Get the information from Blogger feed json object
@@ -565,7 +530,7 @@ const getEntryArray = (input: unknown) => {
  *
  * @returns An object containing information from feed
  */
-export const parseFeed = (input: unknown) => {
+export function parseFeed(input: unknown): Feed {
   const inputFeedLike = getNested(input, 'feed');
 
   // Check if input.feed is an object
@@ -576,4 +541,4 @@ export const parseFeed = (input: unknown) => {
 
   const inputEntryLike = getNested(input, 'entry');
   return getFeedFromEntry(getEntryArray(inputEntryLike));
-};
+}

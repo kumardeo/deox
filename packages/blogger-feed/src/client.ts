@@ -1,6 +1,6 @@
-import { NOT_FOUND_ERRORS } from './constants';
-import { SDKInputNotFoundError } from './errors';
+import { SDKError } from './errors';
 import { type FetchFeedOptions, fetchFeed } from './request';
+import type { Blog, Feed } from './types';
 import { isString } from './utils';
 
 /**
@@ -15,11 +15,13 @@ export interface ClientOptions {
  * A class for fetching Blogger feed
  */
 export class Client {
-  private jsonp: boolean;
-  private base: string;
+  private _jsonp: boolean;
+  private _base: string;
 
-  private _bU: string | undefined;
-  private _bI: string | undefined;
+  private _blogUrl: string | undefined;
+  private _blogId: string | undefined;
+
+  private _blog?: Blog;
 
   /**
    * Creates an instance of {@link Client}
@@ -29,8 +31,8 @@ export class Client {
    */
   constructor(urlOrId: string | URL, options: ClientOptions = {}) {
     if (isString(urlOrId) && /^\d{12,24}$/.test(urlOrId)) {
-      this._bI = urlOrId;
-      this.base = getServiceBase(urlOrId);
+      this._blogId = urlOrId;
+      this._base = getServiceBase(urlOrId);
     } else {
       let url: URL | null = null;
       if (urlOrId instanceof URL) {
@@ -47,71 +49,60 @@ export class Client {
         throw new Error(`Argument 'urlOrId' has unsupported protocol '${url.protocol}'`);
       }
 
-      this._bU = addSlash(url.origin);
-      this.base = getDomainBase(url.origin);
+      this._blogUrl = trailingSlash(url.origin);
+      this._base = getDomainBase(url.origin);
     }
-    this.jsonp = options.jsonp === true;
+    this._jsonp = options.jsonp === true;
 
     // Throw an error if jsonp is enabled but current environment is not browser
-    if (this.jsonp && (typeof window !== 'object' || typeof document !== 'object')) {
+    if (this._jsonp && (typeof window !== 'object' || typeof document !== 'object')) {
       throw new Error("options.jsonp is set to true but current environment does't support it, please set it to false to use json");
     }
   }
 
-  private _?: {
-    id: string;
-    url: string;
-    serviceBase: string;
-    domainBase: string;
-  };
-
-  get blog() {
-    return (async () => {
-      const { blog } = await this.req('./posts/summary', { params: { maxResults: 0 } });
+  async getBlog(): Promise<{ id: string; url: string }> {
+    if (!this._blog) {
+      const { blog } = await this.req('./posts/summary', {
+        params: {
+          // do not load entries since we only need blog info
+          maxResults: 0,
+        },
+      });
 
       if (!blog) {
-        throw new SDKInputNotFoundError(NOT_FOUND_ERRORS.blog);
+        throw new SDKError('The blog was not found.');
       }
 
-      this._ ??= {
-        id: blog.id,
-        url: blog.url,
-        serviceBase: getServiceBase(blog.id),
-        domainBase: getDomainBase(blog.url),
-      };
+      this._blog = blog;
+    }
 
-      return this._;
-    })();
+    return this._blog;
   }
 
-  get id() {
-    return (async () => {
-      this._bI ??= (await this.blog).id;
-      return this._bI;
-    })();
+  async getBlogId(): Promise<string> {
+    this._blogId ??= (await this.getBlog()).id;
+    return this._blogId;
   }
 
-  get url() {
-    return (async () => {
-      this._bU ??= (await this.blog).url;
-      return this._bU;
-    })();
+  async getBlogUrl(): Promise<string> {
+    this._blogUrl ??= trailingSlash((await this.getBlog()).url);
+    return this._blogUrl;
   }
 
-  get domainBase() {
-    return (async () => getDomainBase(await this.url))();
+  async getDomainBase(): Promise<string> {
+    return getDomainBase(await this.getBlogUrl());
   }
 
-  get serviceBase() {
-    return (async () => getServiceBase(await this.id))();
+  async getServiceBase(): Promise<string> {
+    return getServiceBase(await this.getBlogId());
   }
 
-  async req(path: string, options?: FetchFeedOptions) {
-    return fetchFeed(path, { baseUrl: this.base, jsonp: this.jsonp, ...options });
+  async req(path: string, options?: FetchFeedOptions): Promise<Feed> {
+    return fetchFeed(path, { base: this._base, jsonp: this._jsonp, ...options });
   }
 }
 
-function addSlash(url: string): string {
+function trailingSlash(url: string): string {
   return url.endsWith('/') ? url : `${url}/`;
 }
 
@@ -120,5 +111,5 @@ function getServiceBase(id: string): string {
 }
 
 function getDomainBase(origin: string): string {
-  return `${addSlash(origin)}feeds/`;
+  return `${trailingSlash(origin)}feeds/`;
 }

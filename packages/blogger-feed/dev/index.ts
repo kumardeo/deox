@@ -31,7 +31,7 @@ const feed = new BloggerFeed('fineshopdesign.com', {
   console.info('.posts.list({ label })', _posts_list_label);
 
   // Posts.get
-  const _posts_get = await feed.posts.get(_posts_list[0].id);
+  const _posts_get = await feed.posts.get(_posts_list.items[0].id);
   console.info('.posts.get():', _posts_get);
 
   // Posts.query
@@ -43,7 +43,7 @@ const feed = new BloggerFeed('fineshopdesign.com', {
   console.info('.pages.list():', _pages_list);
 
   // Pages.get
-  const _pages_get = await feed.pages.get(_pages_list[0].id);
+  const _pages_get = await feed.pages.get(_pages_list.items[0].id);
   console.info('.pages.get():', _pages_get);
 
   // Comments.list
@@ -54,7 +54,7 @@ const feed = new BloggerFeed('fineshopdesign.com', {
   console.info('.comments.list():', _comments_list);
 
   // Comments.get
-  const _comments_get = await feed.comments.get(_comments_list[0].post.id, _comments_list[0].id);
+  const _comments_get = await feed.comments.get(_comments_list.items[0].post.id, _comments_list.items[0].id);
   console.info('.comments.get():', _comments_get);
 })().catch(console.error);
 

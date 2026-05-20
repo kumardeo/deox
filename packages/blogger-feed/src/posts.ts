@@ -1,10 +1,9 @@
-import { NOT_FOUND_ERRORS } from './constants';
-import { SDKInputNotFoundError } from './errors';
-import { Methods } from './methods';
+import { Methods, type WithPagination } from './methods';
+import type { Post } from './types';
 import { assertNonBlankString, isUndefined } from './utils';
 
 /** Options for {@link Posts.list} */
-export type PostsListOptions = {
+export interface PostsListOptions {
   maxResults?: number;
   startIndex?: number;
   orderBy?: 'published' | 'updated';
@@ -14,15 +13,17 @@ export type PostsListOptions = {
   updatedMax?: Date | string;
   label?: string;
   summary?: boolean;
-};
+}
 
 /** Options for {@link Posts.get} */
-export type PostsGetOptions = { summary?: boolean };
+export interface PostsGetOptions {
+  summary?: boolean;
+}
 
 /** Options for {@link Posts.query} */
-export type PostsQueryOptions = Omit<PostsListOptions, 'label'>;
+export interface PostsQueryOptions extends Omit<PostsListOptions, 'label'> {}
 
-export class Posts extends Methods {
+export class PostsMethods extends Methods {
   /**
    * Retrieves all the posts of the blog
    *
@@ -30,7 +31,7 @@ export class Posts extends Methods {
    *
    * @returns On success, an Array of Post
    */
-  async list(options: PostsListOptions = {}, { signal }: { signal?: AbortSignal } = {}) {
+  async list(options: PostsListOptions = {}, { signal }: { signal?: AbortSignal } = {}): Promise<WithPagination<'posts'>> {
     const { label } = options;
 
     // validate label if provided
@@ -44,7 +45,7 @@ export class Posts extends Methods {
       signal,
     });
 
-    return this._p('posts', result);
+    return this._paginate('posts', result);
   }
 
   /**
@@ -55,7 +56,7 @@ export class Posts extends Methods {
    *
    * @returns On success, a Post
    */
-  async get(postId: string, options: PostsGetOptions = {}, { signal }: { signal?: AbortSignal } = {}) {
+  async get(postId: string, options: PostsGetOptions = {}, { signal }: { signal?: AbortSignal } = {}): Promise<Post | null> {
     assertNonBlankString(postId, "Argument 'postId'");
 
     const { posts } = await this.c.req(`./posts/${options.summary === true ? 'summary' : 'default'}/${encodeURIComponent(postId)}`, {
@@ -63,12 +64,7 @@ export class Posts extends Methods {
       signal,
     });
 
-    const post = posts?.find((p) => p.id === postId);
-
-    // Throw an error if the post was not found
-    if (!post) throw new SDKInputNotFoundError(NOT_FOUND_ERRORS.post);
-
-    return post;
+    return posts?.find((p) => p.id === postId) ?? null;
   }
 
   /**
@@ -79,7 +75,7 @@ export class Posts extends Methods {
    *
    * @returns On success, an Array of Post
    */
-  async query(query: string, options: PostsQueryOptions = {}, { signal }: { signal?: AbortSignal } = {}) {
+  async query(query: string, options: PostsQueryOptions = {}, { signal }: { signal?: AbortSignal } = {}): Promise<WithPagination<'posts'>> {
     assertNonBlankString(query, "Argument 'query'");
 
     const result = await this.c.req(`./posts/${options.summary === true ? 'summary' : 'default'}`, {
@@ -90,6 +86,6 @@ export class Posts extends Methods {
       signal,
     });
 
-    return this._p('posts', result);
+    return this._paginate('posts', result);
   }
 }
