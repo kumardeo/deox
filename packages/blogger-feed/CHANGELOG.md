@@ -1,5 +1,77 @@
 # @deox/blogger-feed
 
+## 0.1.0
+
+### Minor Changes
+
+- [#38](https://github.com/kumardeo/deox/pull/38) [`e999855`](https://github.com/kumardeo/deox/commit/e99985537271b900023a7a95572aade09fb393e9) Thanks [@kumardeo](https://github.com/kumardeo)! - **Pagination API has changed**
+
+  List methods now return a pagination object instead of an array with mixed pagination properties.
+
+  Before:
+
+  ```ts
+  const feed = new BloggerFeed(url);
+  const posts = await feed.posts.list();
+
+  posts[0];
+  posts.next();
+  ```
+
+  Now:
+
+  ```ts
+  const feed = new BloggerFeed(url);
+  const posts = await feed.posts.list();
+
+  posts.items[0];
+  posts.next();
+  ```
+
+  This affects all list methods:
+
+  - `BloggerFeed.posts.list`
+  - `BloggerFeed.pages.list`
+  - `BloggerFeed.comments.list`
+
+- [#38](https://github.com/kumardeo/deox/pull/38) [`e999855`](https://github.com/kumardeo/deox/commit/e99985537271b900023a7a95572aade09fb393e9) Thanks [@kumardeo](https://github.com/kumardeo)! - **`get` methods now return `null`**
+
+  `get` methods now return `null` when an entity is not found instead of throwing `SDKInputNotFoundError`.
+
+  The `SDKInputNotFoundError` class has been removed.
+
+  Before:
+
+  ```ts
+  const feed = new BloggerFeed(url);
+
+  try {
+    const post = await feed.posts.get(id);
+  } catch (error) {
+    if (error instanceof SDKInputNotFoundError) {
+      // handle not found
+    }
+  }
+  ```
+
+  Now:
+
+  ```ts
+  const feed = new BloggerFeed(url);
+  const post = await feed.posts.get(id);
+
+  if (post === null) {
+    // handle not found
+  }
+  ```
+
+  This affects:
+
+  - `BloggerFeed.blog.get`
+  - `BloggerFeed.posts.get`
+  - `BloggerFeed.pages.get`
+  - `BloggerFeed.comments.get`
+
 ## 0.0.12
 
 ### Patch Changes

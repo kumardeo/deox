@@ -1,5 +1,11 @@
 # @deox/google-image
 
+## 0.0.4
+
+### Patch Changes
+
+- [`6264f55`](https://github.com/kumardeo/deox/commit/6264f55d356be0c3137645b98d4053665e1e3402) Thanks [@kumardeo](https://github.com/kumardeo)! - refactor: rename short variables for clarity
+
 ## 0.0.3
 
 ### Patch Changes
