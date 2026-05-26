@@ -18,5 +18,5 @@
     "types": []
   },
   "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.mts", "src/**/*.test.ts", "src/**/*.test.tsx", "src/**/*.js"],
-  "exclude": ["dist"]
+  "exclude": ["dist", "dev"]
 }

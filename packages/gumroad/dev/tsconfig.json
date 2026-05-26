@@ -1,10 +1,10 @@
 {
   "compilerOptions": {
-    "target": "ES2021",
-    "module": "ESNext",
+    "target": "es2021",
+    "module": "esnext",
     "lib": ["ES2022", "ESNext"],
-    "jsx": "react",
-    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "allowJs": true,
     "checkJs": false,
@@ -15,9 +15,7 @@
     "skipLibCheck": true,
     "declaration": true,
     "emitDeclarationOnly": true,
-    "baseUrl": ".",
     "types": ["@cloudflare/workers-types"]
   },
-  "include": [".", "../src"],
-  "exclude": ["node_modules"]
+  "include": [".", "../src"]
 }
