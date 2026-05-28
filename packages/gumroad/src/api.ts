@@ -1,5 +1,6 @@
 import { Client } from './client';
 import { DEFAULT_API_BASE_URL } from './constants';
+import { CoversMethods } from './covers';
 import { CustomFieldsMethods } from './custom-fields';
 import {
   SDKBadRequestError,
@@ -91,6 +92,7 @@ export class API {
   readonly client: Client;
   readonly logger: Logger;
   readonly products: ProductsMethods;
+  readonly covers: CoversMethods;
   readonly variant_categories: VariantCategoriesMethods;
   readonly variants: VariantsMethods;
   readonly offer_codes: OfferCodesMethods;
@@ -116,6 +118,7 @@ export class API {
     });
     this.logger = new Logger(options.debug);
     this.products = new ProductsMethods(this.client, this.logger);
+    this.covers = new CoversMethods(this.client, this.logger);
     this.variant_categories = new VariantCategoriesMethods(this.client, this.logger);
     this.variants = new VariantsMethods(this.client, this.logger);
     this.offer_codes = new OfferCodesMethods(this.client, this.logger);

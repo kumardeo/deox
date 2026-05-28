@@ -126,7 +126,7 @@ export class VariantCategoriesMethods extends Methods {
         product_id,
       );
     } catch (e) {
-      this.logger.function(e, 'createVariantCategory', { product_id, title });
+      this.logger.function(e, 'VariantCategories.create', { product_id, title });
 
       throw e;
     }
@@ -168,7 +168,7 @@ export class VariantCategoriesMethods extends Methods {
         product_id,
       );
     } catch (e) {
-      this.logger.function(e, 'updateVariantCategory', {
+      this.logger.function(e, 'VariantCategories.update', {
         product_id,
         variant_category_id,
         title,
@@ -200,7 +200,7 @@ export class VariantCategoriesMethods extends Methods {
 
       return true;
     } catch (e) {
-      this.logger.function(e, 'deleteVariantCategory', {
+      this.logger.function(e, 'VariantCategories.delete', {
         product_id,
         variant_category_id,
       });

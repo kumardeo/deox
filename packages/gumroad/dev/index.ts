@@ -34,9 +34,14 @@ const app = new Hono<{ Bindings: Env }>()
     return c.json(await gumroad.products.list());
   })
   .get('/products/get', async (c) => {
-    const productId = (await gumroad.products.list())[0].id;
+    const productId = (await gumroad.products.list())[1].id;
 
     return c.json(await gumroad.products.get(productId));
+  })
+  .get('/variant_categories/list', async (c) => {
+    const productId = (await gumroad.products.list())[0].id;
+
+    return c.json(await gumroad.variant_categories.list(productId));
   })
   .get('/payouts/list', async (c) => {
     return c.json(await gumroad.payouts.list());
@@ -55,17 +60,14 @@ const app = new Hono<{ Bindings: Env }>()
   .get('/sales/list/next', async (c) => {
     return c.json(await (await gumroad.sales.list()).next());
   })
-  .get('/variant_categories/list', async (c) => {
-    const product_id = (await gumroad.products.list())[0].id;
-
-    return c.json(await gumroad.variant_categories.list(product_id));
-  })
   .get('/resource_subscriptions/list', async (c) => {
     return c.json(await gumroad.resource_subscriptions.list('sale'));
   })
   .get('/user/get', async (c) => {
     return c.json(await gumroad.user.get());
   })
-  .post('/ping', async (c) => gumroad.handle(c.req.raw, 'ping'));
+  .post('/ping', async (c) => {
+    return gumroad.handle(c.req.raw, 'ping');
+  });
 
 export default app;

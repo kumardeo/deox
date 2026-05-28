@@ -18,13 +18,21 @@ export type Recurrence = 'monthly' | 'quarterly' | 'biannually' | 'yearly';
 /** Represents recurrence prices */
 export type RecurrencePrices = {
   [K in Recurrence]?: {
-    /** The price in USD cents */
+    /** The price in USD cents for this recurrence */
     price_cents: number;
 
-    /** May return number if `is_pay_what_you_want` is `true` */
+    /**
+     * Suggested price in cents
+     *
+     * May return a number if `is_pay_what_you_want` is `true`
+     */
     suggested_price_cents: number | null;
 
-    /** The {@link PurchasingPowerParityPrices} if available */
+    /**
+     * PPP-adjusted prices for this recurrence
+     *
+     * Present when the seller has purchasing power parity enabled and the product has not opted out
+     */
     purchasing_power_parity_prices?: PurchasingPowerParityPrices;
   };
 };
@@ -44,30 +52,48 @@ export type Card = {
   expiry_year: number | null;
 };
 
-/** Represents option for product variant */
+/** Represents option for product variant category */
 export type ProductVariantOption = {
-  /** The name of the product variant */
+  /** The name of the option */
   name: string;
 
-  /** **Set for non-membership product options** */
-  price_difference?: number;
+  /** Price difference in cents from the base price (0 for membership tiers, whose prices are set via `recurrence_prices`) */
+  price_difference: number | null;
 
-  /** **Set for non-membership product options** */
-  purchasing_power_parity_prices?: PurchasingPowerParityPrices;
+  /**
+   * PPP-adjusted prices for this option, computed from the base price plus `price_difference`; `null` for options whose `price_difference` is `null`
+   *
+   * Present when the seller has purchasing power parity enabled and the product has not opted out
+   */
+  purchasing_power_parity_prices: PurchasingPowerParityPrices | null;
 
-  /** Indicates whether the user can pay what they want */
+  /** Indicates whether this option is pay-what-you-want */
   is_pay_what_you_want: boolean;
 
-  /** **Present for membership products, `otherwise null`** */
+  /** @deprecated Always `null` */
+  url: string | null;
+
+  /**
+   * Prices per recurrence interval
+   *
+   * Present for membership products; otherwise `null`
+   */
   recurrence_prices: RecurrencePrices | null;
+
+  /**
+   * Per-variant rich content pages
+   *
+   * Omitted from `GET /v2/products` list responses
+   */
+  rich_content?: RichContentItem[];
 };
 
-/** Represents a product variant */
+/** Represents a product variant category */
 export type ProductVariant = {
-  /** The title of the variant */
+  /** The title of the variant category */
   title: string;
 
-  /** The options available for the variant */
+  /** The options available for the variant category */
   options: ProductVariantOption[];
 };
 
@@ -142,27 +168,79 @@ export type BundleProduct = {
   position: number;
 };
 
+export type RichContentText = {
+  type: 'text';
+  text: string;
+};
+
+export type RichContentElement = {
+  type: string;
+  attrs?: Record<string, unknown>;
+  content?: RichContentNode[];
+  [K: string]: unknown;
+};
+
+export type RichContentNode = RichContentText | RichContentElement;
+
+export type RichContentDoc = {
+  type: 'doc';
+  content: RichContentNode[];
+};
+
+export type RichContentItem = {
+  id: string;
+  page_id: string;
+  title: string;
+  variant_id: string | null;
+  description: RichContentDoc;
+};
+
+/** Represents a file */
+export type File = {
+  /** External ID of the file */
+  id: string;
+
+  /** Display name of the file */
+  name: string | null;
+
+  /** File size in bytes */
+  size: number | null;
+
+  /** Signed download URL for uploaded files; raw URL for external-link files (filetype: `link`) */
+  url: string;
+
+  /** File extension (e.g. `pdf`) or `link` for external URLs */
+  filetype: StringWithSuggestions<'link'>;
+
+  /** Group classification */
+  filegroup: StringWithSuggestions<'audio' | 'video' | 'document'>;
+};
+
 /** Represents a product */
 export type Product = {
-  /** The custom permalink of the product, `null` if not available */
+  /** The custom URL slug for the product, `null` if not available */
   custom_permalink: string | null;
 
-  /** The custom receipt of the product, `null` if not available */
+  /** The custom receipt text, `null` if not available */
   custom_receipt: string | null;
 
-  /** The summary of the product, `null` if not set */
+  /** The custom summary shown to buyers, `null` if not set */
   custom_summary: string | null;
 
-  /** Custom fields of the product as an Array of {@link CustomField} */
+  /**
+   * Combined list of the seller's global checkout custom fields and the product's own custom fields
+   *
+   * An Array of {@link CustomField}
+   */
   custom_fields: CustomField[];
 
-  /** Indicates whether the price of the product is customizable */
+  /** Indicates whether pay-what-you-want pricing is enabled */
   customizable_price: boolean | null;
 
-  /** The description of the product */
+  /** The product description */
   description: string;
 
-  /** Indicates whether the product is deleted */
+  /** Indicates whether the product has been deleted */
   deleted: boolean;
 
   /** The number of maximum purchase allowed for the product, `null` if not set */
@@ -174,10 +252,10 @@ export type Product = {
   /** The preview url of the product */
   preview_url: string | null;
 
-  /** Indicates whether the product requires shipping */
+  /** Indicates whether shipping info is required */
   require_shipping: boolean;
 
-  /** The duration of the subscription, `null` if not available */
+  /** The subscription billing interval, `null` if not available */
   subscription_duration: Recurrence | null;
 
   /** Indicates whether the product is published */
@@ -190,7 +268,7 @@ export type Product = {
    */
   url: string | null;
 
-  /** The id of the product */
+  /** The unique identifier for the product */
   id: string;
 
   /** The price of the product in USD cents */
@@ -203,16 +281,17 @@ export type Product = {
    */
   purchasing_power_parity_prices?: PurchasingPowerParityPrices;
 
-  /** The currency of the price */
+  /** ISO currency code (e.g. `usd`) */
   currency: StringWithSuggestions<'usd'>;
 
   /**
-   * The short url of the product provided by gumroad.
+   * The short Gumroad URL for the product
+   *
    * Example: `https://sahil.gumroad.com/l/pencil`
    */
   short_url: string;
 
-  /** The thumbnail url of the product, `null` if not available */
+  /** The URL of the product thumbnail image, `null` if not available */
   thumbnail_url: string | null;
 
   /** Covers for the product, in display order */
@@ -228,9 +307,9 @@ export type Product = {
   formatted_price: string;
 
   /**
-   * Legacy single-file metadata; returns {} for products with 0 or 2+ files.
+   * Legacy single-file metadata; returns `{}` for products with 0 or 2+ files.
    *
-   * For complete file state, fetch the product via GET /v2/products/:id and read the "files" array (not returned by GET /v2/products)
+   * For complete file state, fetch the product via `GET /v2/products/:id` and read the `files` array (not returned by `GET /v2/products`)
    */
   file_info: FileInfo | NonNullable<unknown>;
 
@@ -240,26 +319,53 @@ export type Product = {
   /**
    * Number of sales of the product, note that the number is in string
    *
-   * **Only available with the `view_sales` scope**
+   * **Only available with the `view_sales` or `account` scope**
    */
-  sales_count?: `${number}`;
+  sales_count?: number;
 
   /**
    * The amount in USD cents which was made with the sales of the product
    *
-   * **Only available with the `view_sales` scope**
+   * **Only available with the `view_sales` or `account` scope**
    */
-  sales_usd_cents?: `${number}`;
-
-  /** Variants of the product as an Array of {@link ProductVariant} */
-  variants: ProductVariant[];
+  sales_usd_cents?: number;
 
   /**
    * The delivery url of the product, `null` if not set
    *
    * @deprecated Always `null`
+   *
+   * **Only available with the `view_sales` or `account` scope**
    */
   custom_delivery_url: string | null;
+
+  /**
+   * Product-level rich content pages
+   *
+   * Omitted from `GET /v2/products` list responses
+   */
+  rich_content?: RichContentItem[];
+
+  /**
+   * Whether all variants share the product-level rich content
+   *
+   * Omitted from `GET /v2/products` list responses
+   */
+  has_same_rich_content_for_all_variants?: boolean;
+
+  /**
+   * Files attached to the product. Files whose backing S3 object is missing are omitted from the response.
+   *
+   * Omitted from `GET /v2/products` list responses
+   */
+  files?: File[];
+
+  /**
+   * Variant categories and their options
+   *
+   * An Array of {@link ProductVariant}
+   */
+  variants: ProductVariant[];
 } & (
   | {
       /** Indicates whether the product is a membership product */

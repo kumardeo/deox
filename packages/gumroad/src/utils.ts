@@ -64,10 +64,10 @@ export const error = {
     return this.inGumroadRequest(e, result.error) ? result : false;
   },
 
-  isOfferCodeNotFound(e: unknown) {
+  isCoverNotFound(e: unknown) {
     const result = {
-      error: 'The offer_code was not found.',
-      code: 'offer_code_not_found' as const,
+      error: 'The cover was not found.',
+      code: 'cover_not_found' as const,
     };
     return this.inGumroadRequest(e, result.error) ? result : false;
   },
@@ -76,6 +76,14 @@ export const error = {
     const result = {
       error: 'The variant_category was not found.',
       code: 'variant_category_not_found' as const,
+    };
+    return this.inGumroadRequest(e, result.error) ? result : false;
+  },
+
+  isOfferCodeNotFound(e: unknown) {
+    const result = {
+      error: 'The offer_code was not found.',
+      code: 'offer_code_not_found' as const,
     };
     return this.inGumroadRequest(e, result.error) ? result : false;
   },
@@ -115,16 +123,17 @@ export const error = {
   isPayoutNotFound(e: unknown) {
     const result = {
       error: 'The payout was not found.',
-      code: 'payout_not_found',
-    } as const;
+      code: 'payout_not_found' as const,
+    };
     return this.inGumroadRequest(e, result.error) ? result : false;
   },
 
   isAnyNotFound(e: unknown) {
     return (
       this.isProductNotFound(e) ||
-      this.isOfferCodeNotFound(e) ||
+      this.isCoverNotFound(e) ||
       this.isVariantCategoryNotFound(e) ||
+      this.isOfferCodeNotFound(e) ||
       this.isLicenseNotFound(e) ||
       this.isSubscriberNotFound(e) ||
       this.isResourceSubscriptionNotFound(e) ||
