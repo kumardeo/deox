@@ -61,56 +61,47 @@ You can handle webhook requests with ease by using this library. An example is s
 
 ```ts
 // src/index.ts
+import { env } from "cloudflare:workers";
 import { Gumroad } from "@deox/gumroad";
 
-export type Env = Readonly<{
- GUMROAD_ACCESS_TOKEN: string;
-}>;
+const gumroad = new Gumroad(env.GUMROAD_ACCESS_TOKEN);
 
-const handleWebhook = async (request: Request, env: Env) => {
- const gumroad = new Gumroad(env.GUMROAD_ACCESS_TOKEN);
-
- gumroad.on(
+gumroad.on(
   "ping",
   async (ctx, next) => {
-   console.log(
-    `Good news! A new sale was made using an email address ${ctx.data.email}`
-   );
+    console.log(
+      `Good news! A new sale was made using an email address ${ctx.data.email}`,
+    );
 
-   const sale = await ctx.api.sales.get(ctx.data.sale_id);
+    const sale = await ctx.api.sales.get(ctx.data.sale_id);
 
-   console.log(sale);
+    console.log(sale);
 
-   // ...
+    // ...
 
-   if (ctx.data.test) {
-    await next();
-   }
+    if (ctx.data.test) {
+      await next();
+    }
   },
   () => {
-   // This will be called only on test pings
-   console.log("A test ping!");
-  }
- );
+    // This will be called only on test pings
+    console.log("A test ping!");
+  },
+);
 
- // Second parameter is type of resource subscription
- // which is going to be posted on this endpoint
- // Make sure you specify the correct type
- return gumroad.handle(request, "ping");
-};
+export default {
+  async fetch(request, env) {
+    const url = new URL(request.url);
 
-const workers: ExportedHandler<Env> = {
- fetch: (request, env) => {
-  const url = new URL(request.url);
+    // Check for pathname and request method
+    if (request.method === "POST" && url.pathname === "/ping") {
+      // Second parameter is type of resource subscription
+      // which is going to be posted on this endpoint
+      // Make sure you specify the correct type
+      return gumroad.handle(request, "ping");
+    }
 
-  // Check for pathname and request method
-  if (request.method === "POST" && url.pathname === "/ping") {
-   return handleWebhook(request, env);
-  }
-
-  return new Response(null, { status: 404 });
- }
-};
-
-export default workers;
+    return new Response(null, { status: 404 });
+  },
+} satisfies ExportedHandler<Env>;
 ```

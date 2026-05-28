@@ -1,7 +1,9 @@
 /**
- * TODO: These types are not yet finalized since there is no reference for conditional data in Gumroad API docs
- * * So I read the docs and wrote the expected types but not yet tested
- * * Sorry for my bad English!
+ * !DISCLAIMER:
+ *
+ * I wrote these types based on my understanding of the documentation, but they have not been fully tested yet.
+ *
+ * If you find any mistakes, feel free to open an issue.
  */
 
 import type { StringWithSuggestions } from './utils';
