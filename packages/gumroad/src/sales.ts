@@ -1,6 +1,6 @@
 import { Methods } from './methods';
 import type { Sale } from './types';
-import { addProperties, validators } from './utils';
+import { addProperties, assertNonBlankString } from './utils';
 
 /**
  * Bindings for Array of {@link Sale}
@@ -21,7 +21,7 @@ export interface SalesProps {
    *
    * @returns On success, an Array of {@link Sale} | `null` if next page does not exists
    */
-  next(requestOptions?: { signal?: AbortSignal }): Promise<(Sale[] & SalesProps) | null>;
+  next(requestOptions?: { signal?: AbortSignal }): Promise<((Sale & SaleProps)[] & SalesProps) | null>;
 }
 
 /**
@@ -31,33 +31,29 @@ export interface SaleProps {
   /**
    * Marks the sale as shipped
    *
-   * @param tracking_url (Optional) The tracking url
-   *
    * @returns On success, a {@link Sale}
    */
-  markAsShipped(tracking_url?: string | undefined, requestOptions?: { signal?: AbortSignal }): Promise<Sale & SaleProps>;
+  markAsShipped(options: { tracking_url?: string | undefined }, requestOptions?: { signal?: AbortSignal }): Promise<Sale & SaleProps>;
 
   /**
    * Refunds the sale
    *
-   * @param amount_cents The amount in cents
-   *
    * @returns On success, a {@link Sale}
    */
-  refund(amount_cents?: number | undefined, requestOptions?: { signal?: AbortSignal }): Promise<Sale & SaleProps>;
+  refund(options: { amount_cents?: number | undefined }, requestOptions?: { signal?: AbortSignal }): Promise<Sale & SaleProps>;
 }
 
 /**
  * A class having API methods related to Sales
  */
-export class Sales extends Methods {
-  protected _bind_sales(object: { next_page_url?: string; next_page_key?: string; sales: Sale[] }) {
+export class SalesMethods extends Methods {
+  protected _bindSales(object: { next_page_url?: string; next_page_key?: string; sales: Sale[] }): (Sale & SaleProps)[] & SalesProps {
     const properties: SalesProps = {
       next_page_key: object.next_page_key,
       next_page_url: object.next_page_url,
       next: async ({ signal } = {}) => {
         if (object.next_page_url) {
-          return this._bind_sales(
+          return this._bindSales(
             await this.client.request<typeof object>(object.next_page_url, {
               signal,
             }),
@@ -69,16 +65,16 @@ export class Sales extends Methods {
     };
 
     return addProperties(
-      object.sales.map((sale) => this._bind_sale(sale)),
+      object.sales.map((sale) => this._bindSale(sale)),
       properties,
     );
   }
 
-  protected _bind_sale(sale: Sale) {
+  protected _bindSale(sale: Sale): Sale & SaleProps {
     const properties: SaleProps = {
-      markAsShipped: async (tracking_url, requestOptions) => this.markAsShipped(sale.id, tracking_url, requestOptions),
+      markAsShipped: async (options, requestOptions) => this.markAsShipped(sale.id, options, requestOptions),
 
-      refund: async (amount_cents, requestOptions) => this.refund(sale.id, amount_cents, requestOptions),
+      refund: async (options, requestOptions) => this.refund(sale.id, options, requestOptions),
     };
 
     return addProperties(sale, properties);
@@ -123,9 +119,9 @@ export class Sales extends Methods {
       page_key?: string;
     },
     { signal }: { signal?: AbortSignal } = {},
-  ) {
+  ): Promise<(Sale & SaleProps)[] & SalesProps> {
     try {
-      return this._bind_sales(
+      return this._bindSales(
         await this.client.request<{
           next_page_url?: string;
           next_page_key?: string;
@@ -153,11 +149,11 @@ export class Sales extends Methods {
    *
    * @see https://app.gumroad.com/api#get-/sales/:id
    */
-  async get(sale_id: string, { signal }: { signal?: AbortSignal } = {}) {
+  async get(sale_id: string, { signal }: { signal?: AbortSignal } = {}): Promise<Sale & SaleProps> {
     try {
-      validators.notBlank(sale_id, "Argument 'sale_id'");
+      assertNonBlankString(sale_id, "Argument 'sale_id'");
 
-      return this._bind_sale(
+      return this._bindSale(
         (
           await this.client.request<{ sale: Sale }>(`./sales/${encodeURI(sale_id)}`, {
             signal,
@@ -177,17 +173,25 @@ export class Sales extends Methods {
    * Marks a sale as shipped.
    *
    * @param sale_id The id of the sale
-   * @param tracking_url (Optional) The tracking url
    *
    * @returns On success, a {@link Sale}
    *
    * @see https://app.gumroad.com/api#put-/sales/:id/mark_as_shipped
    */
-  async markAsShipped(sale_id: string, tracking_url?: string, { signal }: { signal?: AbortSignal } = {}) {
+  async markAsShipped(
+    sale_id: string,
+    {
+      tracking_url,
+    }: {
+      /** The tracking url */
+      tracking_url?: string;
+    } = {},
+    { signal }: { signal?: AbortSignal } = {},
+  ): Promise<Sale & SaleProps> {
     try {
-      validators.notBlank(sale_id, "Argument 'sale_id'");
+      assertNonBlankString(sale_id, "Argument 'sale_id'");
 
-      return this._bind_sale(
+      return this._bindSale(
         (
           await this.client.request<{ sale: Sale }>(`./sales/${encodeURI(sale_id)}/mark_as_shipped`, {
             params: { tracking_url },
@@ -203,25 +207,35 @@ export class Sales extends Methods {
   }
 
   /**
-   * **Only available with the `refund_sales` scope**
-   *
    * Refunds a sale.
    *
    * @param sale_id The id of the sale
-   * @param amount_cents Amount in cents (in currency of the sale) to be refunded.
-   * If set, issue partial refund by this amount.
-   * If not set, issue full refund.
-   * You can issue multiple partial refunds per sale until it is fully refunded.
    *
    * @returns On success, a {@link Sale}
    *
    * @see https://app.gumroad.com/api#put-/sales/:id/refund
+   *
+   * **Only available with the `refund_sales` scope**
    */
-  async refund(sale_id: string, amount_cents?: number, { signal }: { signal?: AbortSignal } = {}) {
+  async refund(
+    sale_id: string,
+    {
+      amount_cents,
+    }: {
+      /**
+       * Amount in cents (in currency of the sale) to be refunded.
+       * If set, issue partial refund by this amount.
+       * If not set, issue full refund.
+       * You can issue multiple partial refunds per sale until it is fully refunded.
+       */
+      amount_cents?: number;
+    } = {},
+    { signal }: { signal?: AbortSignal } = {},
+  ): Promise<Sale & SaleProps> {
     try {
-      validators.notBlank(sale_id, "Argument 'sale_id'");
+      assertNonBlankString(sale_id, "Argument 'sale_id'");
 
-      return this._bind_sale(
+      return this._bindSale(
         (
           await this.client.request<{ sale: Sale }>(`./sales/${encodeURI(sale_id)}/refund`, {
             params: { amount_cents },

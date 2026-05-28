@@ -1,10 +1,10 @@
 import { Methods } from './methods';
-import type { User as UserType } from './types';
+import type { User } from './types';
 
 /**
  * A class having API methods related to User
  */
-export class User extends Methods {
+export class UserMethods extends Methods {
   /**
    * Retrieve the user's data.
    *
@@ -12,10 +12,10 @@ export class User extends Methods {
    *
    * @see https://app.gumroad.com/api#get-/user
    */
-  async get({ signal }: { signal?: AbortSignal } = {}) {
+  async get({ signal }: { signal?: AbortSignal } = {}): Promise<User> {
     try {
       return (
-        await this.client.request<{ user: UserType }>('./user', {
+        await this.client.request<{ user: User }>('./user', {
           signal,
         })
       ).user;

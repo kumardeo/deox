@@ -12,7 +12,7 @@ export interface ClientOptions {
    */
   debug?: boolean;
 
-  baseUrl?: string | URL;
+  base?: string | URL;
 }
 
 /**
@@ -21,12 +21,12 @@ export interface ClientOptions {
 export class Client {
   protected accessToken: string;
   protected debug: boolean;
-  protected baseUrl: string;
+  protected base: string;
 
   constructor(accessToken: string, options: ClientOptions = {}) {
     this.accessToken = accessToken;
     this.debug = options.debug === true;
-    this.baseUrl = options.baseUrl instanceof URL || typeof options.baseUrl === 'string' ? String(options.baseUrl) : DEFAULT_API_BASE_URL;
+    this.base = options.base instanceof URL || typeof options.base === 'string' ? String(options.base) : DEFAULT_API_BASE_URL;
   }
 
   /**
@@ -38,12 +38,11 @@ export class Client {
    * @returns On success, the response data
    */
   async request<T extends NonNullable<unknown> = NonNullable<unknown>>(path: string, options: RequestOptions = {}) {
-    return (
-      await request<T>(path, this.accessToken, {
-        ...options,
-        baseUrl: this.baseUrl,
-        debug: this.debug,
-      })
-    ).data;
+    return await request<T>(path, {
+      ...options,
+      accessToken: this.accessToken,
+      base: this.base,
+      debug: this.debug,
+    });
   }
 }

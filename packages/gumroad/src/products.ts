@@ -1,6 +1,6 @@
 import { Methods } from './methods';
 import type { Product } from './types';
-import { addProperties, validators } from './utils';
+import { addProperties, assertNonBlankString } from './utils';
 
 /**
  * Bindings for {@link Product}
@@ -31,8 +31,8 @@ export interface ProductProps {
 /**
  * A class having API methods related to Products
  */
-export class Products extends Methods {
-  protected _bind_product(product: Product) {
+export class ProductsMethods extends Methods {
+  protected _bindProduct(product: Product): Product & ProductProps {
     const properties: ProductProps = {
       delete: async (requestOptions) => this.delete(product.id, requestOptions),
 
@@ -51,13 +51,13 @@ export class Products extends Methods {
    *
    * @see https://app.gumroad.com/api#get-/products
    */
-  async list({ signal }: { signal?: AbortSignal } = {}) {
+  async list({ signal }: { signal?: AbortSignal } = {}): Promise<(Product & ProductProps)[]> {
     try {
       return (
         await this.client.request<{ products: Product[] }>('./products', {
           signal,
         })
-      ).products.map((product) => this._bind_product(product));
+      ).products.map((product) => this._bindProduct(product));
     } catch (e) {
       this.logger.function(e, 'Products.list');
 
@@ -74,11 +74,11 @@ export class Products extends Methods {
    *
    * @see https://app.gumroad.com/api#get-/products/:id
    */
-  async get(product_id: string, { signal }: { signal?: AbortSignal } = {}) {
+  async get(product_id: string, { signal }: { signal?: AbortSignal } = {}): Promise<Product & ProductProps> {
     try {
-      validators.notBlank(product_id, "Argument 'product_id'");
+      assertNonBlankString(product_id, "Argument 'product_id'");
 
-      return this._bind_product(
+      return this._bindProduct(
         (
           await this.client.request<{ product: Product }>(`./products/${encodeURI(product_id)}`, {
             signal,
@@ -101,16 +101,16 @@ export class Products extends Methods {
    *
    * @see https://app.gumroad.com/api#delete-/products/:id
    */
-  async delete(product_id: string, { signal }: { signal?: AbortSignal } = {}) {
+  async delete(product_id: string, { signal }: { signal?: AbortSignal } = {}): Promise<true> {
     try {
-      validators.notBlank(product_id, "Argument 'product_id'");
+      assertNonBlankString(product_id, "Argument 'product_id'");
 
       await this.client.request(`./products/${encodeURI(product_id)}`, {
         method: 'DELETE',
         signal,
       });
 
-      return true as const;
+      return true;
     } catch (e) {
       this.logger.function(e, 'Products.delete', { product_id });
 
@@ -127,11 +127,11 @@ export class Products extends Methods {
    *
    * @see https://app.gumroad.com/api#put-/products/:id/enable
    */
-  async enable(product_id: string, { signal }: { signal?: AbortSignal } = {}) {
+  async enable(product_id: string, { signal }: { signal?: AbortSignal } = {}): Promise<Product & ProductProps> {
     try {
-      validators.notBlank(product_id, "Argument 'product_id'");
+      assertNonBlankString(product_id, "Argument 'product_id'");
 
-      return this._bind_product(
+      return this._bindProduct(
         (
           await this.client.request<{ product: Product }>(`./products/${encodeURI(product_id)}/enable`, {
             method: 'PUT',
@@ -155,11 +155,11 @@ export class Products extends Methods {
    *
    * @see https://app.gumroad.com/api#put-/products/:id/disable
    */
-  async disable(product_id: string, { signal }: { signal?: AbortSignal } = {}) {
+  async disable(product_id: string, { signal }: { signal?: AbortSignal } = {}): Promise<Product & ProductProps> {
     try {
-      validators.notBlank(product_id, "Argument 'product_id'");
+      assertNonBlankString(product_id, "Argument 'product_id'");
 
-      return this._bind_product(
+      return this._bindProduct(
         (
           await this.client.request<{ product: Product }>(`./products/${encodeURI(product_id)}/disable`, {
             method: 'PUT',

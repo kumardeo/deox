@@ -1,7 +1,7 @@
 import { RESOURCE_SUBSCRIPTION_NAMES } from './constants';
 import { Methods } from './methods';
 import type { ResourceSubscription, ResourceSubscriptionName } from './types';
-import { addProperties, validators } from './utils';
+import { addProperties, assertNonBlankString } from './utils';
 
 /**
  * Bindings for {@link ResourceSubscription}
@@ -18,8 +18,8 @@ export interface ResourceSubscriptionProps {
 /**
  * A class having API methods related to Resource Subscriptions
  */
-export class ResourceSubscriptions extends Methods {
-  protected _bind_resource_subscription(resource_subscription: ResourceSubscription) {
+export class ResourceSubscriptionsMethods extends Methods {
+  protected _bindResourceSubscription(resource_subscription: ResourceSubscription): ResourceSubscription & ResourceSubscriptionProps {
     const properties: ResourceSubscriptionProps = {
       delete: async (requestOptions) => this.delete(resource_subscription.id, requestOptions),
     };
@@ -36,9 +36,12 @@ export class ResourceSubscriptions extends Methods {
    *
    * @see https://app.gumroad.com/api#get-/resource_subscriptions
    */
-  async list(resource_name: ResourceSubscriptionName, { signal }: { signal?: AbortSignal } = {}) {
+  async list(
+    resource_name: ResourceSubscriptionName,
+    { signal }: { signal?: AbortSignal } = {},
+  ): Promise<(ResourceSubscription & ResourceSubscriptionProps)[]> {
     try {
-      validators.notBlank(resource_name, "Argument 'resource_name'");
+      assertNonBlankString(resource_name, "Argument 'resource_name'");
 
       return (
         await this.client.request<{
@@ -47,7 +50,7 @@ export class ResourceSubscriptions extends Methods {
           params: { resource_name },
           signal,
         })
-      ).resource_subscriptions.map((resource_subscription) => this._bind_resource_subscription(resource_subscription));
+      ).resource_subscriptions.map((resource_subscription) => this._bindResourceSubscription(resource_subscription));
     } catch (e) {
       this.logger.function(e, 'ResourceSubscriptions.list', { resource_name });
 
@@ -69,16 +72,20 @@ export class ResourceSubscriptions extends Methods {
    *
    * @see https://app.gumroad.com/api#put-/resource_subscriptions
    */
-  async create(post_url: string, resource_name: ResourceSubscriptionName, { signal }: { signal?: AbortSignal } = {}) {
+  async create(
+    post_url: string,
+    resource_name: ResourceSubscriptionName,
+    { signal }: { signal?: AbortSignal } = {},
+  ): Promise<ResourceSubscription & ResourceSubscriptionProps> {
     try {
-      validators.notBlank(post_url, "Argument 'post_url'");
-      validators.notBlank(resource_name, "Argument 'resource_name'");
+      assertNonBlankString(post_url, "Argument 'post_url'");
+      assertNonBlankString(resource_name, "Argument 'resource_name'");
 
       if (!RESOURCE_SUBSCRIPTION_NAMES.includes(resource_name)) {
         throw new TypeError(`'${resource_name}' is not a valid 'resource_name'`);
       }
 
-      return this._bind_resource_subscription(
+      return this._bindResourceSubscription(
         (
           await this.client.request<{
             resource_subscription: {
@@ -111,15 +118,16 @@ export class ResourceSubscriptions extends Methods {
    *
    * @see https://app.gumroad.com/api#delete-/resource_subscriptions/:resource_subscription_id
    */
-  async delete(resource_subscription_id: string, { signal }: { signal?: AbortSignal } = {}) {
+  async delete(resource_subscription_id: string, { signal }: { signal?: AbortSignal } = {}): Promise<true> {
     try {
-      validators.notBlank(resource_subscription_id, "Argument 'resource_subscription_id'");
+      assertNonBlankString(resource_subscription_id, "Argument 'resource_subscription_id'");
+
       await this.client.request(`./resource_subscriptions/${encodeURI(resource_subscription_id)}`, {
         method: 'DELETE',
         signal,
       });
 
-      return true as const;
+      return true;
     } catch (e) {
       this.logger.function(e, 'ResourceSubscriptions.delete', {
         resource_subscription_id,

@@ -1,6 +1,6 @@
 import { Methods } from './methods';
 import type { VariantCategory } from './types';
-import { addProperties, validators } from './utils';
+import { addProperties, assertNonBlankString } from './utils';
 
 /**
  * Bindings for {@link VariantCategory}
@@ -26,8 +26,8 @@ export interface VariantCategoryProps {
 /**
  * A class having API methods related to Variant Categories
  */
-export class VariantCategories extends Methods {
-  protected _bind_variant_category(variant_category: VariantCategory, product_id: string) {
+export class VariantCategoriesMethods extends Methods {
+  protected _bindVariantCategory(variant_category: VariantCategory, product_id: string): VariantCategory & VariantCategoryProps {
     const properties: VariantCategoryProps = {
       update: async (title, requestOptions) => this.update(product_id, variant_category.id, title, requestOptions),
 
@@ -46,9 +46,9 @@ export class VariantCategories extends Methods {
    *
    * @see https://app.gumroad.com/api#get-/products/:product_id/variant_categories
    */
-  async list(product_id: string, { signal }: { signal?: AbortSignal } = {}) {
+  async list(product_id: string, { signal }: { signal?: AbortSignal } = {}): Promise<(VariantCategory & VariantCategoryProps)[]> {
     try {
-      validators.notBlank(product_id, "Argument 'product_id'");
+      assertNonBlankString(product_id, "Argument 'product_id'");
 
       return (
         await this.client.request<{
@@ -56,7 +56,7 @@ export class VariantCategories extends Methods {
         }>(`./products/${encodeURI(product_id)}/variant_categories`, {
           signal,
         })
-      ).variant_categories.map((variant_category) => this._bind_variant_category(variant_category, product_id));
+      ).variant_categories.map((variant_category) => this._bindVariantCategory(variant_category, product_id));
     } catch (e) {
       this.logger.function(e, 'VariantCategories.list', { product_id });
 
@@ -74,12 +74,16 @@ export class VariantCategories extends Methods {
    *
    * @see https://app.gumroad.com/api#get-/products/:product_id/variant_categories/:id
    */
-  async get(product_id: string, variant_category_id: string, { signal }: { signal?: AbortSignal } = {}) {
+  async get(
+    product_id: string,
+    variant_category_id: string,
+    { signal }: { signal?: AbortSignal } = {},
+  ): Promise<VariantCategory & VariantCategoryProps> {
     try {
-      validators.notBlank(product_id, "Argument 'product_id'");
-      validators.notBlank(variant_category_id, "Argument 'variant_category_id'");
+      assertNonBlankString(product_id, "Argument 'product_id'");
+      assertNonBlankString(variant_category_id, "Argument 'variant_category_id'");
 
-      return this._bind_variant_category(
+      return this._bindVariantCategory(
         (
           await this.client.request<{ variant_category: VariantCategory }>(
             `./products/${encodeURI(product_id)}/variant_categories/${encodeURI(variant_category_id)}`,
@@ -110,12 +114,12 @@ export class VariantCategories extends Methods {
    *
    * @see https://app.gumroad.com/api#post-/products/:product_id/variant_categories
    */
-  async create(product_id: string, title: string, { signal }: { signal?: AbortSignal } = {}) {
+  async create(product_id: string, title: string, { signal }: { signal?: AbortSignal } = {}): Promise<VariantCategory & VariantCategoryProps> {
     try {
-      validators.notBlank(product_id, "Argument 'product_id'");
-      validators.notBlank(title, "Argument 'title'");
+      assertNonBlankString(product_id, "Argument 'product_id'");
+      assertNonBlankString(title, "Argument 'title'");
 
-      return this._bind_variant_category(
+      return this._bindVariantCategory(
         (
           await this.client.request<{ variant_category: VariantCategory }>(`./products/${encodeURI(product_id)}/variant_categories`, {
             method: 'POST',
@@ -143,13 +147,18 @@ export class VariantCategories extends Methods {
    *
    * @see https://app.gumroad.com/api#put-/products/:product_id/variant_categories/:id
    */
-  async update(product_id: string, variant_category_id: string, title: string, { signal }: { signal?: AbortSignal } = {}) {
+  async update(
+    product_id: string,
+    variant_category_id: string,
+    title: string,
+    { signal }: { signal?: AbortSignal } = {},
+  ): Promise<VariantCategory & VariantCategoryProps> {
     try {
-      validators.notBlank(product_id, "Argument 'product_id'");
-      validators.notBlank(variant_category_id, "Argument 'variant_category_id'");
-      validators.notBlank(title, "Argument 'title'");
+      assertNonBlankString(product_id, "Argument 'product_id'");
+      assertNonBlankString(variant_category_id, "Argument 'variant_category_id'");
+      assertNonBlankString(title, "Argument 'title'");
 
-      return this._bind_variant_category(
+      return this._bindVariantCategory(
         (
           await this.client.request<{ variant_category: VariantCategory }>(
             `./products/${encodeURI(product_id)}/variant_categories/${encodeURI(variant_category_id)}`,
@@ -183,17 +192,17 @@ export class VariantCategories extends Methods {
    *
    * @see https://app.gumroad.com/api#delete-/products/:product_id/variant_categories/:id
    */
-  async delete(product_id: string, variant_category_id: string, { signal }: { signal?: AbortSignal } = {}) {
+  async delete(product_id: string, variant_category_id: string, { signal }: { signal?: AbortSignal } = {}): Promise<true> {
     try {
-      validators.notBlank(product_id, "Argument 'product_id'");
-      validators.notBlank(variant_category_id, "Argument 'variant_category_id'");
+      assertNonBlankString(product_id, "Argument 'product_id'");
+      assertNonBlankString(variant_category_id, "Argument 'variant_category_id'");
 
       await this.client.request(`./products/${encodeURI(product_id)}/variant_categories/${encodeURI(variant_category_id)}`, {
         method: 'DELETE',
         signal,
       });
 
-      return true as const;
+      return true;
     } catch (e) {
       this.logger.function(e, 'deleteVariantCategory', {
         product_id,

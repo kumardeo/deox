@@ -2,7 +2,7 @@ import { API, type APIOptions } from './api';
 import { UPDATE_NAMES } from './constants';
 import { SDKError } from './errors';
 import type { MayBePromise, UpdateMap } from './types';
-import { parseDeepFormData, validators } from './utils';
+import { assertNonBlankString, parseDeepFormData } from './utils';
 
 /**
  * An interface representing options for {@link Gumroad} constructor
@@ -75,7 +75,7 @@ export class Gumroad extends API {
    *
    * @param handler An error handling function
    */
-  onError(handler: ErrorHandler) {
+  onError(handler: ErrorHandler): this {
     if (typeof handler !== 'function') {
       throw new TypeError(`Argument 'handler' must be of type function, provided type is ${typeof handler}`);
     }
@@ -90,7 +90,7 @@ export class Gumroad extends API {
    * @param err The `Error` object
    * @param context The {@link Context}
    */
-  private async _handleError(err: unknown, context: Context) {
+  private async _handleError(err: unknown, context: Context): Promise<void> {
     if (err instanceof Error && this._errorHandler) {
       await this._errorHandler(err, context);
     } else {
@@ -104,8 +104,8 @@ export class Gumroad extends API {
    * @param update_name The name of update
    * @param handlers A function for handling the ping
    */
-  on<T extends keyof UpdateMap>(update_name: T, ...handlers: Handler<T>[]) {
-    validators.notBlank(update_name, "Argument 'update_name'");
+  on<T extends keyof UpdateMap>(update_name: T, ...handlers: Handler<T>[]): this {
+    assertNonBlankString(update_name, "Argument 'update_name'");
 
     if (!UPDATE_NAMES.includes(update_name)) {
       throw new TypeError(
@@ -178,7 +178,7 @@ export class Gumroad extends API {
    * @param update_name The name of update (event)
    * @param payload The payload for context
    */
-  private async _dispatch<T extends keyof UpdateMap>(update_name: T, payload: UpdateMap[T]) {
+  private async _dispatch<T extends keyof UpdateMap>(update_name: T, payload: UpdateMap[T]): Promise<void> {
     const handlers = this._events[update_name];
 
     if (handlers && handlers.length !== 0) {
@@ -211,7 +211,7 @@ export class Gumroad extends API {
    *
    * @returns The same reference to the payload data but formatted
    */
-  private _formatPayload<T extends keyof UpdateMap>(payload: UpdateMap[T]) {
+  private _formatPayload<T extends keyof UpdateMap>(payload: UpdateMap[T]): UpdateMap[T] {
     // Validate card field
     if ('card' in payload) {
       const card = payload.card || {};
@@ -236,7 +236,7 @@ export class Gumroad extends API {
    *
    * @returns On success, a `Response` object with 200 status code
    */
-  async handle<T extends keyof UpdateMap>(request: Request, update_name: T) {
+  async handle<T extends keyof UpdateMap>(request: Request, update_name: T): Promise<Response> {
     if (!(request instanceof Request)) {
       throw new TypeError("Argument 'request' must be an instance of Request");
     }
@@ -253,7 +253,7 @@ export class Gumroad extends API {
       );
     }
 
-    validators.notBlank(update_name, "Argument 'update_name'");
+    assertNonBlankString(update_name, "Argument 'update_name'");
 
     if (!UPDATE_NAMES.includes(update_name)) {
       throw new TypeError(

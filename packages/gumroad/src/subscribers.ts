@@ -1,14 +1,12 @@
 import { Methods } from './methods';
 import type { Subscriber } from './types';
-import { validators } from './utils';
+import { assertNonBlankString } from './utils';
 
 /**
  * A class having API methods related to Subscribers
  */
-export class Subscribers extends Methods {
+export class SubscribersMethods extends Methods {
   /**
-   * **Only available with the `view_sales` scope**
-   *
    * Retrieves all of the active subscribers for one of the authenticated user's products.
    *
    * A subscription is terminated if any of `failed_at`, `ended_at`, or `cancelled_at` timestamps are populated and are in the past.
@@ -17,15 +15,25 @@ export class Subscribers extends Methods {
    * `fixed_subscription_period_ended`, `cancelled`.
    *
    * @param product_id The id of the product
-   * @param email (Optional) Filter subscribers by this email
    *
    * @returns On success, an Array of {@link Subscriber}
    *
    * @see https://app.gumroad.com/api#get-/products/:product_id/subscribers
+   *
+   * **Only available with the `view_sales` scope**
    */
-  async list(product_id: string, email?: string, { signal }: { signal?: AbortSignal } = {}) {
+  async list(
+    product_id: string,
+    {
+      email,
+    }: {
+      /** Filter subscribers by this email */
+      email?: string;
+    } = {},
+    { signal }: { signal?: AbortSignal } = {},
+  ): Promise<Subscriber[]> {
     try {
-      validators.notBlank(product_id, "Argument 'product_id'");
+      assertNonBlankString(product_id, "Argument 'product_id'");
 
       return (
         await this.client.request<{ subscribers: Subscriber[] }>(`./products/${encodeURI(product_id)}/subscribers`, {
@@ -51,9 +59,9 @@ export class Subscribers extends Methods {
    *
    * @see https://app.gumroad.com/api#get-/subscribers/:id
    */
-  async get(subscriber_id: string, { signal }: { signal?: AbortSignal } = {}) {
+  async get(subscriber_id: string, { signal }: { signal?: AbortSignal } = {}): Promise<Subscriber> {
     try {
-      validators.notBlank(subscriber_id, "Argument 'subscriber_id'");
+      assertNonBlankString(subscriber_id, "Argument 'subscriber_id'");
 
       return (
         await this.client.request<{ subscriber: Subscriber }>(`./subscribers/${encodeURI(subscriber_id)}`, {

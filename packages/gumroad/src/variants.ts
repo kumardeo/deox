@@ -1,6 +1,6 @@
 import { Methods } from './methods';
 import type { Variant } from './types';
-import { addProperties, validators } from './utils';
+import { addProperties, assertNonBlankString } from './utils';
 
 /**
  * Bindings for {@link Variant}
@@ -32,12 +32,12 @@ export interface VariantProps {
 /**
  * A class having API methods related to Variants
  */
-export class Variants extends Methods {
-  protected _bind_variant(variant: Variant, product_id: string, variant_category_id: string) {
+export class VariantsMethods extends Methods {
+  protected _bindVariant(variant: Variant, product_id: string, variant_category_id: string): Variant & VariantProps {
     const properties: VariantProps = {
       update: async (update_options, requestOptions) => this.update(product_id, variant_category_id, variant.id, update_options, requestOptions),
 
-      delete: (requestOptions) => this.delete(product_id, variant_category_id, variant.id, requestOptions),
+      delete: async (requestOptions) => this.delete(product_id, variant_category_id, variant.id, requestOptions),
     };
 
     return addProperties(variant, properties);
@@ -53,10 +53,10 @@ export class Variants extends Methods {
    *
    * @see https://app.gumroad.com/api#get-/products/:product_id/variant_categories/:variant_category_id/variants
    */
-  async list(product_id: string, variant_category_id: string, { signal }: { signal?: AbortSignal } = {}) {
+  async list(product_id: string, variant_category_id: string, { signal }: { signal?: AbortSignal } = {}): Promise<(Variant & VariantProps)[]> {
     try {
-      validators.notBlank(product_id, "Argument 'product_id'");
-      validators.notBlank(variant_category_id, "Argument 'variant_category_id'");
+      assertNonBlankString(product_id, "Argument 'product_id'");
+      assertNonBlankString(variant_category_id, "Argument 'variant_category_id'");
 
       return (
         await this.client.request<{ variants: Variant[] }>(
@@ -65,7 +65,7 @@ export class Variants extends Methods {
             signal,
           },
         )
-      ).variants.map((variant) => this._bind_variant(variant, product_id, variant_category_id));
+      ).variants.map((variant) => this._bindVariant(variant, product_id, variant_category_id));
     } catch (e) {
       this.logger.function(e, 'Variants.list', {
         product_id,
@@ -87,13 +87,18 @@ export class Variants extends Methods {
    *
    * @see https://app.gumroad.com/api#get-/products/:product_id/variant_categories/:variant_category_id/variants/:id
    */
-  async get(product_id: string, variant_category_id: string, variant_id: string, { signal }: { signal?: AbortSignal } = {}) {
+  async get(
+    product_id: string,
+    variant_category_id: string,
+    variant_id: string,
+    { signal }: { signal?: AbortSignal } = {},
+  ): Promise<Variant & VariantProps> {
     try {
-      validators.notBlank(product_id, "Argument 'product_id'");
-      validators.notBlank(variant_category_id, "Argument 'variant_category_id'");
-      validators.notBlank(variant_id, "Argument 'variant_id'");
+      assertNonBlankString(product_id, "Argument 'product_id'");
+      assertNonBlankString(variant_category_id, "Argument 'variant_category_id'");
+      assertNonBlankString(variant_id, "Argument 'variant_id'");
 
-      return this._bind_variant(
+      return this._bindVariant(
         (
           await this.client.request<{ variant: Variant }>(
             `./products/${encodeURI(product_id)}/variant_categories/${encodeURI(variant_category_id)}/variants/${encodeURI(variant_id)}`,
@@ -123,7 +128,6 @@ export class Variants extends Methods {
    * @param variant_category_id The id of variant category
    * @param name The name of the variant to create
    * @param price_difference_cents The price difference in cents
-   * @param max_purchase_count (Optional) The maximum purchase count
    *
    * @returns On success, a {@link Variant}
    *
@@ -134,15 +138,20 @@ export class Variants extends Methods {
     variant_category_id: string,
     name: string,
     price_difference_cents: number,
-    max_purchase_count?: number,
+    {
+      max_purchase_count,
+    }: {
+      /** The maximum purchase count */
+      max_purchase_count?: number;
+    } = {},
     { signal }: { signal?: AbortSignal } = {},
-  ) {
+  ): Promise<Variant & VariantProps> {
     try {
-      validators.notBlank(product_id, "Argument 'product_id'");
-      validators.notBlank(variant_category_id, "Argument 'variant_category_id'");
-      validators.notBlank(name, "Argument 'name'");
+      assertNonBlankString(product_id, "Argument 'product_id'");
+      assertNonBlankString(variant_category_id, "Argument 'variant_category_id'");
+      assertNonBlankString(name, "Argument 'name'");
 
-      return this._bind_variant(
+      return this._bindVariant(
         (
           await this.client.request<{ variant: Variant }>(
             `./products/${encodeURI(product_id)}/variant_categories/${encodeURI(variant_category_id)}/variants`,
@@ -195,13 +204,13 @@ export class Variants extends Methods {
       max_purchase_count?: number;
     },
     { signal }: { signal?: AbortSignal } = {},
-  ) {
+  ): Promise<Variant & VariantProps> {
     try {
-      validators.notBlank(product_id, "Argument 'product_id'");
-      validators.notBlank(variant_category_id, "Argument 'variant_category_id'");
-      validators.notBlank(variant_id, "Argument 'variant_id'");
+      assertNonBlankString(product_id, "Argument 'product_id'");
+      assertNonBlankString(variant_category_id, "Argument 'variant_category_id'");
+      assertNonBlankString(variant_id, "Argument 'variant_id'");
 
-      return this._bind_variant(
+      return this._bindVariant(
         (
           await this.client.request<{ variant: Variant }>(
             `./products/${encodeURI(product_id)}/variant_categories/${encodeURI(variant_category_id)}/variants/${encodeURI(variant_id)}`,
@@ -238,11 +247,11 @@ export class Variants extends Methods {
    *
    * @see https://app.gumroad.com/api#delete-/products/:product_id/variant_categories/:variant_category_id/variants/:id
    */
-  async delete(product_id: string, variant_category_id: string, variant_id: string, { signal }: { signal?: AbortSignal } = {}) {
+  async delete(product_id: string, variant_category_id: string, variant_id: string, { signal }: { signal?: AbortSignal } = {}): Promise<true> {
     try {
-      validators.notBlank(product_id, "Argument 'product_id'");
-      validators.notBlank(variant_category_id, "Argument 'variant_category_id'");
-      validators.notBlank(variant_id, "Argument 'variant_id'");
+      assertNonBlankString(product_id, "Argument 'product_id'");
+      assertNonBlankString(variant_category_id, "Argument 'variant_category_id'");
+      assertNonBlankString(variant_id, "Argument 'variant_id'");
 
       await this.client.request(
         `./products/${encodeURI(product_id)}/variant_categories/${encodeURI(variant_category_id)}/variants/${encodeURI(variant_id)}`,
@@ -252,7 +261,7 @@ export class Variants extends Methods {
         },
       );
 
-      return true as const;
+      return true;
     } catch (e) {
       this.logger.function(e, 'Variants.delete', {
         product_id,

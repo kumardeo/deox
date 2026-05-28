@@ -1,52 +1,49 @@
 import { isArray, isNumber, isPlainObject } from '@deox/utils/predicate';
 import { SDKRequestError } from './errors';
 
-function getConfigurations<M extends Record<string | number, unknown>>(properties: M): PropertyDescriptorMap {
-  return Object.entries(properties).reduce<PropertyDescriptorMap>((acc, [key, value]) => {
-    acc[key] = {
-      value,
-    };
-
-    return acc;
-  }, {});
-}
-
 export function addProperties<O extends NonNullable<unknown>, I extends NonNullable<unknown>, M extends NonNullable<unknown>>(
-  object: O,
+  target: O,
   immutable: I,
   mutable?: M,
-): O & M & I {
+): O & M & Readonly<I> {
   if (mutable) {
-    Object.assign(object, mutable);
+    Object.assign(target, mutable);
   }
-  Object.defineProperties(object, getConfigurations(immutable));
 
-  return object as O & M & I;
+  const descriptorMap: PropertyDescriptorMap = {};
+  for (const [key, value] of Object.entries(immutable)) {
+    descriptorMap[key] = { value };
+  }
+
+  Object.defineProperties(target, descriptorMap);
+
+  return target as O & M & Readonly<I>;
 }
 
-export const validators = {
-  string(data: unknown, name: string) {
-    if (typeof data !== 'string') {
-      throw new TypeError(`${name} must be of type string, current type is ${typeof data}`);
-    }
-  },
+/** asserts: input must be string */
+export function assertString(input: unknown, name: string): asserts input is string {
+  if (typeof input !== 'string') {
+    throw new TypeError(`${name} must be of type string, current type is ${typeof input}`);
+  }
+}
 
-  notEmpty(data: unknown, name: string) {
-    this.string(data, name);
+/** asserts: string must not be empty */
+export function assertNonEmptyString(input: unknown, name: string): asserts input is string {
+  assertString(input, name);
 
-    if ((data as string).length === 0) {
-      throw new TypeError(`${name} cannot be an empty string`);
-    }
-  },
+  if (input.length === 0) {
+    throw new TypeError(`${name} cannot be an empty string`);
+  }
+}
 
-  notBlank(data: unknown, name: string) {
-    this.string(data, name);
+/** asserts: string must not be blank */
+export function assertNonBlankString(input: unknown, name: string): asserts input is string {
+  assertString(input, name);
 
-    if ((data as string).trim().length === 0) {
-      throw new TypeError(`${name} cannot be a blank string`);
-    }
-  },
-};
+  if (input.trim().length === 0) {
+    throw new TypeError(`${name} cannot be a blank string`);
+  }
+}
 
 export const error = {
   inGumroadRequest(e: unknown, message: string) {
