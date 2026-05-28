@@ -112,6 +112,14 @@ export const error = {
     return this.inGumroadRequest(e, result.error) ? result : false;
   },
 
+  isPayoutNotFound(e: unknown) {
+    const result = {
+      error: 'The payout was not found.',
+      code: 'payout_not_found',
+    } as const;
+    return this.inGumroadRequest(e, result.error) ? result : false;
+  },
+
   isAnyNotFound(e: unknown) {
     return (
       this.isProductNotFound(e) ||
@@ -120,7 +128,8 @@ export const error = {
       this.isLicenseNotFound(e) ||
       this.isSubscriberNotFound(e) ||
       this.isResourceSubscriptionNotFound(e) ||
-      this.isSaleNotFound(e)
+      this.isSaleNotFound(e) ||
+      this.isPayoutNotFound(e)
     );
   },
 };

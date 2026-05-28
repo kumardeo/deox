@@ -2,6 +2,7 @@ import clc from '@deox/clc';
 import { DEFAULT_API_BASE_URL } from './constants';
 import {
   SDKBadRequestError,
+  SDKForbiddenError,
   SDKInputNotFoundError,
   SDKInternalServerError,
   SDKNotFoundError,
@@ -82,7 +83,7 @@ export async function request<T extends NonNullable<unknown> = NonNullable<unkno
     const started = debug ? Date.now() : null;
 
     const response = await fetch(url, init).catch((e) => {
-      throw new SDKRequestError('Fetch to Gumroad API failed', String(url), {
+      throw new SDKRequestError('Fetch to Gumroad API failed', url.pathname, {
         cause: e,
       });
     });
@@ -137,30 +138,33 @@ export async function request<T extends NonNullable<unknown> = NonNullable<unkno
 }
 
 function getResponseError(response: Response, message?: string, defaultMessage?: string): Error {
+  const pathname = new URL(response.url).pathname;
   switch (response.status) {
     case 400:
-      return new SDKBadRequestError(message || `Server responded with '${response.statusText}' status text`, response);
+      return new SDKBadRequestError(message || `Server responded with '${response.statusText}' status text`, pathname);
     case 401:
       return new SDKUnauthorizedError(
         message || `Server responded with '${response.statusText}' status text, please make sure you have passed a valid Access Token!`,
-        response,
+        pathname,
       );
     case 402:
       return new SDKRequestFailedError(
         message || `Server responded with '${response.statusText}' status text, looks like the parameters were valid but request failed.`,
-        response,
+        pathname,
       );
+    case 403:
+      return new SDKForbiddenError(message || `Server responded with '${response.statusText}' status text`, pathname);
     case 404:
-      return new SDKNotFoundError(message || `Server responded with '${response.statusText}' status text`, response);
+      return new SDKNotFoundError(message || `Server responded with '${response.statusText}' status text`, pathname);
     case 500:
     case 502:
     case 503:
     case 504:
       return new SDKInternalServerError(
         message || `Server responded with '${response.statusText}' status text, looks like something else went wrong on endpoint.`,
-        response,
+        pathname,
       );
     default:
-      return new SDKRequestError(defaultMessage || message || 'Response error', response);
+      return new SDKRequestError(defaultMessage || message || 'Response error', pathname);
   }
 }

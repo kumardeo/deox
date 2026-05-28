@@ -811,6 +811,107 @@ export type Sale = {
       }
   );
 
+export type PayoutStatus = 'payable' | 'completed' | 'pending' | 'failed';
+
+export type PaymentProcessor = 'stripe' | 'paypal' | 'STRIPE' | 'PAYPAL';
+
+export type PayoutMinimal = {
+  /** Unique identifier for the payout (null for upcoming payouts) */
+  id: string | null;
+
+  /** Payout amount as a decimal string */
+  amount: string;
+
+  /** ISO currency code (e.g. "USD") */
+  currency: string;
+
+  /** Payout status */
+  status: PayoutStatus;
+
+  /** ISO 8601 timestamp of when the payout was created */
+  created_at: string;
+
+  /** ISO 8601 timestamp of when the payout was processed */
+  processed_at: string | null;
+
+  /** Payment processor used */
+  payment_processor: PaymentProcessor;
+
+  /** Masked bank account number (present for Stripe payouts) */
+  bank_account_visual: string | null;
+
+  /** PayPal email address (present for PayPal payouts) */
+  paypal_email: string | null;
+};
+
+/** Transaction type */
+export type TransactionType =
+  | 'Sale'
+  | 'Chargeback'
+  | 'Full Refund'
+  | 'Partial Refund'
+  | 'PayPal Refund'
+  | 'Stripe Connect Refund'
+  | 'Affiliate Credit'
+  | 'PayPal Connect Affiliate Fees'
+  | 'Stripe Connect Affiliate Fees'
+  | 'PayPal Payouts'
+  | 'Stripe Connect Payouts'
+  | 'Credit'
+  | 'Payout Fee'
+  | 'Technical Adjustment';
+
+/** Represents a payout transaction */
+export type Transaction = {
+  /** Transaction type */
+  type: TransactionType;
+
+  /** Transaction date (YYYY-MM-DD) */
+  date: string;
+
+  /** Associated purchase ID */
+  purchase_id: string;
+
+  /** Name of the purchased item */
+  item_name: string;
+
+  /** Name of the buyer */
+  buyer_name: string;
+
+  /** Email of the buyer */
+  buyer_email: string;
+
+  /** Tax amount */
+  taxes: number | string;
+
+  /** Shipping amount */
+  shipping: number | string;
+
+  /** Sale price (negative for refunds/chargebacks) */
+  sale_price: number;
+
+  /** Gumroad fees */
+  gumroad_fees: number | string;
+
+  /** Net total after fees (negative for refunds/chargebacks) */
+  net_total: number;
+};
+
+/** Represents a Payout */
+export type Payout = PayoutMinimal & {
+  /** Array of sale IDs included in this payout (omitted if include_sales is "false") */
+  sales?: string[];
+
+  /** Array of refunded sale IDs in this payout (omitted if include_sales is "false") */
+  refunded_sales?: string[];
+
+  /** Array of disputed sale IDs in this payout (omitted if include_sales is "false") */
+  disputed_sales?: string[];
+
+  /** Detailed transaction list matching payout CSV export (present when include_transactions is "true") */
+  transactions?: Transaction[];
+};
+
 /**
  * * Update (Resource subscriptions post data) types
  */

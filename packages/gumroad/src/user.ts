@@ -1,9 +1,7 @@
 import { Methods } from './methods';
 import type { User } from './types';
 
-/**
- * A class having API methods related to User
- */
+/** A class having API methods related to User */
 export class UserMethods extends Methods {
   /**
    * Retrieve the user's data.

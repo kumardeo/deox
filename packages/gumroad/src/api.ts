@@ -14,6 +14,7 @@ import {
 import { LicensesMethods } from './licenses';
 import { Logger } from './logger';
 import { OfferCodesMethods } from './offer-codes';
+import { PayoutsMethods } from './payouts';
 import { ProductsMethods } from './products';
 import { request } from './request';
 import { ResourceSubscriptionsMethods } from './resource-subscriptions';
@@ -25,9 +26,7 @@ import { assertNonBlankString, formatCustomField } from './utils';
 import { VariantCategoriesMethods } from './variant-categories';
 import { VariantsMethods } from './variants';
 
-/**
- * An interface representing options for {@link API}
- */
+/** An interface representing options for {@link API} */
 export interface APIOptions {
   /**
    * Indicates whether to enable debug mode or not
@@ -37,9 +36,7 @@ export interface APIOptions {
   debug?: boolean;
 }
 
-/**
- * A class for making API requests to Gumroad API endpoints
- */
+/** A class for making API requests to Gumroad API endpoints */
 export class API {
   static readonly SDKBadRequestError = SDKBadRequestError;
   static readonly SDKError = SDKError;
@@ -103,6 +100,7 @@ export class API {
   readonly resource_subscriptions: ResourceSubscriptionsMethods;
   readonly subscribers: SubscribersMethods;
   readonly licenses: LicensesMethods;
+  readonly payouts: PayoutsMethods;
 
   /**
    * Creates an instance of {@link API}
@@ -127,5 +125,6 @@ export class API {
     this.sales = new SalesMethods(this.client, this.logger);
     this.subscribers = new SubscribersMethods(this.client, this.logger);
     this.licenses = new LicensesMethods(this.client, this.logger);
+    this.payouts = new PayoutsMethods(this.client, this.logger);
   }
 }

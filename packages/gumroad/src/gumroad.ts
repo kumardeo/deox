@@ -4,68 +4,44 @@ import { SDKError } from './errors';
 import type { MayBePromise, UpdateMap } from './types';
 import { assertNonBlankString, parseDeepFormData } from './utils';
 
-/**
- * An interface representing options for {@link Gumroad} constructor
- */
+/** An interface representing options for {@link Gumroad} constructor */
 export interface GumroadOptions extends APIOptions {}
 
-/**
- * Represents context for handler
- */
+/** Represents context for handler */
 export type Context<T extends keyof UpdateMap = keyof UpdateMap> = {
-  /**
-   * The data for current context
-   */
+  /** The data for current context */
   data: UpdateMap[T];
 
-  /**
-   * The {@link Gumroad}
-   */
+  /** The {@link API} */
   api: API;
 
-  /**
-   * Type of current update name
-   */
+  /** Type of current update name */
   type: T;
 
-  /**
-   * Can be used to read and write custom variables in handlers
-   */
+  /** Can be used to read and write custom variables in handlers */
   // biome-ignore lint/suspicious/noExplicitAny: we need to use `any` here
   vars: Record<string, any>;
 };
 
-/**
- * A handler for update
- */
+/** A handler for update */
 export type Handler<T extends keyof UpdateMap = keyof UpdateMap> = (
-  /**
-   * Context for the current update
-   */
+  /** Context for the current update */
   ctx: Context<T>,
 
-  /**
-   * When invoked and awaited, it triggers the next corresponding handler
-   */
+  /** When invoked and awaited, it triggers the next corresponding handler */
   next: () => Promise<void>,
 ) => MayBePromise<unknown>;
 
-/**
- * An error handler
- */
+/** An error handler */
 export type ErrorHandler = (err: Error, ctx: Context) => MayBePromise<unknown>;
 
 export class Gumroad extends API {
-  /**
-   * Record of events for handling pings
-   */
+  /** Record of events for handling pings */
   private _events: {
     [K in keyof UpdateMap]?: Handler<K>[];
   } = {};
 
-  /**
-   * The error handler for the pings handlers
-   */
+  /** The error handler for the pings handlers */
   private _errorHandler: ErrorHandler | undefined;
 
   /**

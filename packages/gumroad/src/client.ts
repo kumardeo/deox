@@ -1,9 +1,7 @@
 import { DEFAULT_API_BASE_URL } from './constants';
 import { type RequestOptions, request } from './request';
 
-/**
- * An interface representing options for {@link Client} constructor
- */
+/** An interface representing options for {@link Client} constructor */
 export interface ClientOptions {
   /**
    * Indicates whether to enable debug mode or not
@@ -15,9 +13,7 @@ export interface ClientOptions {
   base?: string | URL;
 }
 
-/**
- * A class containing methods for making HTTPS requests to Gumroad API endpoints
- */
+/** A class containing methods for making HTTPS requests to Gumroad API endpoints */
 export class Client {
   protected accessToken: string;
   protected debug: boolean;

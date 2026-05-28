@@ -34,9 +34,20 @@ const app = new Hono<{ Bindings: Env }>()
     return c.json(await gumroad.products.list());
   })
   .get('/products/get', async (c) => {
-    const product_id = (await gumroad.products.list())[0].id;
+    const productId = (await gumroad.products.list())[0].id;
 
-    return c.json(await gumroad.products.get(product_id));
+    return c.json(await gumroad.products.get(productId));
+  })
+  .get('/payouts/list', async (c) => {
+    return c.json(await gumroad.payouts.list());
+  })
+  .get('/payouts/get', async (c) => {
+    const payoutId = (await gumroad.payouts.list())[0].id;
+
+    return c.json(await gumroad.payouts.get(payoutId!, { include_transactions: true }));
+  })
+  .get('/payouts/upcoming', async (c) => {
+    return c.json(await gumroad.payouts.upcoming());
   })
   .get('/sales/list', async (c) => {
     return c.json(await gumroad.sales.list());

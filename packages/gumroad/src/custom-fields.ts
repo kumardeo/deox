@@ -2,9 +2,7 @@ import { Methods } from './methods';
 import type { CustomField } from './types';
 import { addProperties, assertNonBlankString } from './utils';
 
-/**
- * Bindings for {@link CustomField}
- */
+/** Bindings for {@link CustomField} */
 export interface CustomFieldProps {
   /**
    * Updates the custom field
@@ -31,9 +29,7 @@ export interface CustomFieldProps {
   delete(requestOptions?: { signal?: AbortSignal }): Promise<true>;
 }
 
-/**
- * A class having API methods related to Custom Fields
- */
+/** A class having API methods related to Custom Fields */
 export class CustomFieldsMethods extends Methods {
   protected _bindCustomField(custom_field: CustomField, product_id: string): CustomField & CustomFieldProps {
     const methods: CustomFieldProps = {

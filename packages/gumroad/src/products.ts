@@ -2,9 +2,7 @@ import { Methods } from './methods';
 import type { Product } from './types';
 import { addProperties, assertNonBlankString } from './utils';
 
-/**
- * Bindings for {@link Product}
- */
+/** Bindings for {@link Product} */
 export interface ProductProps {
   /**
    * Deletes the product
@@ -28,9 +26,7 @@ export interface ProductProps {
   disable(requestOptions?: { signal?: AbortSignal }): Promise<Product & ProductProps>;
 }
 
-/**
- * A class having API methods related to Products
- */
+/** A class having API methods related to Products */
 export class ProductsMethods extends Methods {
   protected _bindProduct(product: Product): Product & ProductProps {
     const properties: ProductProps = {

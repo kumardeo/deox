@@ -2,9 +2,7 @@ import { Methods } from './methods';
 import type { Subscriber } from './types';
 import { assertNonBlankString } from './utils';
 
-/**
- * A class having API methods related to Subscribers
- */
+/** A class having API methods related to Subscribers */
 export class SubscribersMethods extends Methods {
   /**
    * Retrieves all of the active subscribers for one of the authenticated user's products.
@@ -49,8 +47,6 @@ export class SubscribersMethods extends Methods {
   }
 
   /**
-   * **Only available with the `view_sales` scope**
-   *
    * Retrieves the details of a subscriber to this user's product.
    *
    * @param subscriber_id The subscriber id
@@ -58,6 +54,8 @@ export class SubscribersMethods extends Methods {
    * @returns On success, a {@link Subscriber}
    *
    * @see https://app.gumroad.com/api#get-/subscribers/:id
+   *
+   * **Only available with the `view_sales` scope**
    */
   async get(subscriber_id: string, { signal }: { signal?: AbortSignal } = {}): Promise<Subscriber> {
     try {

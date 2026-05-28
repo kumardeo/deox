@@ -2,9 +2,7 @@ import { Methods } from './methods';
 import type { OfferCode } from './types';
 import { addProperties, assertNonBlankString } from './utils';
 
-/**
- * Bindings for {@link OfferCode}
- */
+/** Bindings for {@link OfferCode} */
 export interface OfferCodeProps {
   /**
    * Updates the offer code
@@ -36,9 +34,7 @@ export interface OfferCodeProps {
   delete(requestOptions?: { signal?: AbortSignal }): Promise<true>;
 }
 
-/**
- * A class having API methods related to Offer Codes
- */
+/** A class having API methods related to Offer Codes */
 export class OfferCodesMethods extends Methods {
   protected _bindOfferCode(offer_code: OfferCode, product_id: string): OfferCode & OfferCodeProps {
     const properties: OfferCodeProps = {

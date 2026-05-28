@@ -2,9 +2,7 @@ import { Methods } from './methods';
 import type { VariantCategory } from './types';
 import { addProperties, assertNonBlankString } from './utils';
 
-/**
- * Bindings for {@link VariantCategory}
- */
+/** Bindings for {@link VariantCategory} */
 export interface VariantCategoryProps {
   /**
    * Updates the variant category
@@ -23,9 +21,7 @@ export interface VariantCategoryProps {
   delete(requestOptions?: { signal?: AbortSignal }): Promise<true>;
 }
 
-/**
- * A class having API methods related to Variant Categories
- */
+/** A class having API methods related to Variant Categories */
 export class VariantCategoriesMethods extends Methods {
   protected _bindVariantCategory(variant_category: VariantCategory, product_id: string): VariantCategory & VariantCategoryProps {
     const properties: VariantCategoryProps = {

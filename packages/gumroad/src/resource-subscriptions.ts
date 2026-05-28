@@ -3,9 +3,7 @@ import { Methods } from './methods';
 import type { ResourceSubscription, ResourceSubscriptionName } from './types';
 import { addProperties, assertNonBlankString } from './utils';
 
-/**
- * Bindings for {@link ResourceSubscription}
- */
+/** Bindings for {@link ResourceSubscription} */
 export interface ResourceSubscriptionProps {
   /**
    * Deletes the resource subscription
@@ -15,9 +13,7 @@ export interface ResourceSubscriptionProps {
   delete(requestOptions?: { signal?: AbortSignal }): Promise<true>;
 }
 
-/**
- * A class having API methods related to Resource Subscriptions
- */
+/** A class having API methods related to Resource Subscriptions */
 export class ResourceSubscriptionsMethods extends Methods {
   protected _bindResourceSubscription(resource_subscription: ResourceSubscription): ResourceSubscription & ResourceSubscriptionProps {
     const properties: ResourceSubscriptionProps = {

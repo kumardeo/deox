@@ -2,9 +2,7 @@ import { Methods } from './methods';
 import type { Variant } from './types';
 import { addProperties, assertNonBlankString } from './utils';
 
-/**
- * Bindings for {@link Variant}
- */
+/** Bindings for {@link Variant} */
 export interface VariantProps {
   /**
    * Updates the variant
@@ -23,15 +21,14 @@ export interface VariantProps {
   ): Promise<Variant & VariantProps>;
 
   /**
+   * Deletes the variant
    *
    * @returns On success, `true`
    */
   delete(requestOptions?: { signal?: AbortSignal }): Promise<true>;
 }
 
-/**
- * A class having API methods related to Variants
- */
+/** A class having API methods related to Variants */
 export class VariantsMethods extends Methods {
   protected _bindVariant(variant: Variant, product_id: string, variant_category_id: string): Variant & VariantProps {
     const properties: VariantProps = {

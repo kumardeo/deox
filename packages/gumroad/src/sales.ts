@@ -2,18 +2,12 @@ import { Methods } from './methods';
 import type { Sale } from './types';
 import { addProperties, assertNonBlankString } from './utils';
 
-/**
- * Bindings for Array of {@link Sale}
- */
+/** Bindings for Array of {@link Sale} */
 export interface SalesProps {
-  /**
-   * The key for next page of sales if available
-   */
+  /** The key for next page of sales if available */
   readonly next_page_key: string | undefined;
 
-  /**
-   * The API endpoint for next page of sales if available
-   */
+  /** The API endpoint for next page of sales if available */
   readonly next_page_url: string | undefined;
 
   /**
@@ -24,9 +18,7 @@ export interface SalesProps {
   next(requestOptions?: { signal?: AbortSignal }): Promise<((Sale & SaleProps)[] & SalesProps) | null>;
 }
 
-/**
- * Bindings for {@link Sale}
- */
+/** Bindings for {@link Sale} */
 export interface SaleProps {
   /**
    * Marks the sale as shipped
@@ -43,9 +35,7 @@ export interface SaleProps {
   refund(options: { amount_cents?: number | undefined }, requestOptions?: { signal?: AbortSignal }): Promise<Sale & SaleProps>;
 }
 
-/**
- * A class having API methods related to Sales
- */
+/** A class having API methods related to Sales */
 export class SalesMethods extends Methods {
   protected _bindSales(object: { next_page_url?: string; next_page_key?: string; sales: Sale[] }): (Sale & SaleProps)[] & SalesProps {
     const properties: SalesProps = {
@@ -81,8 +71,6 @@ export class SalesMethods extends Methods {
   }
 
   /**
-   * **Only available with the `view_sales` scope**
-   *
    * Retrieves all of the successful sales by the authenticated user.
    *
    * @param options (Optional) Options
@@ -90,32 +78,27 @@ export class SalesMethods extends Methods {
    * @returns On success, an Array of {@link Sales}
    *
    * @see https://app.gumroad.com/api#get-/sales
+   *
+   * **Only available with the `view_sales` scope**
    */
   async list(
     options?: {
-      /**
-       * Date in form `YYYY-MM-DD` - Only return sales after this date
-       */
+      /** Date in form `YYYY-MM-DD` - Only return sales after this date */
       after?: string;
-      /**
-       * Date in form `YYYY-MM-DD` - Only return sales before this date
-       */
+
+      /** Date in form `YYYY-MM-DD` - Only return sales before this date */
       before?: string;
-      /**
-       * Filter sales by this product
-       */
+
+      /** Filter sales by this product */
       product_id?: string;
-      /**
-       * Filter sales by this email
-       */
+
+      /** Filter sales by this email */
       email?: string;
-      /**
-       * Filter sales by this Order ID
-       */
+
+      /** Filter sales by this Order ID */
       order_id?: string;
-      /**
-       * A key representing a page of results. It is given in the response as `next_page_key`.
-       */
+
+      /** A key representing a page of results. It is given in the response as `next_page_key`. */
       page_key?: string;
     },
     { signal }: { signal?: AbortSignal } = {},
@@ -139,8 +122,6 @@ export class SalesMethods extends Methods {
   }
 
   /**
-   * **Only available with the `view_sales` scope**
-   *
    * Retrieves the details of a sale by this user
    *
    * @param sale_id The id of the sale
@@ -148,6 +129,8 @@ export class SalesMethods extends Methods {
    * @returns On success, a {@link Sale}
    *
    * @see https://app.gumroad.com/api#get-/sales/:id
+   *
+   * **Only available with the `view_sales` scope**
    */
   async get(sale_id: string, { signal }: { signal?: AbortSignal } = {}): Promise<Sale & SaleProps> {
     try {
@@ -168,8 +151,6 @@ export class SalesMethods extends Methods {
   }
 
   /**
-   * **Only available with the `mark_sales_as_shipped` scope**
-   *
    * Marks a sale as shipped.
    *
    * @param sale_id The id of the sale
@@ -177,6 +158,8 @@ export class SalesMethods extends Methods {
    * @returns On success, a {@link Sale}
    *
    * @see https://app.gumroad.com/api#put-/sales/:id/mark_as_shipped
+   *
+   * **Only available with the `mark_sales_as_shipped` scope**
    */
   async markAsShipped(
     sale_id: string,

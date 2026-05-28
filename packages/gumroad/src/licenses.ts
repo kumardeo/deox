@@ -2,13 +2,9 @@ import { Methods } from './methods';
 import type { Purchase } from './types';
 import { addProperties, assertNonBlankString, formatCustomField } from './utils';
 
-/**
- * Bindings for {@link Purchase}
- */
+/** Bindings for {@link Purchase} */
 export interface PurchaseProps {
-  /**
-   * The number of license uses
-   */
+  /** The number of license uses */
   readonly license_uses: number;
 
   /**
@@ -46,9 +42,7 @@ export interface PurchaseProps {
   decrementUsesCount(requestOptions?: { signal?: AbortSignal }): Promise<Purchase & PurchaseProps>;
 }
 
-/**
- * A class having API methods related to Licenses
- */
+/** A class having API methods related to Licenses */
 export class LicensesMethods extends Methods {
   protected _bindPurchase({
     purchase,
