@@ -47,7 +47,7 @@ export interface RequestOptions {
 export async function request<T extends NonNullable<unknown> = NonNullable<unknown>>(
   path: string | URL,
   { accessToken, method = 'GET', params = {}, body, debug = false, base = DEFAULT_API_BASE_URL, signal }: RequestOptions = {},
-): Promise<T> {
+): Promise<T & { success: true }> {
   try {
     const url = new URL(path, base);
 
@@ -107,7 +107,7 @@ export async function request<T extends NonNullable<unknown> = NonNullable<unkno
       if (typeof data === 'object' && data !== null) {
         if ('success' in data) {
           if (data.success === true && response.status === 200) {
-            return data as T;
+            return data as T & { success: true };
           }
 
           if (data.success === false && 'message' in data && typeof data.message === 'string') {

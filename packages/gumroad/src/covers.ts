@@ -25,7 +25,7 @@ export class CoversMethods extends Methods {
       assertNonBlankString(product_id, "Argument 'product_id'");
       assertNonBlankString(url, "Argument 'url'");
 
-      return await this.client.request<{
+      const { covers, main_cover_id } = await this.client.request<{
         covers: Cover[];
         main_cover_id: string | null;
       }>(`./products/${encodeURI(product_id)}/covers`, {
@@ -33,6 +33,8 @@ export class CoversMethods extends Methods {
         params: { url },
         signal,
       });
+
+      return { covers, main_cover_id };
     } catch (e) {
       this.logger.function(e, 'Covers.add', { product_id, url });
 
@@ -61,13 +63,15 @@ export class CoversMethods extends Methods {
       assertNonBlankString(product_id, "Argument 'product_id'");
       assertNonBlankString(cover_id, "Argument 'cover_id'");
 
-      return await this.client.request<{ covers: Cover[]; main_cover_id: string | null }>(
+      const { covers, main_cover_id } = await this.client.request<{ covers: Cover[]; main_cover_id: string | null }>(
         `./products/${encodeURI(product_id)}/covers/${encodeURI(cover_id)}`,
         {
           method: 'DELETE',
           signal,
         },
       );
+
+      return { covers, main_cover_id };
     } catch (e) {
       this.logger.function(e, 'Covers.delete', {
         product_id,

@@ -45,6 +45,27 @@ export function assertNonBlankString(input: unknown, name: string): asserts inpu
   }
 }
 
+/** asserts: input must be number */
+export function assertNumber(input: unknown, name: string): asserts input is number {
+  if (typeof input !== 'number') {
+    throw new TypeError(`${name} must be of type number, current type is ${typeof input}`);
+  }
+}
+
+/** asserts: input must be array */
+export function assertArray(input: unknown, name: string): asserts input is any[] {
+  if (!Array.isArray(input)) {
+    throw new TypeError(`${name} must be an Array, current type is ${typeof input}`);
+  }
+}
+
+/** asserts: input must be object */
+export function assertObject(input: unknown, name: string): asserts input is NonNullable<object> {
+  if (typeof input !== 'object' || input === null || Array.isArray(input)) {
+    throw new TypeError(`${name} must be an Object`);
+  }
+}
+
 export const error = {
   inGumroadRequest(e: unknown, message: string) {
     if (e instanceof SDKRequestError) {

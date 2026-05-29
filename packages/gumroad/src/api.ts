@@ -12,6 +12,7 @@ import {
   SDKRequestFailedError,
   SDKUnauthorizedError,
 } from './errors';
+import { FilesMethods } from './files';
 import { LicensesMethods } from './licenses';
 import { Logger } from './logger';
 import { OfferCodesMethods } from './offer-codes';
@@ -92,6 +93,7 @@ export class API {
   readonly client: Client;
   readonly logger: Logger;
   readonly products: ProductsMethods;
+  readonly files: FilesMethods;
   readonly covers: CoversMethods;
   readonly variant_categories: VariantCategoriesMethods;
   readonly variants: VariantsMethods;
@@ -118,6 +120,7 @@ export class API {
     });
     this.logger = new Logger(options.debug);
     this.products = new ProductsMethods(this.client, this.logger);
+    this.files = new FilesMethods(this.client, this.logger);
     this.covers = new CoversMethods(this.client, this.logger);
     this.variant_categories = new VariantCategoriesMethods(this.client, this.logger);
     this.variants = new VariantsMethods(this.client, this.logger);
