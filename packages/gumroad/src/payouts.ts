@@ -80,18 +80,22 @@ export class PayoutsMethods extends Methods {
     { signal }: { signal?: AbortSignal } = {},
   ): Promise<PayoutMinimal[] & PayoutsProps> {
     try {
+      const { after, before, page_key, include_upcoming } = options;
+
       return this._bindPayouts(
         await this.client.request<{
           next_page_url?: string;
           next_page_key?: string;
           payouts: PayoutMinimal[];
         }>('./payouts', {
-          params: options,
+          params: { after, before, page_key, include_upcoming },
           signal,
         }),
       );
     } catch (e) {
-      this.logger.function(e, 'Payouts.list', { options });
+      this.logger.function(e, 'Payouts.list', {
+        options,
+      });
 
       throw e;
     }
@@ -130,14 +134,19 @@ export class PayoutsMethods extends Methods {
     try {
       assertNonBlankString(payout_id, "Argument 'payout_id'");
 
+      const { include_sales, include_transactions } = options;
+
       return (
         await this.client.request<{ payout: Payout }>(`./payouts/${encodeURI(payout_id)}`, {
-          params: options,
+          params: { include_sales, include_transactions },
           signal,
         })
       ).payout;
     } catch (e) {
-      this.logger.function(e, 'Payouts.get', { payout_id, options });
+      this.logger.function(e, 'Payouts.get', {
+        payout_id,
+        options,
+      });
 
       throw e;
     }
@@ -175,16 +184,20 @@ export class PayoutsMethods extends Methods {
     { signal }: { signal?: AbortSignal } = {},
   ): Promise<Payout[]> {
     try {
+      const { include_sales, include_transactions } = options;
+
       return (
         await this.client.request<{
           payouts: Payout[];
         }>('./payouts/upcoming', {
-          params: options,
+          params: { include_sales, include_transactions },
           signal,
         })
       ).payouts;
     } catch (e) {
-      this.logger.function(e, 'Payouts.upcoming', { options });
+      this.logger.function(e, 'Payouts.upcoming', {
+        options,
+      });
 
       throw e;
     }

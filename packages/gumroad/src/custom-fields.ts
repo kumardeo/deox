@@ -33,7 +33,7 @@ export interface CustomFieldProps {
 export class CustomFieldsMethods extends Methods {
   protected _bindCustomField(custom_field: CustomField, product_id: string): CustomField & CustomFieldProps {
     const methods: CustomFieldProps = {
-      update: async (update_options, requestOptions) => this.update(product_id, custom_field.name, update_options, requestOptions),
+      update: async (options, requestOptions) => this.update(product_id, custom_field.name, options, requestOptions),
 
       delete: async (requestOptions) => this.delete(product_id, custom_field.name, requestOptions),
     };
@@ -90,15 +90,17 @@ export class CustomFieldsMethods extends Methods {
     try {
       assertNonBlankString(product_id, "Argument 'product_id'");
 
+      const { type, required, variant } = options;
+
       return this._bindCustomField(
         (
           await this.client.request<{ custom_field: CustomField }>(`./products/${encodeURI(product_id)}/custom_fields`, {
             method: 'POST',
             params: {
               name,
-              type: options.type && ['text', 'checkbox', 'terms'].includes(options.type) ? options.type : 'text',
-              required: typeof options.required === 'boolean' ? options.required : true,
-              variant: options.variant,
+              type: type && ['text', 'checkbox', 'terms'].includes(type) ? type : undefined,
+              required: typeof required === 'boolean' ? required : undefined,
+              variant,
             },
             signal,
           })
@@ -132,8 +134,8 @@ export class CustomFieldsMethods extends Methods {
     name: string,
     options: {
       name?: string;
-      required?: boolean;
       type?: 'text' | 'checkbox' | 'terms';
+      required?: boolean;
       variant?: string;
     } = {},
     { signal }: { signal?: AbortSignal } = {},
@@ -142,15 +144,17 @@ export class CustomFieldsMethods extends Methods {
       assertNonBlankString(product_id, "Argument 'product_id'");
       assertNonBlankString(name, "Argument 'name'");
 
+      const { name: newName, type, required, variant } = options;
+
       return this._bindCustomField(
         (
           await this.client.request<{ custom_field: CustomField }>(`./products/${encodeURI(product_id)}/custom_fields/${encodeURI(name)}`, {
             method: 'PUT',
             params: {
-              type: options.type && ['text', 'checkbox', 'terms'].includes(options.type) ? options.type : 'text',
-              required: typeof options.required === 'boolean' ? options.required : undefined,
-              name: options.name,
-              variant: options.variant,
+              type: type && ['text', 'checkbox', 'terms'].includes(type) ? type : undefined,
+              required: typeof required === 'boolean' ? required : undefined,
+              name: newName,
+              variant: variant,
             },
             signal,
           })

@@ -1,6 +1,6 @@
 import { Methods } from './methods';
-import type { Product } from './types';
-import { addProperties, assertNonBlankString } from './utils';
+import type { Product, Recurrence } from './types';
+import { addProperties, assertArray, assertNonBlankString, assertNumber } from './utils';
 
 /** Bindings for {@link Product} */
 export interface ProductProps {
@@ -83,6 +83,119 @@ export class ProductsMethods extends Methods {
       );
     } catch (e) {
       this.logger.function(e, 'Products.get', { product_id });
+
+      throw e;
+    }
+  }
+
+  /**
+   * Create a new product (as a draft).
+   *
+   * **Only available with the `edit_products` or `account` scope.**
+   */
+  async create(
+    name: string,
+    price: number,
+    options: {
+      /**
+       * Native type of the product.
+       * Cannot be changed later
+       *
+       * @default 'digital'
+       */
+      native_type?: 'digital' | 'course' | 'ebook' | 'membership' | 'bundle' | 'coffee' | 'call' | 'commission';
+
+      /** The product description in HTML */
+      description?: string;
+
+      /** The custom URL slug for the product */
+      custom_permalink?: string;
+
+      /** ISO currency code; defaults to your account currency */
+      price_currency_type?: string;
+
+      /** For `membership` only */
+      subscription_duration?: Recurrence;
+
+      /** Set to `true` if want to enable pay-what-you-want */
+      customizable_price?: boolean;
+
+      /** Suggested price in cents */
+      suggested_price_cents?: number;
+
+      /** The number of maximum purchase allowed for the product */
+      max_purchase_count?: number;
+
+      taxonomy_id?: string;
+
+      /** Array of tag strings */
+      tags?: string[];
+
+      /** The custom summary shown to buyers */
+      custom_summary?: string;
+
+      /** Array of files to attach */
+      files?: { id?: string; url: string }[];
+    } = {},
+    { signal }: { signal?: AbortSignal } = {},
+  ): Promise<Product & ProductProps> {
+    try {
+      assertNonBlankString(name, "Argument 'name'");
+      assertNumber(price, "Argument 'price'");
+
+      const {
+        native_type,
+        description,
+        custom_permalink,
+        price_currency_type,
+        subscription_duration,
+        customizable_price,
+        suggested_price_cents,
+        max_purchase_count,
+        taxonomy_id,
+        tags,
+        custom_summary,
+        files,
+      } = options;
+
+      if (typeof tags !== 'undefined') {
+        assertArray(tags, "'options.tags'");
+
+        for (let i = 0; i < tags.length; i++) {
+          const tag = tags[i];
+
+          assertNonBlankString(tag, `'options.tags[${i}]'`);
+        }
+      }
+
+      return this._bindProduct(
+        (
+          await this.client.request<{ product: Product }>('./products', {
+            method: 'POST',
+            params: {
+              native_type,
+              description,
+              custom_permalink,
+              price_currency_type,
+              subscription_duration,
+              customizable_price,
+              suggested_price_cents,
+              max_purchase_count,
+              taxonomy_id,
+              tags,
+              custom_summary,
+              files,
+            },
+            signal,
+          })
+        ).product,
+      );
+    } catch (e) {
+      this.logger.function(e, 'Products.create', {
+        name,
+        price,
+        options,
+      });
 
       throw e;
     }

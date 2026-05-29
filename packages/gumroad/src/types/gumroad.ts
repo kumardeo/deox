@@ -13,7 +13,7 @@ import type { StringWithSuggestions } from './utils';
  */
 
 /** Type of recurrence */
-export type Recurrence = 'monthly' | 'quarterly' | 'biannually' | 'yearly';
+export type Recurrence = 'monthly' | 'quarterly' | 'biannually' | 'yearly' | 'every_two_years';
 
 /** Represents recurrence prices */
 export type RecurrencePrices = {

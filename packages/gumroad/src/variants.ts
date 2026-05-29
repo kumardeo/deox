@@ -32,7 +32,7 @@ export interface VariantProps {
 export class VariantsMethods extends Methods {
   protected _bindVariant(variant: Variant, product_id: string, variant_category_id: string): Variant & VariantProps {
     const properties: VariantProps = {
-      update: async (update_options, requestOptions) => this.update(product_id, variant_category_id, variant.id, update_options, requestOptions),
+      update: async (options, requestOptions) => this.update(product_id, variant_category_id, variant.id, options, requestOptions),
 
       delete: async (requestOptions) => this.delete(product_id, variant_category_id, variant.id, requestOptions),
     };
@@ -135,9 +135,7 @@ export class VariantsMethods extends Methods {
     variant_category_id: string,
     name: string,
     price_difference_cents: number,
-    {
-      max_purchase_count,
-    }: {
+    options: {
       /** The maximum purchase count */
       max_purchase_count?: number;
     } = {},
@@ -147,6 +145,8 @@ export class VariantsMethods extends Methods {
       assertNonBlankString(product_id, "Argument 'product_id'");
       assertNonBlankString(variant_category_id, "Argument 'variant_category_id'");
       assertNonBlankString(name, "Argument 'name'");
+
+      const { max_purchase_count } = options;
 
       return this._bindVariant(
         (
@@ -172,7 +172,7 @@ export class VariantsMethods extends Methods {
         variant_category_id,
         name,
         price_difference_cents,
-        max_purchase_count,
+        options,
       });
 
       throw e;
@@ -199,7 +199,7 @@ export class VariantsMethods extends Methods {
       name?: string;
       price_difference_cents?: number;
       max_purchase_count?: number;
-    },
+    } = {},
     { signal }: { signal?: AbortSignal } = {},
   ): Promise<Variant & VariantProps> {
     try {
@@ -207,13 +207,15 @@ export class VariantsMethods extends Methods {
       assertNonBlankString(variant_category_id, "Argument 'variant_category_id'");
       assertNonBlankString(variant_id, "Argument 'variant_id'");
 
+      const { name, price_difference_cents, max_purchase_count } = options;
+
       return this._bindVariant(
         (
           await this.client.request<{ variant: Variant }>(
             `./products/${encodeURI(product_id)}/variant_categories/${encodeURI(variant_category_id)}/variants/${encodeURI(variant_id)}`,
             {
               method: 'PUT',
-              params: options,
+              params: { name, price_difference_cents, max_purchase_count },
               signal,
             },
           )

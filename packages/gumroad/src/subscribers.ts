@@ -22,9 +22,7 @@ export class SubscribersMethods extends Methods {
    */
   async list(
     product_id: string,
-    {
-      email,
-    }: {
+    options: {
       /** Filter subscribers by this email */
       email?: string;
     } = {},
@@ -33,6 +31,8 @@ export class SubscribersMethods extends Methods {
     try {
       assertNonBlankString(product_id, "Argument 'product_id'");
 
+      const { email } = options;
+
       return (
         await this.client.request<{ subscribers: Subscriber[] }>(`./products/${encodeURI(product_id)}/subscribers`, {
           params: { email },
@@ -40,7 +40,7 @@ export class SubscribersMethods extends Methods {
         })
       ).subscribers;
     } catch (e) {
-      this.logger.function(e, 'Subscribers.list', { product_id, email });
+      this.logger.function(e, 'Subscribers.list', { product_id, options });
 
       throw e;
     }

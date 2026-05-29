@@ -100,22 +100,17 @@ export class FilesMethods extends Methods {
         throw new TypeError("Argument 'parts' must have at least 1 item");
       }
 
-      const params: Record<string, string | number> = { upload_id, key };
-
       for (let i = 0; i < parts.length; i++) {
         const part = parts[i];
 
         assertObject(part, `'parts[${i}]'`);
         assertNumber(part.part_number, `'parts[${i}].part_number'`);
         assertNonBlankString(part.etag, `'parts[${i}].etag'`);
-
-        params['parts[][part_number]'] = part.part_number;
-        params['parts[][etag]'] = part.etag;
       }
 
       const { file_url } = await this.client.request<{ file_url: string }>('./files/complete', {
         method: 'POST',
-        params,
+        params: { upload_id, key, parts },
         signal,
       });
 

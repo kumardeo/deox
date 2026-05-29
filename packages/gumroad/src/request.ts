@@ -1,4 +1,5 @@
 import clc from '@deox/clc';
+import { type Serializable, serialize } from '@deox/utils/params';
 import { DEFAULT_API_BASE_URL } from './constants';
 import {
   SDKBadRequestError,
@@ -18,7 +19,7 @@ export interface RequestOptions {
   accessToken?: string;
 
   /** The search queries */
-  params?: Record<string, string | number | boolean | undefined | (string | number | boolean | undefined)[]>;
+  params?: Record<string, Serializable>;
 
   /** The method for request */
   method?: string;
@@ -66,13 +67,8 @@ export async function request<T extends NonNullable<object> = NonNullable<object
   try {
     const url = new URL(path, base);
 
-    for (const [name, value] of Object.entries(params)) {
-      for (const item of Array.isArray(value) ? value : [value]) {
-        if (['string', 'boolean', 'number'].includes(typeof item)) {
-          url.searchParams.append(name, String(item));
-        }
-      }
-    }
+    serialize(params, url.searchParams);
+
     if (accessToken) {
       url.searchParams.set('access_token', accessToken);
     }

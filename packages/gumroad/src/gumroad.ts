@@ -1,8 +1,9 @@
+import { deserialize } from '@deox/utils/params';
 import { API, type APIOptions } from './api';
 import { UPDATE_NAMES } from './constants';
 import { SDKError } from './errors';
 import type { MayBePromise, UpdateMap } from './types';
-import { assertNonBlankString, parseDeepFormData } from './utils';
+import { assertNonBlankString } from './utils';
 
 /** An interface representing options for {@link Gumroad} constructor */
 export interface GumroadOptions extends APIOptions {}
@@ -244,13 +245,23 @@ export class Gumroad extends API {
 
     let payload: UpdateMap[T];
     if (contentType.startsWith('multipart/form-data') || contentType.startsWith('application/x-www-form-urlencoded')) {
-      payload = parseDeepFormData(await request.formData(), {
-        parseBoolean: true,
-        parseNull: true,
-        parseNumber: true,
-      }) as UpdateMap[T];
+      try {
+        const formData = await request.formData();
+        payload = deserialize(formData) as UpdateMap[T];
+      } catch (e) {
+        throw new SDKError('Failed to deserialize form data', {
+          cause: e,
+        });
+      }
     } else if (contentType.startsWith('application/json')) {
-      payload = (await request.json()) as UpdateMap[T];
+      try {
+        const parsed = await request.json();
+        payload = parsed as UpdateMap[T];
+      } catch (e) {
+        throw new SDKError('Failed to parse JSON body', {
+          cause: e,
+        });
+      }
     } else {
       throw new SDKError(`Content-Type '${contentType}' is not supported`);
     }

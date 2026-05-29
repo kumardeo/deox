@@ -82,7 +82,7 @@ export class SalesMethods extends Methods {
    * **Only available with the `view_sales` scope**
    */
   async list(
-    options?: {
+    options: {
       /** Date in form `YYYY-MM-DD` - Only return sales after this date */
       after?: string;
 
@@ -100,22 +100,26 @@ export class SalesMethods extends Methods {
 
       /** A key representing a page of results. It is given in the response as `next_page_key`. */
       page_key?: string;
-    },
+    } = {},
     { signal }: { signal?: AbortSignal } = {},
   ): Promise<(Sale & SaleProps)[] & SalesProps> {
     try {
+      const { after, before, product_id, email, order_id, page_key } = options;
+
       return this._bindSales(
         await this.client.request<{
           next_page_url?: string;
           next_page_key?: string;
           sales: Sale[];
         }>('./sales', {
-          params: options,
+          params: { after, before, product_id, email, order_id, page_key },
           signal,
         }),
       );
     } catch (e) {
-      this.logger.function(e, 'Sales.list', { options });
+      this.logger.function(e, 'Sales.list', {
+        options,
+      });
 
       throw e;
     }
@@ -163,9 +167,7 @@ export class SalesMethods extends Methods {
    */
   async markAsShipped(
     sale_id: string,
-    {
-      tracking_url,
-    }: {
+    options: {
       /** The tracking url */
       tracking_url?: string;
     } = {},
@@ -173,6 +175,8 @@ export class SalesMethods extends Methods {
   ): Promise<Sale & SaleProps> {
     try {
       assertNonBlankString(sale_id, "Argument 'sale_id'");
+
+      const { tracking_url } = options;
 
       return this._bindSale(
         (
@@ -183,7 +187,7 @@ export class SalesMethods extends Methods {
         ).sale,
       );
     } catch (e) {
-      this.logger.function(e, 'Sales.markAsShipped', { sale_id, tracking_url });
+      this.logger.function(e, 'Sales.markAsShipped', { sale_id, options });
 
       throw e;
     }
@@ -202,9 +206,7 @@ export class SalesMethods extends Methods {
    */
   async refund(
     sale_id: string,
-    {
-      amount_cents,
-    }: {
+    options: {
       /**
        * Amount in cents (in currency of the sale) to be refunded.
        * If set, issue partial refund by this amount.
@@ -218,6 +220,8 @@ export class SalesMethods extends Methods {
     try {
       assertNonBlankString(sale_id, "Argument 'sale_id'");
 
+      const { amount_cents } = options;
+
       return this._bindSale(
         (
           await this.client.request<{ sale: Sale }>(`./sales/${encodeURI(sale_id)}/refund`, {
@@ -227,7 +231,7 @@ export class SalesMethods extends Methods {
         ).sale,
       );
     } catch (e) {
-      this.logger.function(e, 'Sales.refund', { sale_id, amount_cents });
+      this.logger.function(e, 'Sales.refund', { sale_id, options });
 
       throw e;
     }

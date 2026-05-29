@@ -17,9 +17,7 @@ export class TaxFormsMethods extends Methods {
    * **Only available with the `view_tax_data` scope.**
    */
   async list(
-    {
-      year,
-    }: {
+    options: {
       /**
        * A 4-digit tax year.
        *
@@ -32,6 +30,8 @@ export class TaxFormsMethods extends Methods {
     { signal }: { signal?: AbortSignal } = {},
   ): Promise<TaxForm[]> {
     try {
+      const { year } = options;
+
       if (typeof year !== 'undefined') {
         assertNumber(year, "'options.year'");
       }
@@ -43,7 +43,9 @@ export class TaxFormsMethods extends Methods {
         })
       ).tax_forms;
     } catch (e) {
-      this.logger.function(e, 'TaxForms.list');
+      this.logger.function(e, 'TaxForms.list', {
+        options,
+      });
 
       throw e;
     }

@@ -38,7 +38,7 @@ export interface OfferCodeProps {
 export class OfferCodesMethods extends Methods {
   protected _bindOfferCode(offer_code: OfferCode, product_id: string): OfferCode & OfferCodeProps {
     const properties: OfferCodeProps = {
-      update: async (update_options, requestOptions) => this.update(product_id, offer_code.id, update_options, requestOptions),
+      update: async (options, requestOptions) => this.update(product_id, offer_code.id, options, requestOptions),
 
       delete: async (requestOptions) => this.delete(product_id, offer_code.id, requestOptions),
     };
@@ -123,24 +123,26 @@ export class OfferCodesMethods extends Methods {
     product_id: string,
     name: string,
     amount_off: number,
-    options?: {
+    options: {
       /**
        * @default "cents"
        */
       offer_type?: 'cents' | 'percent';
       max_purchase_count?: number;
       universal?: boolean;
-    },
+    } = {},
     { signal }: { signal?: AbortSignal } = {},
   ): Promise<OfferCode & OfferCodeProps> {
     try {
       assertNonBlankString(product_id, "Argument 'product_id'");
 
+      const { offer_type, max_purchase_count, universal } = options;
+
       return this._bindOfferCode(
         (
           await this.client.request<{ offer_code: OfferCode }>(`./products/${encodeURI(product_id)}/offer_codes`, {
             method: 'POST',
-            params: { ...options, name, amount_off },
+            params: { name, amount_off, offer_type, max_purchase_count, universal },
             signal,
           })
         ).offer_code,
@@ -172,12 +174,7 @@ export class OfferCodesMethods extends Methods {
   async update(
     product_id: string,
     offer_code_id: string,
-    options:
-      | { offer_code: string }
-      | {
-          max_purchase_count: number;
-        }
-      | { offer_code: string; max_purchase_count: number },
+    options: { offer_code: string } | { max_purchase_count: number } | { offer_code: string; max_purchase_count: number },
     { signal }: { signal?: AbortSignal } = {},
   ): Promise<OfferCode & OfferCodeProps> {
     try {

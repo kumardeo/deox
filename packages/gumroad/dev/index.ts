@@ -11,7 +11,7 @@ const gumroad = new Gumroad(env.GUMROAD_ACCESS_TOKEN, { debug: true })
     async (ctx, next) => {
       const sale = await ctx.api.sales.get(ctx.data.sale_id);
 
-      console.log(sale);
+      console.log(ctx.data);
 
       if (sale?.email) {
         await next();

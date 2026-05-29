@@ -83,9 +83,7 @@ export class LicensesMethods extends Methods {
   async verify(
     product_id: string,
     license_key: string,
-    {
-      increment_uses_count,
-    }: {
+    options: {
       /** If `true`, increment the uses count of a license. Default: `true` */
       increment_uses_count?: boolean;
     } = {},
@@ -95,7 +93,9 @@ export class LicensesMethods extends Methods {
       assertNonBlankString(product_id, "Argument 'product_id'");
       assertNonBlankString(license_key, "Argument 'license_key'");
 
-      const response = await this.client.request<{
+      const { increment_uses_count } = options;
+
+      const { purchase, uses } = await this.client.request<{
         uses: number;
         purchase: Purchase;
       }>('./licenses/verify', {
@@ -104,14 +104,14 @@ export class LicensesMethods extends Methods {
         signal,
       });
 
-      formatCustomField(response.purchase);
+      formatCustomField(purchase);
 
-      return this._bindPurchase({ ...response, product_id, license_key });
+      return this._bindPurchase({ product_id, license_key, purchase, uses });
     } catch (e) {
       this.logger.function(e, 'Licenses.verify', {
         product_id,
         license_key,
-        increment_uses_count,
+        options,
       });
 
       throw e;
@@ -133,7 +133,7 @@ export class LicensesMethods extends Methods {
       assertNonBlankString(product_id, "Argument 'product_id'");
       assertNonBlankString(license_key, "Argument 'license_key'");
 
-      const response = await this.client.request<{
+      const { purchase, uses } = await this.client.request<{
         uses: number;
         purchase: Purchase;
       }>('./licenses/enable', {
@@ -142,9 +142,9 @@ export class LicensesMethods extends Methods {
         signal,
       });
 
-      formatCustomField(response.purchase);
+      formatCustomField(purchase);
 
-      return this._bindPurchase({ ...response, product_id, license_key });
+      return this._bindPurchase({ product_id, license_key, purchase, uses });
     } catch (e) {
       this.logger.function(e, 'Licenses.enable', {
         product_id,
@@ -170,7 +170,7 @@ export class LicensesMethods extends Methods {
       assertNonBlankString(product_id, "Argument 'product_id'");
       assertNonBlankString(license_key, "Argument 'license_key'");
 
-      const response = await this.client.request<{
+      const { purchase, uses } = await this.client.request<{
         uses: number;
         purchase: Purchase;
       }>('./licenses/disable', {
@@ -179,9 +179,9 @@ export class LicensesMethods extends Methods {
         signal,
       });
 
-      formatCustomField(response.purchase);
+      formatCustomField(purchase);
 
-      return this._bindPurchase({ ...response, product_id, license_key });
+      return this._bindPurchase({ product_id, license_key, purchase, uses });
     } catch (e) {
       this.logger.function(e, 'Licenses.disable', {
         product_id,
@@ -207,7 +207,7 @@ export class LicensesMethods extends Methods {
       assertNonBlankString(product_id, "Argument 'product_id'");
       assertNonBlankString(license_key, "Argument 'license_key'");
 
-      const response = await this.client.request<{
+      const { purchase, uses } = await this.client.request<{
         uses: number;
         purchase: Purchase;
       }>('./licenses/decrement_uses_count', {
@@ -216,9 +216,9 @@ export class LicensesMethods extends Methods {
         signal,
       });
 
-      formatCustomField(response.purchase);
+      formatCustomField(purchase);
 
-      return this._bindPurchase({ ...response, product_id, license_key });
+      return this._bindPurchase({ product_id, license_key, purchase, uses });
     } catch (e) {
       this.logger.function(e, 'Licenses.decrementUsesCount', {
         product_id,
