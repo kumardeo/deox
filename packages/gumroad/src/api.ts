@@ -2,9 +2,11 @@ import { Client } from './client';
 import { DEFAULT_API_BASE_URL } from './constants';
 import { CoversMethods } from './covers';
 import { CustomFieldsMethods } from './custom-fields';
+import { EarningsMethods } from './earnings';
 import {
   SDKBadRequestError,
   SDKError,
+  SDKForbiddenError,
   SDKInputNotFoundError,
   SDKInternalServerError,
   SDKNotFoundError,
@@ -48,6 +50,7 @@ export class API {
   static readonly SDKNotFoundError = SDKNotFoundError;
   static readonly SDKRequestError = SDKRequestError;
   static readonly SDKRequestFailedError = SDKRequestFailedError;
+  static readonly SDKForbiddenError = SDKForbiddenError;
   static readonly SDKUnauthorizedError = SDKUnauthorizedError;
 
   /**
@@ -107,6 +110,7 @@ export class API {
   readonly licenses: LicensesMethods;
   readonly payouts: PayoutsMethods;
   readonly tax_forms: TaxFormsMethods;
+  readonly earnings: EarningsMethods;
 
   /**
    * Creates an instance of {@link API}
@@ -135,5 +139,6 @@ export class API {
     this.licenses = new LicensesMethods(this.client, this.logger);
     this.payouts = new PayoutsMethods(this.client, this.logger);
     this.tax_forms = new TaxFormsMethods(this.client, this.logger);
+    this.earnings = new EarningsMethods(this.client, this.logger);
   }
 }

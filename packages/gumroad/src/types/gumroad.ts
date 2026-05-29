@@ -1038,6 +1038,30 @@ export type TaxForm = {
   filed_at: string | null;
 };
 
+/** Represents an Annual earnings breakdown */
+export type AnnualEarnings = {
+  /** The tax year the earnings cover */
+  year: number;
+
+  /** Always `usd` */
+  currency: StringWithSuggestions<'usd'>;
+
+  /** Gross earnings in cents, summed across all successful non-refunded sales */
+  gross_cents: number;
+
+  /** Gumroad fees in cents */
+  fees_cents: number;
+
+  /** Gumroad-collected and seller-collected taxes in cents */
+  taxes_cents: number;
+
+  /** Affiliate credit in cents */
+  affiliate_credit_cents: number;
+
+  /** Equals `gross_cents - fees_cents - taxes_cents - affiliate_credit_cents` */
+  net_cents: number;
+};
+
 /**
  * * Update (Resource subscriptions post data) types
  */
