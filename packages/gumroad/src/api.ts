@@ -22,6 +22,7 @@ import { request } from './request';
 import { ResourceSubscriptionsMethods } from './resource-subscriptions';
 import { SalesMethods } from './sales';
 import { SubscribersMethods } from './subscribers';
+import { TaxFormsMethods } from './tax-forms';
 import type { Purchase } from './types';
 import { UserMethods } from './user';
 import { assertNonBlankString, formatCustomField } from './utils';
@@ -105,6 +106,7 @@ export class API {
   readonly subscribers: SubscribersMethods;
   readonly licenses: LicensesMethods;
   readonly payouts: PayoutsMethods;
+  readonly tax_forms: TaxFormsMethods;
 
   /**
    * Creates an instance of {@link API}
@@ -132,5 +134,6 @@ export class API {
     this.subscribers = new SubscribersMethods(this.client, this.logger);
     this.licenses = new LicensesMethods(this.client, this.logger);
     this.payouts = new PayoutsMethods(this.client, this.logger);
+    this.tax_forms = new TaxFormsMethods(this.client, this.logger);
   }
 }

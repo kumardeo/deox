@@ -38,7 +38,7 @@ const app = new Hono<{ Bindings: Env }>()
 
     return c.json(await gumroad.products.get(productId));
   })
-  .get('/variant_categories/list', async (c) => {
+  .get('/variant-categories/list', async (c) => {
     const productId = (await gumroad.products.list())[1].id;
 
     return c.json(await gumroad.variant_categories.list(productId));
@@ -65,6 +65,9 @@ const app = new Hono<{ Bindings: Env }>()
   })
   .get('/user/get', async (c) => {
     return c.json(await gumroad.user.get());
+  })
+  .get('/tax-forms/list', async (c) => {
+    return c.json(await gumroad.tax_forms.list());
   })
   .post('/ping', async (c) => {
     return gumroad.handle(c.req.raw, 'ping');

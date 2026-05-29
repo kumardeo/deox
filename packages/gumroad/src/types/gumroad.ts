@@ -1020,6 +1020,24 @@ export type Payout = PayoutMinimal & {
   transactions?: Transaction[];
 };
 
+/** Tax form type */
+export type TaxFormType = 'us_1099_k' | 'us_1099_misc';
+
+/** Represents a tax form */
+export type TaxForm = {
+  /** The tax year the form covers */
+  tax_year: number;
+
+  /** The form type. */
+  tax_form_type: TaxFormType;
+
+  /**
+   * ISO-8601 timestamp when Stripe filed the form with the IRS.
+   * `null` if the form has not yet been filed.
+   */
+  filed_at: string | null;
+};
+
 /**
  * * Update (Resource subscriptions post data) types
  */

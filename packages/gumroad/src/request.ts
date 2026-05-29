@@ -23,6 +23,9 @@ export interface RequestOptions {
   /** The method for request */
   method?: string;
 
+  /** The request headers */
+  headers?: HeadersInit;
+
   /** The body which should be send */
   body?: unknown;
 
@@ -34,6 +37,8 @@ export interface RequestOptions {
 
   /** An AbortSignal to set request's signal. */
   signal?: AbortSignal;
+
+  download?: boolean;
 }
 
 /**
@@ -44,9 +49,19 @@ export interface RequestOptions {
  *
  * @returns Parsed response data from the Gumroad API.
  */
-export async function request<T extends NonNullable<unknown> = NonNullable<unknown>>(
+export async function request<T extends NonNullable<object> = NonNullable<object>>(
   path: string | URL,
-  { accessToken, method = 'GET', params = {}, body, debug = false, base = DEFAULT_API_BASE_URL, signal }: RequestOptions = {},
+  {
+    accessToken,
+    method = 'GET',
+    params = {},
+    headers: optHeaders = {},
+    body,
+    debug = false,
+    base = DEFAULT_API_BASE_URL,
+    signal,
+    download = false,
+  }: RequestOptions = {},
 ): Promise<T & { success: true }> {
   try {
     const url = new URL(path, base);
@@ -62,14 +77,16 @@ export async function request<T extends NonNullable<unknown> = NonNullable<unkno
       url.searchParams.set('access_token', accessToken);
     }
 
-    const headers = new Headers();
+    const headers = new Headers(optHeaders);
     const init: RequestInit = {
       method,
       signal,
       headers,
     };
 
-    headers.set('Accept', 'application/json');
+    if (!headers.has('Accept')) {
+      headers.set('Accept', 'application/json');
+    }
 
     if (method.toUpperCase() === 'POST' && typeof body !== 'undefined') {
       if (body instanceof URLSearchParams || body instanceof FormData) {
@@ -102,7 +119,14 @@ export async function request<T extends NonNullable<unknown> = NonNullable<unkno
       );
     }
 
-    if (response.headers.get('Content-Type')?.includes('application/json')) {
+    const contentType = response.headers.get('Content-Type');
+
+    if (download && response.status === 200) {
+      const bytes = new Uint8Array(await response.arrayBuffer());
+      return { success: true, bytes, type: contentType } as unknown as T & { success: true };
+    }
+
+    if (contentType?.includes('application/json')) {
       const data: unknown = await response.json();
       if (typeof data === 'object' && data !== null) {
         if ('success' in data) {
@@ -123,7 +147,11 @@ export async function request<T extends NonNullable<unknown> = NonNullable<unkno
       throw getResponseError(response, `Invalid Server Response body: ${JSON.stringify(data)}`);
     }
 
-    throw getResponseError(response, undefined, `Response content type is not 'application/json'`);
+    throw getResponseError(
+      response,
+      undefined,
+      contentType !== null ? `Response Content-Type ('${contentType}') is not supported` : 'Response has no Content-Type header',
+    );
   } catch (e) {
     const notFoundError = error.isAnyNotFound(e);
 

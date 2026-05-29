@@ -149,6 +149,14 @@ export const error = {
     return this.inGumroadRequest(e, result.error) ? result : false;
   },
 
+  isTaxFormNotFound(e: unknown) {
+    const result = {
+      error: 'Tax form not found.',
+      code: 'tax_form_not_found' as const,
+    };
+    return this.inGumroadRequest(e, result.error) ? result : false;
+  },
+
   isAnyNotFound(e: unknown) {
     return (
       this.isProductNotFound(e) ||
@@ -159,7 +167,8 @@ export const error = {
       this.isSubscriberNotFound(e) ||
       this.isResourceSubscriptionNotFound(e) ||
       this.isSaleNotFound(e) ||
-      this.isPayoutNotFound(e)
+      this.isPayoutNotFound(e) ||
+      this.isTaxFormNotFound(e)
     );
   },
 };
