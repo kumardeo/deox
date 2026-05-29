@@ -98,13 +98,19 @@ export class SalesMethods extends Methods {
       /** Filter sales by this Order ID */
       order_id?: string;
 
+      /** Filter sales by customer name */
+      name?: string;
+
+      /** Filter sales by license key */
+      license_key?: string;
+
       /** A key representing a page of results. It is given in the response as `next_page_key`. */
       page_key?: string;
     } = {},
     { signal }: { signal?: AbortSignal } = {},
   ): Promise<(Sale & SaleProps)[] & SalesProps> {
     try {
-      const { after, before, product_id, email, order_id, page_key } = options;
+      const { after, before, product_id, email, order_id, name, license_key, page_key } = options;
 
       return this._bindSales(
         await this.client.request<{
@@ -112,7 +118,7 @@ export class SalesMethods extends Methods {
           next_page_key?: string;
           sales: Sale[];
         }>('./sales', {
-          params: { after, before, product_id, email, order_id, page_key },
+          params: { after, before, product_id, email, order_id, name, license_key, page_key },
           signal,
         }),
       );

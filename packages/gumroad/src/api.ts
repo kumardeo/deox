@@ -66,9 +66,7 @@ export class API {
   static async verifyLicense(
     product_id: string,
     license_key: string,
-    {
-      increment_uses_count,
-    }: {
+    options: {
       /** Increments license uses on successful verification, defaults to: `true` */
       increment_uses_count?: boolean;
     } = {},
@@ -76,6 +74,8 @@ export class API {
   ): Promise<Purchase> {
     assertNonBlankString(product_id, "Argument 'product_id'");
     assertNonBlankString(license_key, "Argument 'license_key'");
+
+    const { increment_uses_count } = options;
 
     return formatCustomField(
       (

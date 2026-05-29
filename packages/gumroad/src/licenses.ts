@@ -228,4 +228,41 @@ export class LicensesMethods extends Methods {
       throw e;
     }
   }
+
+  /**
+   * Rotate a license key. The old license key will no longer be valid.
+   *
+   * @param product_id The unique ID of the product, available on product's edit page
+   * @param license_key The license key provided by your customer
+   *
+   * @returns On success, a {@link Purchase}
+   *
+   * @see https://app.gumroad.com/api#put-/licenses/rotate
+   */
+  async rotate(product_id: string, license_key: string, { signal }: { signal?: AbortSignal } = {}): Promise<Purchase & PurchaseProps> {
+    try {
+      assertNonBlankString(product_id, "Argument 'product_id'");
+      assertNonBlankString(license_key, "Argument 'license_key'");
+
+      const { purchase, uses } = await this.client.request<{
+        uses: number;
+        purchase: Purchase;
+      }>('./licenses/rotate', {
+        method: 'PUT',
+        params: { product_id, license_key },
+        signal,
+      });
+
+      formatCustomField(purchase);
+
+      return this._bindPurchase({ product_id, license_key, purchase, uses });
+    } catch (e) {
+      this.logger.function(e, 'Licenses.rotate', {
+        product_id,
+        license_key,
+      });
+
+      throw e;
+    }
+  }
 }

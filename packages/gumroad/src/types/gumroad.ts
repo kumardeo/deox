@@ -103,8 +103,8 @@ export type FileInfo = {
   Size: string;
 };
 
-/** Represents a custom field */
-export type CustomField = {
+/** Represents a minimal custom field */
+export type CustomFieldMinimal = {
   /** The id of the custom field */
   id: string;
 
@@ -116,6 +116,18 @@ export type CustomField = {
 
   /** Indicates whether the custom field is required */
   required: boolean;
+
+  /** Whether this field is collected per product */
+  collect_per_product: boolean;
+};
+
+/** Represents a custom field */
+export type CustomField = CustomFieldMinimal & {
+  /** Whether this field applies globally */
+  global: boolean;
+
+  /** Array of product IDs this field is associated with */
+  products: string[];
 };
 
 /** The type of the cover */
@@ -230,9 +242,9 @@ export type Product = {
   /**
    * Combined list of the seller's global checkout custom fields and the product's own custom fields
    *
-   * An Array of {@link CustomField}
+   * An Array of {@link CustomFieldMinimal}
    */
-  custom_fields: CustomField[];
+  custom_fields: CustomFieldMinimal[];
 
   /** Indicates whether pay-what-you-want pricing is enabled */
   customizable_price: boolean | null;
@@ -467,7 +479,7 @@ export type User = {
    */
   links?: string[];
 
-  /** The gumroad profile url of the user */
+  /** The Gumroad profile url of the user */
   profile_url: string;
 
   /** **Only available with the `view_sales` scope** */
@@ -726,6 +738,9 @@ export type Variant = {
   /** The name of the variant */
   name: string;
 
+  /** Description of the variant */
+  description: string | null;
+
   /** The price difference in USD cents */
   price_difference_cents: number;
 
@@ -765,8 +780,8 @@ export type Sale = {
   /** Gumroad's fee, in USD cents */
   gumroad_fee: number;
 
-  is_bundle_purchase: boolean;
-  is_bundle_product_purchase: boolean;
+  is_bundle_purchase?: boolean;
+  is_bundle_product_purchase?: boolean;
 
   /** Formatted display price */
   formatted_display_price: string;
@@ -1242,7 +1257,7 @@ export type UpdateSubscription = {
   /** Timestamp when free trial ends, if free trial is enabled for the membership */
   free_trial_ends_at?: string;
 
-  /** Custom fields from the original purchase as an array of {@link CustomField} */
+  /** Custom fields from the original purchase */
   custom_fields: string[];
 
   /** License key from the original purchase */

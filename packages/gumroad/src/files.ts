@@ -85,7 +85,7 @@ export class FilesMethods extends Methods {
   async complete(
     upload_id: string,
     key: string,
-    parts: { part_number: string; etag: string }[],
+    parts: { part_number: number; etag: string }[],
     { signal }: { signal?: AbortSignal } = {},
   ): Promise<{
     /** Pass this as `files[][url]` when attaching to a product */
@@ -94,19 +94,7 @@ export class FilesMethods extends Methods {
     try {
       assertNonBlankString(upload_id, "Argument 'upload_id'");
       assertNonBlankString(key, "Argument 'key'");
-      assertArray(parts, "Argument 'parts'");
-
-      if (parts.length === 0) {
-        throw new TypeError("Argument 'parts' must have at least 1 item");
-      }
-
-      for (let i = 0; i < parts.length; i++) {
-        const part = parts[i];
-
-        assertObject(part, `'parts[${i}]'`);
-        assertNumber(part.part_number, `'parts[${i}].part_number'`);
-        assertNonBlankString(part.etag, `'parts[${i}].etag'`);
-      }
+      assertParts(parts, "Argument 'parts'");
 
       const { file_url } = await this.client.request<{ file_url: string }>('./files/complete', {
         method: 'POST',
@@ -161,5 +149,21 @@ export class FilesMethods extends Methods {
 
       throw e;
     }
+  }
+}
+
+function assertParts(parts: { part_number: number; etag: string }[], name: string): void {
+  assertArray(parts, name);
+
+  if (parts.length === 0) {
+    throw new TypeError(`${name} must have at least 1 item`);
+  }
+
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i];
+
+    assertObject(part, `'parts[${i}]'`);
+    assertNumber(part.part_number, `'parts[${i}].part_number'`);
+    assertNonBlankString(part.etag, `'parts[${i}].etag'`);
   }
 }

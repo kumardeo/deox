@@ -25,17 +25,30 @@ export class SubscribersMethods extends Methods {
     options: {
       /** Filter subscribers by this email */
       email?: string;
+
+      /**
+       * Set to `true` to limit the number of subscribers returned to 100
+       *
+       * @default false
+       */
+      paginated?: boolean;
+
+      /**
+       * A key representing a page of results.
+       * It is given in the paginated response of the previous page as `next_page_key`.
+       */
+      page_key?: string;
     } = {},
     { signal }: { signal?: AbortSignal } = {},
   ): Promise<Subscriber[]> {
     try {
       assertNonBlankString(product_id, "Argument 'product_id'");
 
-      const { email } = options;
+      const { email, paginated, page_key } = options;
 
       return (
         await this.client.request<{ subscribers: Subscriber[] }>(`./products/${encodeURI(product_id)}/subscribers`, {
-          params: { email },
+          params: { email, paginated, page_key },
           signal,
         })
       ).subscribers;
