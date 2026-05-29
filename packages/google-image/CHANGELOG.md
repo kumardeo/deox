@@ -1,5 +1,11 @@
 # @deox/google-image
 
+## 0.0.5
+
+### Patch Changes
+
+- [#44](https://github.com/kumardeo/deox/pull/44) [`5c1f953`](https://github.com/kumardeo/deox/commit/5c1f953c45df0fc1d7a4860ace8f2f24b38a29e3) Thanks [@kumardeo](https://github.com/kumardeo)! - feat: remove dependency on `@deox/utils`
+
 ## 0.0.4
 
 ### Patch Changes
