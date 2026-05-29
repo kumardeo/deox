@@ -1,19 +1,13 @@
 import { Methods } from './methods';
 import type { Sale } from './types';
-import { addProperties, validators } from './utils';
+import { addProperties, assertNonBlankString } from './utils';
 
-/**
- * Bindings for Array of {@link Sale}
- */
+/** Bindings for Array of {@link Sale} */
 export interface SalesProps {
-  /**
-   * The key for next page of sales if available
-   */
+  /** The key for next page of sales if available */
   readonly next_page_key: string | undefined;
 
-  /**
-   * The API endpoint for next page of sales if available
-   */
+  /** The API endpoint for next page of sales if available */
   readonly next_page_url: string | undefined;
 
   /**
@@ -21,43 +15,35 @@ export interface SalesProps {
    *
    * @returns On success, an Array of {@link Sale} | `null` if next page does not exists
    */
-  next(requestOptions?: { signal?: AbortSignal }): Promise<(Sale[] & SalesProps) | null>;
+  next(requestOptions?: { signal?: AbortSignal }): Promise<((Sale & SaleProps)[] & SalesProps) | null>;
 }
 
-/**
- * Bindings for {@link Sale}
- */
+/** Bindings for {@link Sale} */
 export interface SaleProps {
   /**
    * Marks the sale as shipped
    *
-   * @param tracking_url (Optional) The tracking url
-   *
    * @returns On success, a {@link Sale}
    */
-  markAsShipped(tracking_url?: string | undefined, requestOptions?: { signal?: AbortSignal }): Promise<Sale & SaleProps>;
+  markAsShipped(options: { tracking_url?: string | undefined }, requestOptions?: { signal?: AbortSignal }): Promise<Sale & SaleProps>;
 
   /**
    * Refunds the sale
    *
-   * @param amount_cents The amount in cents
-   *
    * @returns On success, a {@link Sale}
    */
-  refund(amount_cents?: number | undefined, requestOptions?: { signal?: AbortSignal }): Promise<Sale & SaleProps>;
+  refund(options: { amount_cents?: number | undefined }, requestOptions?: { signal?: AbortSignal }): Promise<Sale & SaleProps>;
 }
 
-/**
- * A class having API methods related to Sales
- */
-export class Sales extends Methods {
-  protected _bind_sales(object: { next_page_url?: string; next_page_key?: string; sales: Sale[] }) {
+/** A class having API methods related to Sales */
+export class SalesMethods extends Methods {
+  protected _bindSales(object: { next_page_url?: string; next_page_key?: string; sales: Sale[] }): (Sale & SaleProps)[] & SalesProps {
     const properties: SalesProps = {
       next_page_key: object.next_page_key,
       next_page_url: object.next_page_url,
       next: async ({ signal } = {}) => {
         if (object.next_page_url) {
-          return this._bind_sales(
+          return this._bindSales(
             await this.client.request<typeof object>(object.next_page_url, {
               signal,
             }),
@@ -69,24 +55,22 @@ export class Sales extends Methods {
     };
 
     return addProperties(
-      object.sales.map((sale) => this._bind_sale(sale)),
+      object.sales.map((sale) => this._bindSale(sale)),
       properties,
     );
   }
 
-  protected _bind_sale(sale: Sale) {
+  protected _bindSale(sale: Sale): Sale & SaleProps {
     const properties: SaleProps = {
-      markAsShipped: async (tracking_url, requestOptions) => this.markAsShipped(sale.id, tracking_url, requestOptions),
+      markAsShipped: async (options, requestOptions) => this.markAsShipped(sale.id, options, requestOptions),
 
-      refund: async (amount_cents, requestOptions) => this.refund(sale.id, amount_cents, requestOptions),
+      refund: async (options, requestOptions) => this.refund(sale.id, options, requestOptions),
     };
 
     return addProperties(sale, properties);
   }
 
   /**
-   * **Only available with the `view_sales` scope**
-   *
    * Retrieves all of the successful sales by the authenticated user.
    *
    * @param options (Optional) Options
@@ -94,57 +78,60 @@ export class Sales extends Methods {
    * @returns On success, an Array of {@link Sales}
    *
    * @see https://app.gumroad.com/api#get-/sales
+   *
+   * **Only available with the `view_sales` scope**
    */
   async list(
-    options?: {
-      /**
-       * Date in form `YYYY-MM-DD` - Only return sales after this date
-       */
+    options: {
+      /** Date in form `YYYY-MM-DD` - Only return sales after this date */
       after?: string;
-      /**
-       * Date in form `YYYY-MM-DD` - Only return sales before this date
-       */
+
+      /** Date in form `YYYY-MM-DD` - Only return sales before this date */
       before?: string;
-      /**
-       * Filter sales by this product
-       */
+
+      /** Filter sales by this product */
       product_id?: string;
-      /**
-       * Filter sales by this email
-       */
+
+      /** Filter sales by this email */
       email?: string;
-      /**
-       * Filter sales by this Order ID
-       */
+
+      /** Filter sales by this Order ID */
       order_id?: string;
-      /**
-       * A key representing a page of results. It is given in the response as `next_page_key`.
-       */
+
+      /** Filter sales by customer name */
+      name?: string;
+
+      /** Filter sales by license key */
+      license_key?: string;
+
+      /** A key representing a page of results. It is given in the response as `next_page_key`. */
       page_key?: string;
-    },
+    } = {},
     { signal }: { signal?: AbortSignal } = {},
-  ) {
+  ): Promise<(Sale & SaleProps)[] & SalesProps> {
     try {
-      return this._bind_sales(
+      const { after, before, product_id, email, order_id, name, license_key, page_key } = options;
+
+      return this._bindSales(
         await this.client.request<{
           next_page_url?: string;
           next_page_key?: string;
           sales: Sale[];
         }>('./sales', {
-          params: options,
+          params: { after, before, product_id, email, order_id, name, license_key, page_key },
           signal,
         }),
       );
     } catch (e) {
-      this.logger.function(e, 'Sales.list', { options });
+      this.logger.function(e, 'Sales.list', {
+        options,
+      });
 
       throw e;
     }
   }
 
   /**
-   * **Only available with the `view_sales` scope**
-   *
    * Retrieves the details of a sale by this user
    *
    * @param sale_id The id of the sale
@@ -152,12 +139,14 @@ export class Sales extends Methods {
    * @returns On success, a {@link Sale}
    *
    * @see https://app.gumroad.com/api#get-/sales/:id
+   *
+   * **Only available with the `view_sales` scope**
    */
-  async get(sale_id: string, { signal }: { signal?: AbortSignal } = {}) {
+  async get(sale_id: string, { signal }: { signal?: AbortSignal } = {}): Promise<Sale & SaleProps> {
     try {
-      validators.notBlank(sale_id, "Argument 'sale_id'");
+      assertNonBlankString(sale_id, "Argument 'sale_id'");
 
-      return this._bind_sale(
+      return this._bindSale(
         (
           await this.client.request<{ sale: Sale }>(`./sales/${encodeURI(sale_id)}`, {
             signal,
@@ -172,22 +161,30 @@ export class Sales extends Methods {
   }
 
   /**
-   * **Only available with the `mark_sales_as_shipped` scope**
-   *
    * Marks a sale as shipped.
    *
    * @param sale_id The id of the sale
-   * @param tracking_url (Optional) The tracking url
    *
    * @returns On success, a {@link Sale}
    *
    * @see https://app.gumroad.com/api#put-/sales/:id/mark_as_shipped
+   *
+   * **Only available with the `mark_sales_as_shipped` scope**
    */
-  async markAsShipped(sale_id: string, tracking_url?: string, { signal }: { signal?: AbortSignal } = {}) {
+  async markAsShipped(
+    sale_id: string,
+    options: {
+      /** The tracking url */
+      tracking_url?: string;
+    } = {},
+    { signal }: { signal?: AbortSignal } = {},
+  ): Promise<Sale & SaleProps> {
     try {
-      validators.notBlank(sale_id, "Argument 'sale_id'");
+      assertNonBlankString(sale_id, "Argument 'sale_id'");
 
-      return this._bind_sale(
+      const { tracking_url } = options;
+
+      return this._bindSale(
         (
           await this.client.request<{ sale: Sale }>(`./sales/${encodeURI(sale_id)}/mark_as_shipped`, {
             params: { tracking_url },
@@ -196,32 +193,42 @@ export class Sales extends Methods {
         ).sale,
       );
     } catch (e) {
-      this.logger.function(e, 'Sales.markAsShipped', { sale_id, tracking_url });
+      this.logger.function(e, 'Sales.markAsShipped', { sale_id, options });
 
       throw e;
     }
   }
 
   /**
-   * **Only available with the `refund_sales` scope**
-   *
    * Refunds a sale.
    *
    * @param sale_id The id of the sale
-   * @param amount_cents Amount in cents (in currency of the sale) to be refunded.
-   * If set, issue partial refund by this amount.
-   * If not set, issue full refund.
-   * You can issue multiple partial refunds per sale until it is fully refunded.
    *
    * @returns On success, a {@link Sale}
    *
    * @see https://app.gumroad.com/api#put-/sales/:id/refund
+   *
+   * **Only available with the `refund_sales` scope**
    */
-  async refund(sale_id: string, amount_cents?: number, { signal }: { signal?: AbortSignal } = {}) {
+  async refund(
+    sale_id: string,
+    options: {
+      /**
+       * Amount in cents (in currency of the sale) to be refunded.
+       * If set, issue partial refund by this amount.
+       * If not set, issue full refund.
+       * You can issue multiple partial refunds per sale until it is fully refunded.
+       */
+      amount_cents?: number;
+    } = {},
+    { signal }: { signal?: AbortSignal } = {},
+  ): Promise<Sale & SaleProps> {
     try {
-      validators.notBlank(sale_id, "Argument 'sale_id'");
+      assertNonBlankString(sale_id, "Argument 'sale_id'");
 
-      return this._bind_sale(
+      const { amount_cents } = options;
+
+      return this._bindSale(
         (
           await this.client.request<{ sale: Sale }>(`./sales/${encodeURI(sale_id)}/refund`, {
             params: { amount_cents },
@@ -230,7 +237,7 @@ export class Sales extends Methods {
         ).sale,
       );
     } catch (e) {
-      this.logger.function(e, 'Sales.refund', { sale_id, amount_cents });
+      this.logger.function(e, 'Sales.refund', { sale_id, options });
 
       throw e;
     }

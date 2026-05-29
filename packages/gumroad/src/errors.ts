@@ -1,8 +1,6 @@
 import type { error } from './utils';
 
-/**
- * Represents a SDK error
- */
+/** Represents a SDK error */
 export class SDKError extends Error {
   constructor(message: string, options?: ErrorOptions) {
     super(message, options);
@@ -10,89 +8,63 @@ export class SDKError extends Error {
   }
 }
 
-/**
- * Represents a error thrown while making an API request
- */
+/** Represents a error thrown while making an API request */
 export class SDKRequestError extends SDKError {
-  readonly response?: Response;
+  readonly path: string;
 
-  readonly url: string;
-
-  constructor(message: string, url: Response | URL | string, options?: ErrorOptions) {
+  constructor(message: string, path: string, options?: ErrorOptions) {
     super(message, options);
     this.name = 'SDKRequestError';
 
-    if (url instanceof URL || typeof url === 'string') {
-      this.url = String(url);
-    } else {
-      this.url = url.url;
-      this.response = url;
-    }
+    this.path = path;
   }
 }
 
-/**
- * Represents a error thrown when server responds with `Bad Request`
- */
+/** Represents a error thrown when server responds with `Bad Request` */
 export class SDKBadRequestError extends SDKRequestError {
-  readonly response: Response;
-
-  constructor(message: string, response: Response, options?: ErrorOptions) {
-    super(message, response, options);
+  constructor(message: string, path: string, options?: ErrorOptions) {
+    super(message, path, options);
     this.name = 'SDKBadRequestError';
-    this.response = response;
   }
 }
 
-/**
- * Represents a error thrown when server responds with `Unauthorized`
- */
+/** Represents a error thrown when server responds with `Forbidden` */
+export class SDKForbiddenError extends SDKRequestError {
+  constructor(message: string, path: string, options?: ErrorOptions) {
+    super(message, path, options);
+    this.name = 'SDKForbiddenError';
+  }
+}
+
+/** Represents a error thrown when server responds with `Unauthorized` */
 export class SDKUnauthorizedError extends SDKRequestError {
-  readonly response: Response;
-
-  constructor(message: string, response: Response, options?: ErrorOptions) {
-    super(message, response, options);
+  constructor(message: string, path: string, options?: ErrorOptions) {
+    super(message, path, options);
     this.name = 'SDKUnauthorizedError';
-    this.response = response;
   }
 }
 
-/**
- * Represents a error thrown when server responds with `Request Failed`
- */
+/** Represents a error thrown when server responds with `Request Failed` */
 export class SDKRequestFailedError extends SDKRequestError {
-  readonly response: Response;
-
-  constructor(message: string, response: Response, options?: ErrorOptions) {
-    super(message, response, options);
+  constructor(message: string, path: string, options?: ErrorOptions) {
+    super(message, path, options);
     this.name = 'SDKRequestFailedError';
-    this.response = response;
   }
 }
 
-/**
- * Represents a error thrown when server responds with `Not Found`
- */
+/** Represents a error thrown when server responds with `Not Found` */
 export class SDKNotFoundError extends SDKRequestError {
-  readonly response: Response;
-
-  constructor(message: string, response: Response, options?: ErrorOptions) {
-    super(message, response, options);
+  constructor(message: string, path: string, options?: ErrorOptions) {
+    super(message, path, options);
     this.name = 'SDKNotFoundError';
-    this.response = response;
   }
 }
 
-/**
- * Represents a error thrown when server responds with `Internal Server Error`
- */
+/** Represents a error thrown when server responds with `Internal Server Error` */
 export class SDKInternalServerError extends SDKRequestError {
-  readonly response: Response;
-
-  constructor(message: string, response: Response, options?: ErrorOptions) {
-    super(message, response, options);
+  constructor(message: string, path: string, options?: ErrorOptions) {
+    super(message, path, options);
     this.name = 'SDKInternalServerError';
-    this.response = response;
   }
 }
 

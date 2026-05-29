@@ -1,7 +1,9 @@
 import clc from '@deox/clc';
-import { isObject } from '@deox/utils/predicate';
+import { type Serializable, serialize } from '@deox/utils/params';
+import { DEFAULT_API_BASE_URL } from './constants';
 import {
   SDKBadRequestError,
+  SDKForbiddenError,
   SDKInputNotFoundError,
   SDKInternalServerError,
   SDKNotFoundError,
@@ -11,155 +13,90 @@ import {
 } from './errors';
 import { error } from './utils';
 
-/**
- * An interface representing options for {@link RequestURL}
- */
-export interface RequestURLOptions {
-  /**
-   * Indicates whether to clear existing search queries
-   */
-  clearParams?: boolean;
-
-  /**
-   * A record of key value which should to added to search queries
-   */
-  params?: Record<string, string | number | boolean | undefined | (string | number | boolean | undefined)[]>;
-}
-
-/**
- * Constructs an `URL` object for endpoints
- */
-export class RequestURL extends URL {
-  constructor(url: string | URL, base?: string | URL | undefined, options: RequestURLOptions = {}) {
-    super(url, base);
-    const { searchParams } = this;
-    if (options.clearParams) {
-      searchParams.forEach((_value, key, params) => {
-        params.delete(key);
-      });
-    }
-    const append = (key: string, value: string | number | boolean | undefined) => {
-      if (['string', 'boolean', 'number'].includes(typeof value)) {
-        searchParams.append(key, String(value));
-      }
-    };
-    if (typeof options.params === 'object' && options.params) {
-      const queries = options.params;
-      for (const key in queries) {
-        const value = queries[key];
-        if (Array.isArray(value)) {
-          for (const e in value) {
-            append(key, e);
-          }
-        } else {
-          append(key, value);
-        }
-      }
-    }
-  }
-}
-
-/**
- * An interface representing options for {@link request} function
- */
+/** An interface representing options for {@link request} function */
 export interface RequestOptions {
-  /**
-   * The search queries
-   */
-  params?: RequestURLOptions['params'];
+  /** The access token */
+  accessToken?: string;
 
-  /**
-   * The method for request
-   */
+  /** The search queries */
+  params?: Record<string, Serializable>;
+
+  /** The method for request */
   method?: string;
 
-  /**
-   * The body which should be send
-   */
+  /** The request headers */
+  headers?: HeadersInit;
+
+  /** The body which should be send */
   body?: unknown;
 
-  /**
-   * Indicates whether to enable debug mode
-   */
+  /** Indicates whether to enable debug mode */
   debug?: boolean;
 
-  /**
-   * The base url for Gumroad API
-   */
-  baseUrl?: string | RequestURL;
+  /** The base url for Gumroad API */
+  base?: string | URL;
 
-  /**
-   * An AbortSignal to set request's signal.
-   */
+  /** An AbortSignal to set request's signal. */
   signal?: AbortSignal;
-}
 
-function getResponseError(response: Response, message?: string, defaultMessage?: string): Error {
-  switch (response.status) {
-    case 400:
-      return new SDKBadRequestError(message || `Server responded with '${response.statusText}' status text`, response);
-    case 401:
-      return new SDKUnauthorizedError(
-        message || `Server responded with '${response.statusText}' status text, please make sure you have passed a valid Access Token!`,
-        response,
-      );
-    case 402:
-      return new SDKRequestFailedError(
-        message || `Server responded with '${response.statusText}' status text, looks like the parameters were valid but request failed.`,
-        response,
-      );
-    case 404:
-      return new SDKNotFoundError(message || `Server responded with '${response.statusText}' status text`, response);
-    case 500:
-    case 502:
-    case 503:
-    case 504:
-      return new SDKInternalServerError(
-        message || `Server responded with '${response.statusText}' status text, looks like something else went wrong on endpoint.`,
-        response,
-      );
-    default:
-      return new SDKRequestError(defaultMessage || message || 'Response error', response);
-  }
+  download?: boolean;
 }
 
 /**
  * Requests to Gumroad API
  *
  * @param path The relative path for endpoint
- * @param accessToken The access token | can be `null` in case it is not requested by endpoint
  * @param param2 Options
  *
- * @returns An object containing `data` and `response`
+ * @returns Parsed response data from the Gumroad API.
  */
-export async function request<T extends NonNullable<unknown> = NonNullable<unknown>>(
-  path: string | RequestURL,
-  accessToken?: string | null,
-  { method = 'GET', params = {}, body, debug = false, baseUrl = 'https://api.gumroad.com/v2/', signal }: RequestOptions = {},
-): Promise<{ data: T & { success: true }; response: Response }> {
+export async function request<T extends NonNullable<object> = NonNullable<object>>(
+  path: string | URL,
+  {
+    accessToken,
+    method = 'GET',
+    params = {},
+    headers: optHeaders = {},
+    body,
+    debug = false,
+    base = DEFAULT_API_BASE_URL,
+    signal,
+    download = false,
+  }: RequestOptions = {},
+): Promise<T & { success: true }> {
   try {
-    const endpoint = new RequestURL(path, baseUrl, {
-      params: {
-        ...params,
-        ...(accessToken ? { access_token: accessToken } : undefined),
-      },
-    });
+    const url = new URL(path, base);
 
-    const shouldSendBody = method.toUpperCase() === 'POST' && typeof body !== 'undefined';
-    const config: RequestInit = {
+    serialize(params, url.searchParams);
+
+    if (accessToken) {
+      url.searchParams.set('access_token', accessToken);
+    }
+
+    const headers = new Headers(optHeaders);
+    const init: RequestInit = {
       method,
-      body: shouldSendBody ? JSON.stringify(body) : undefined,
-      headers: {
-        Accept: 'application/json',
-        ...(shouldSendBody ? { 'Content-Type': 'application/json' } : undefined),
-      },
       signal,
+      headers,
     };
+
+    if (!headers.has('Accept')) {
+      headers.set('Accept', 'application/json');
+    }
+
+    if (method.toUpperCase() === 'POST' && typeof body !== 'undefined') {
+      if (body instanceof URLSearchParams || body instanceof FormData) {
+        init.body = body;
+      } else {
+        init.body = JSON.stringify(body);
+        headers.set('Content-Type', 'application/json');
+      }
+    }
 
     const started = debug ? Date.now() : null;
 
-    const response = await fetch(endpoint, config).catch((e) => {
-      throw new SDKRequestError('Fetch to Gumroad API failed', String(endpoint), {
+    const response = await fetch(url, init).catch((e) => {
+      throw new SDKRequestError('Fetch to Gumroad API failed', url.pathname, {
         cause: e,
       });
     });
@@ -174,16 +111,23 @@ export async function request<T extends NonNullable<unknown> = NonNullable<unkno
         coloredStatus = clc.red(coloredStatus);
       }
       console.log(
-        `${clc.green('[@deox/gumroad:info]')} ${clc.bold(method)} ${endpoint.pathname} ${coloredStatus} ${clc.dim(`(${Date.now() - started}ms)`)}`,
+        `${clc.green('[@deox/gumroad:info]')} ${clc.bold(method)} ${url.pathname} ${coloredStatus} ${clc.dim(`(${Date.now() - started}ms)`)}`,
       );
     }
 
-    if (response.headers.get('Content-Type')?.includes('application/json')) {
+    const contentType = response.headers.get('Content-Type');
+
+    if (download && response.status === 200) {
+      const bytes = new Uint8Array(await response.arrayBuffer());
+      return { success: true, bytes, type: contentType } as unknown as T & { success: true };
+    }
+
+    if (contentType?.includes('application/json')) {
       const data: unknown = await response.json();
-      if (isObject(data)) {
+      if (typeof data === 'object' && data !== null) {
         if ('success' in data) {
           if (data.success === true && response.status === 200) {
-            return { data: data as T & { success: true }, response };
+            return data as T & { success: true };
           }
 
           if (data.success === false && 'message' in data && typeof data.message === 'string') {
@@ -199,7 +143,11 @@ export async function request<T extends NonNullable<unknown> = NonNullable<unkno
       throw getResponseError(response, `Invalid Server Response body: ${JSON.stringify(data)}`);
     }
 
-    throw getResponseError(response, undefined, `Response content type is not 'application/json'`);
+    throw getResponseError(
+      response,
+      undefined,
+      contentType !== null ? `Response Content-Type ('${contentType}') is not supported` : 'Response has no Content-Type header',
+    );
   } catch (e) {
     const notFoundError = error.isAnyNotFound(e);
 
@@ -210,5 +158,37 @@ export async function request<T extends NonNullable<unknown> = NonNullable<unkno
     }
 
     throw e;
+  }
+}
+
+function getResponseError(response: Response, message?: string, defaultMessage?: string): Error {
+  const pathname = new URL(response.url).pathname;
+  switch (response.status) {
+    case 400:
+      return new SDKBadRequestError(message || `Server responded with '${response.statusText}' status text`, pathname);
+    case 401:
+      return new SDKUnauthorizedError(
+        message || `Server responded with '${response.statusText}' status text, please make sure you have passed a valid Access Token!`,
+        pathname,
+      );
+    case 402:
+      return new SDKRequestFailedError(
+        message || `Server responded with '${response.statusText}' status text, looks like the parameters were valid but request failed.`,
+        pathname,
+      );
+    case 403:
+      return new SDKForbiddenError(message || `Server responded with '${response.statusText}' status text`, pathname);
+    case 404:
+      return new SDKNotFoundError(message || `Server responded with '${response.statusText}' status text`, pathname);
+    case 500:
+    case 502:
+    case 503:
+    case 504:
+      return new SDKInternalServerError(
+        message || `Server responded with '${response.statusText}' status text, looks like something else went wrong on endpoint.`,
+        pathname,
+      );
+    default:
+      return new SDKRequestError(defaultMessage || message || 'Response error', pathname);
   }
 }

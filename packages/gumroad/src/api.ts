@@ -1,9 +1,12 @@
 import { Client } from './client';
 import { DEFAULT_API_BASE_URL } from './constants';
-import { CustomFields } from './custom-fields';
+import { CoversMethods } from './covers';
+import { CustomFieldsMethods } from './custom-fields';
+import { EarningsMethods } from './earnings';
 import {
   SDKBadRequestError,
   SDKError,
+  SDKForbiddenError,
   SDKInputNotFoundError,
   SDKInternalServerError,
   SDKNotFoundError,
@@ -11,23 +14,24 @@ import {
   SDKRequestFailedError,
   SDKUnauthorizedError,
 } from './errors';
-import { Licenses } from './licenses';
+import { FilesMethods } from './files';
+import { LicensesMethods } from './licenses';
 import { Logger } from './logger';
-import { OfferCodes } from './offer-codes';
-import { Products } from './products';
+import { OfferCodesMethods } from './offer-codes';
+import { PayoutsMethods } from './payouts';
+import { ProductsMethods } from './products';
 import { request } from './request';
-import { ResourceSubscriptions } from './resource-subscriptions';
-import { Sales } from './sales';
-import { Subscribers } from './subscribers';
+import { ResourceSubscriptionsMethods } from './resource-subscriptions';
+import { SalesMethods } from './sales';
+import { SubscribersMethods } from './subscribers';
+import { TaxFormsMethods } from './tax-forms';
 import type { Purchase } from './types';
-import { User } from './user';
-import { formatCustomField, validators } from './utils';
-import { VariantCategories } from './variant-categories';
-import { Variants } from './variants';
+import { UserMethods } from './user';
+import { assertNonBlankString, formatCustomField } from './utils';
+import { VariantCategoriesMethods } from './variant-categories';
+import { VariantsMethods } from './variants';
 
-/**
- * An interface representing options for {@link API}
- */
+/** An interface representing options for {@link API} */
 export interface APIOptions {
   /**
    * Indicates whether to enable debug mode or not
@@ -37,9 +41,7 @@ export interface APIOptions {
   debug?: boolean;
 }
 
-/**
- * A class for making API requests to Gumroad API endpoints
- */
+/** A class for making API requests to Gumroad API endpoints */
 export class API {
   static readonly SDKBadRequestError = SDKBadRequestError;
   static readonly SDKError = SDKError;
@@ -48,6 +50,7 @@ export class API {
   static readonly SDKNotFoundError = SDKNotFoundError;
   static readonly SDKRequestError = SDKRequestError;
   static readonly SDKRequestFailedError = SDKRequestFailedError;
+  static readonly SDKForbiddenError = SDKForbiddenError;
   static readonly SDKUnauthorizedError = SDKUnauthorizedError;
 
   /**
@@ -55,7 +58,6 @@ export class API {
    *
    * @param product_id The unique ID of the product, available on product's edit page
    * @param license_key The license key provided by your customer
-   * @param increment_uses_count Increments license uses on successful verification, defaults to: `true`
    *
    * @returns On success, a {@link Purchase}
    *
@@ -64,41 +66,51 @@ export class API {
   static async verifyLicense(
     product_id: string,
     license_key: string,
-    increment_uses_count?: boolean,
-    options: { debug?: boolean; signal?: AbortSignal } = {},
-  ) {
-    validators.notBlank(product_id, "Argument 'product_id'");
-    validators.notBlank(license_key, "Argument 'license_key'");
+    options: {
+      /** Increments license uses on successful verification, defaults to: `true` */
+      increment_uses_count?: boolean;
+    } = {},
+    { debug, signal }: { debug?: boolean; signal?: AbortSignal } = {},
+  ): Promise<Purchase> {
+    assertNonBlankString(product_id, "Argument 'product_id'");
+    assertNonBlankString(license_key, "Argument 'license_key'");
+
+    const { increment_uses_count } = options;
 
     return formatCustomField(
       (
-        await request<{ purchase: Purchase }>('./licenses/verify', null, {
+        await request<{ purchase: Purchase }>('./licenses/verify', {
           method: 'POST',
-          baseUrl: DEFAULT_API_BASE_URL,
+          base: DEFAULT_API_BASE_URL,
           params: {
             product_id,
             license_key,
             increment_uses_count,
           },
-          debug: options.debug,
-          signal: options.signal,
+          debug,
+          signal,
         })
-      ).data.purchase,
+      ).purchase,
     );
   }
 
   readonly client: Client;
   readonly logger: Logger;
-  readonly products: Products;
-  readonly variant_categories: VariantCategories;
-  readonly variants: Variants;
-  readonly offer_codes: OfferCodes;
-  readonly custom_fields: CustomFields;
-  readonly user: User;
-  readonly sales: Sales;
-  readonly resource_subscriptions: ResourceSubscriptions;
-  readonly subscribers: Subscribers;
-  readonly licenses: Licenses;
+  readonly products: ProductsMethods;
+  readonly files: FilesMethods;
+  readonly covers: CoversMethods;
+  readonly variant_categories: VariantCategoriesMethods;
+  readonly variants: VariantsMethods;
+  readonly offer_codes: OfferCodesMethods;
+  readonly custom_fields: CustomFieldsMethods;
+  readonly user: UserMethods;
+  readonly sales: SalesMethods;
+  readonly resource_subscriptions: ResourceSubscriptionsMethods;
+  readonly subscribers: SubscribersMethods;
+  readonly licenses: LicensesMethods;
+  readonly payouts: PayoutsMethods;
+  readonly tax_forms: TaxFormsMethods;
+  readonly earnings: EarningsMethods;
 
   /**
    * Creates an instance of {@link API}
@@ -107,21 +119,26 @@ export class API {
    * @param options The {@link APIOptions}
    */
   constructor(accessToken: string, options: APIOptions = {}) {
-    validators.notBlank(accessToken, "Argument 'accessToken'");
+    assertNonBlankString(accessToken, "Argument 'accessToken'");
 
     this.client = new Client(accessToken, {
       debug: options.debug,
     });
     this.logger = new Logger(options.debug);
-    this.products = new Products(this.client, this.logger);
-    this.variant_categories = new VariantCategories(this.client, this.logger);
-    this.variants = new Variants(this.client, this.logger);
-    this.offer_codes = new OfferCodes(this.client, this.logger);
-    this.custom_fields = new CustomFields(this.client, this.logger);
-    this.user = new User(this.client, this.logger);
-    this.resource_subscriptions = new ResourceSubscriptions(this.client, this.logger);
-    this.sales = new Sales(this.client, this.logger);
-    this.subscribers = new Subscribers(this.client, this.logger);
-    this.licenses = new Licenses(this.client, this.logger);
+    this.products = new ProductsMethods(this.client, this.logger);
+    this.files = new FilesMethods(this.client, this.logger);
+    this.covers = new CoversMethods(this.client, this.logger);
+    this.variant_categories = new VariantCategoriesMethods(this.client, this.logger);
+    this.variants = new VariantsMethods(this.client, this.logger);
+    this.offer_codes = new OfferCodesMethods(this.client, this.logger);
+    this.custom_fields = new CustomFieldsMethods(this.client, this.logger);
+    this.user = new UserMethods(this.client, this.logger);
+    this.resource_subscriptions = new ResourceSubscriptionsMethods(this.client, this.logger);
+    this.sales = new SalesMethods(this.client, this.logger);
+    this.subscribers = new SubscribersMethods(this.client, this.logger);
+    this.licenses = new LicensesMethods(this.client, this.logger);
+    this.payouts = new PayoutsMethods(this.client, this.logger);
+    this.tax_forms = new TaxFormsMethods(this.client, this.logger);
+    this.earnings = new EarningsMethods(this.client, this.logger);
   }
 }

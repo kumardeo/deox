@@ -1,10 +1,8 @@
 import { Methods } from './methods';
 import type { CustomField } from './types';
-import { addProperties, validators } from './utils';
+import { addProperties, assertNonBlankString } from './utils';
 
-/**
- * Bindings for {@link CustomField}
- */
+/** Bindings for {@link CustomField} */
 export interface CustomFieldProps {
   /**
    * Updates the custom field
@@ -31,13 +29,11 @@ export interface CustomFieldProps {
   delete(requestOptions?: { signal?: AbortSignal }): Promise<true>;
 }
 
-/**
- * A class having API methods related to Custom Fields
- */
-export class CustomFields extends Methods {
-  protected _bind_custom_field(custom_field: CustomField, product_id: string) {
+/** A class having API methods related to Custom Fields */
+export class CustomFieldsMethods extends Methods {
+  protected _bindCustomField(custom_field: CustomField, product_id: string): CustomField & CustomFieldProps {
     const methods: CustomFieldProps = {
-      update: async (update_options, requestOptions) => this.update(product_id, custom_field.name, update_options, requestOptions),
+      update: async (options, requestOptions) => this.update(product_id, custom_field.name, options, requestOptions),
 
       delete: async (requestOptions) => this.delete(product_id, custom_field.name, requestOptions),
     };
@@ -54,15 +50,15 @@ export class CustomFields extends Methods {
    *
    * @see https://app.gumroad.com/api#get-/products/:product_id/custom_fields
    */
-  async list(product_id: string, { signal }: { signal?: AbortSignal } = {}) {
+  async list(product_id: string, { signal }: { signal?: AbortSignal } = {}): Promise<(CustomField & CustomFieldProps)[]> {
     try {
-      validators.notBlank(product_id, "Argument 'product_id'");
+      assertNonBlankString(product_id, "Argument 'product_id'");
 
       return (
         await this.client.request<{ custom_fields: CustomField[] }>(`./products/${encodeURI(product_id)}/custom_fields`, {
           signal,
         })
-      ).custom_fields.map((custom_field) => this._bind_custom_field(custom_field, product_id));
+      ).custom_fields.map((custom_field) => this._bindCustomField(custom_field, product_id));
     } catch (e) {
       this.logger.function(e, 'CustomFields.list', { product_id });
 
@@ -90,19 +86,21 @@ export class CustomFields extends Methods {
       variant?: string;
     } = {},
     { signal }: { signal?: AbortSignal } = {},
-  ) {
+  ): Promise<CustomField & CustomFieldProps> {
     try {
-      validators.notBlank(product_id, "Argument 'product_id'");
+      assertNonBlankString(product_id, "Argument 'product_id'");
 
-      return this._bind_custom_field(
+      const { type, required, variant } = options;
+
+      return this._bindCustomField(
         (
           await this.client.request<{ custom_field: CustomField }>(`./products/${encodeURI(product_id)}/custom_fields`, {
             method: 'POST',
             params: {
               name,
-              type: options.type && ['text', 'checkbox', 'terms'].includes(options.type) ? options.type : 'text',
-              required: typeof options.required === 'boolean' ? options.required : true,
-              variant: options.variant,
+              type: type && ['text', 'checkbox', 'terms'].includes(type) ? type : undefined,
+              required: typeof required === 'boolean' ? required : undefined,
+              variant,
             },
             signal,
           })
@@ -136,25 +134,27 @@ export class CustomFields extends Methods {
     name: string,
     options: {
       name?: string;
-      required?: boolean;
       type?: 'text' | 'checkbox' | 'terms';
+      required?: boolean;
       variant?: string;
     } = {},
     { signal }: { signal?: AbortSignal } = {},
-  ) {
+  ): Promise<CustomField & CustomFieldProps> {
     try {
-      validators.notBlank(product_id, "Argument 'product_id'");
-      validators.notBlank(name, "Argument 'name'");
+      assertNonBlankString(product_id, "Argument 'product_id'");
+      assertNonBlankString(name, "Argument 'name'");
 
-      return this._bind_custom_field(
+      const { name: newName, type, required, variant } = options;
+
+      return this._bindCustomField(
         (
           await this.client.request<{ custom_field: CustomField }>(`./products/${encodeURI(product_id)}/custom_fields/${encodeURI(name)}`, {
             method: 'PUT',
             params: {
-              type: options.type && ['text', 'checkbox', 'terms'].includes(options.type) ? options.type : 'text',
-              required: typeof options.required === 'boolean' ? options.required : undefined,
-              name: options.name,
-              variant: options.variant,
+              type: type && ['text', 'checkbox', 'terms'].includes(type) ? type : undefined,
+              required: typeof required === 'boolean' ? required : undefined,
+              name: newName,
+              variant: variant,
             },
             signal,
           })
@@ -182,17 +182,17 @@ export class CustomFields extends Methods {
    *
    * @see https://app.gumroad.com/api#delete-/products/:product_id/custom_fields/:name
    */
-  async delete(product_id: string, name: string, { signal }: { signal?: AbortSignal } = {}) {
+  async delete(product_id: string, name: string, { signal }: { signal?: AbortSignal } = {}): Promise<true> {
     try {
-      validators.notBlank(product_id, "Argument 'product_id'");
-      validators.notBlank(name, "Argument 'name'");
+      assertNonBlankString(product_id, "Argument 'product_id'");
+      assertNonBlankString(name, "Argument 'name'");
 
       await this.client.request(`./products/${encodeURI(product_id)}/custom_fields/${encodeURI(name)}`, {
         method: 'DELETE',
         signal,
       });
 
-      return true as const;
+      return true;
     } catch (e) {
       this.logger.function(e, 'CustomFields.delete', { product_id, name });
 

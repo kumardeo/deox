@@ -1,52 +1,69 @@
-import { isArray, isNumber, isPlainObject } from '@deox/utils/predicate';
 import { SDKRequestError } from './errors';
 
-function getConfigurations<M extends Record<string | number, unknown>>(properties: M): PropertyDescriptorMap {
-  return Object.entries(properties).reduce<PropertyDescriptorMap>((acc, [key, value]) => {
-    acc[key] = {
-      value,
-    };
-
-    return acc;
-  }, {});
-}
-
 export function addProperties<O extends NonNullable<unknown>, I extends NonNullable<unknown>, M extends NonNullable<unknown>>(
-  object: O,
+  target: O,
   immutable: I,
   mutable?: M,
-): O & M & I {
+): O & M & Readonly<I> {
   if (mutable) {
-    Object.assign(object, mutable);
+    Object.assign(target, mutable);
   }
-  Object.defineProperties(object, getConfigurations(immutable));
 
-  return object as O & M & I;
+  const descriptorMap: PropertyDescriptorMap = {};
+  for (const [key, value] of Object.entries(immutable)) {
+    descriptorMap[key] = { value };
+  }
+
+  Object.defineProperties(target, descriptorMap);
+
+  return target as O & M & Readonly<I>;
 }
 
-export const validators = {
-  string(data: unknown, name: string) {
-    if (typeof data !== 'string') {
-      throw new TypeError(`${name} must be of type string, current type is ${typeof data}`);
-    }
-  },
+/** asserts: input must be string */
+export function assertString(input: unknown, name: string): asserts input is string {
+  if (typeof input !== 'string') {
+    throw new TypeError(`${name} must be of type string, current type is ${typeof input}`);
+  }
+}
 
-  notEmpty(data: unknown, name: string) {
-    this.string(data, name);
+/** asserts: string must not be empty */
+export function assertNonEmptyString(input: unknown, name: string): asserts input is string {
+  assertString(input, name);
 
-    if ((data as string).length === 0) {
-      throw new TypeError(`${name} cannot be an empty string`);
-    }
-  },
+  if (input.length === 0) {
+    throw new TypeError(`${name} cannot be an empty string`);
+  }
+}
 
-  notBlank(data: unknown, name: string) {
-    this.string(data, name);
+/** asserts: string must not be blank */
+export function assertNonBlankString(input: unknown, name: string): asserts input is string {
+  assertString(input, name);
 
-    if ((data as string).trim().length === 0) {
-      throw new TypeError(`${name} cannot be a blank string`);
-    }
-  },
-};
+  if (input.trim().length === 0) {
+    throw new TypeError(`${name} cannot be a blank string`);
+  }
+}
+
+/** asserts: input must be number */
+export function assertNumber(input: unknown, name: string): asserts input is number {
+  if (typeof input !== 'number') {
+    throw new TypeError(`${name} must be of type number, current type is ${typeof input}`);
+  }
+}
+
+/** asserts: input must be array */
+export function assertArray(input: unknown, name: string): asserts input is any[] {
+  if (!Array.isArray(input)) {
+    throw new TypeError(`${name} must be an Array, current type is ${typeof input}`);
+  }
+}
+
+/** asserts: input must be object */
+export function assertObject(input: unknown, name: string): asserts input is NonNullable<object> {
+  if (typeof input !== 'object' || input === null || Array.isArray(input)) {
+    throw new TypeError(`${name} must be an Object`);
+  }
+}
 
 export const error = {
   inGumroadRequest(e: unknown, message: string) {
@@ -67,10 +84,10 @@ export const error = {
     return this.inGumroadRequest(e, result.error) ? result : false;
   },
 
-  isOfferCodeNotFound(e: unknown) {
+  isCoverNotFound(e: unknown) {
     const result = {
-      error: 'The offer_code was not found.',
-      code: 'offer_code_not_found' as const,
+      error: 'The cover was not found.',
+      code: 'cover_not_found' as const,
     };
     return this.inGumroadRequest(e, result.error) ? result : false;
   },
@@ -79,6 +96,14 @@ export const error = {
     const result = {
       error: 'The variant_category was not found.',
       code: 'variant_category_not_found' as const,
+    };
+    return this.inGumroadRequest(e, result.error) ? result : false;
+  },
+
+  isOfferCodeNotFound(e: unknown) {
+    const result = {
+      error: 'The offer_code was not found.',
+      code: 'offer_code_not_found' as const,
     };
     return this.inGumroadRequest(e, result.error) ? result : false;
   },
@@ -115,143 +140,40 @@ export const error = {
     return this.inGumroadRequest(e, result.error) ? result : false;
   },
 
+  isPayoutNotFound(e: unknown) {
+    const result = {
+      error: 'The payout was not found.',
+      code: 'payout_not_found' as const,
+    };
+    return this.inGumroadRequest(e, result.error) ? result : false;
+  },
+
+  isTaxFormNotFound(e: unknown) {
+    const result = {
+      error: 'Tax form not found.',
+      code: 'tax_form_not_found' as const,
+    };
+    return this.inGumroadRequest(e, result.error) ? result : false;
+  },
+
   isAnyNotFound(e: unknown) {
     return (
       this.isProductNotFound(e) ||
-      this.isOfferCodeNotFound(e) ||
+      this.isCoverNotFound(e) ||
       this.isVariantCategoryNotFound(e) ||
+      this.isOfferCodeNotFound(e) ||
       this.isLicenseNotFound(e) ||
       this.isSubscriberNotFound(e) ||
       this.isResourceSubscriptionNotFound(e) ||
-      this.isSaleNotFound(e)
+      this.isSaleNotFound(e) ||
+      this.isPayoutNotFound(e) ||
+      this.isTaxFormNotFound(e)
     );
   },
 };
 
-/**
- * Convert input string or number to number if possible
- *
- * @param input The string number or number
- *
- * @returns The converted number otherwise undefined
- */
-export function convertToNumber(input: unknown): number | undefined {
-  if (typeof input === 'string' && /^-?\d+$/.test(input)) {
-    const numbered = Number(input);
-    if (isNumber(numbered)) {
-      return numbered;
-    }
-  } else if (isNumber(input)) {
-    return input;
-  }
-  return undefined;
-}
-
-export type ParseValueOptions = {
-  parseBoolean?: boolean;
-  parseNumber?: boolean;
-  parseNull?: boolean;
-};
-
-/**
- * Parse input string to valid data type otherwise return the same input
- *
- * @param input The input
- * @param options Options
- *
- * @returns The parsed value
- */
-export function parseValue<T = unknown>(input: T, options: ParseValueOptions = {}): number | boolean | T | null {
-  if (typeof input === 'string' && input.trim().length !== 0) {
-    const lowered = input.toLowerCase();
-    if (options.parseNull && lowered === 'null') {
-      return null;
-    }
-    if (options.parseBoolean) {
-      if (lowered === 'true' || lowered === 'false') {
-        return lowered === 'true';
-      }
-    }
-    if (options.parseNumber) {
-      const converted = convertToNumber(input);
-      if (typeof converted === 'number') {
-        return converted;
-      }
-    }
-  }
-  return input;
-}
-
-export type ParsedFormDataValue = string | File | (string | File)[];
-
-export type ParsedFormData = Record<string, ParsedFormDataValue>;
-
-export function parseFormData<T extends ParsedFormData = ParsedFormData>(formData: FormData, options: { all?: boolean } = {}): T {
-  const result: ParsedFormData = {};
-
-  formData.forEach((value, key) => {
-    const shouldParseAllValues = options.all || key.endsWith('[]');
-    const currentValue = result[key];
-
-    if (!shouldParseAllValues) {
-      result[key] = value;
-    } else if (currentValue && isArray(currentValue)) {
-      currentValue.push(value);
-    } else if (currentValue) {
-      result[key] = [currentValue, value];
-    } else {
-      result[key] = value;
-    }
-  });
-
-  return result as T;
-}
-
-export type ParsedDeepFormDataValue = ParsedFormDataValue | number | boolean | null;
-
-export type ParsedDeepFormData = Record<string, ParsedDeepFormDataValue | Record<string, ParsedDeepFormDataValue>>;
-
-export type ParseDeepFormDataOptions = ParseValueOptions;
-
-export function parseDeepFormData<T extends ParsedDeepFormData = ParsedDeepFormData>(formData: FormData, options?: ParseDeepFormDataOptions): T {
-  const parsedData = parseFormData(formData);
-
-  return Object.keys(parsedData).reduce((result, e) => {
-    if (e.match(/\[(.*?)\]/gi)) {
-      const keys = e.split(/\[(.*?)\]/gi).filter((key) => key !== '');
-
-      keys.reduce(
-        (accumulator, key, i) => {
-          if (isPlainObject(accumulator)) {
-            const acc = accumulator;
-            // biome-ignore lint/suspicious/noImplicitAnyLet: we need to use `any` here
-            let value;
-            if (i !== keys.length - 1) {
-              if (!Object.hasOwn(acc, key)) {
-                value = {};
-              } else {
-                value = parseValue(acc[key], options);
-              }
-            } else {
-              value = parseValue(parsedData[e], options);
-            }
-            acc[key] = value;
-            return value as ParsedDeepFormData;
-          }
-          return undefined;
-        },
-        result as ParsedDeepFormData | undefined,
-      );
-    } else {
-      result[e] = parseValue(parsedData[e], options);
-    }
-
-    return result;
-  }, {} as ParsedDeepFormData) as T;
-}
-
 export function formatCustomField<T extends { custom_fields: unknown }>(input: T): T {
-  if (isArray(input.custom_fields)) {
+  if (Array.isArray(input.custom_fields)) {
     input.custom_fields = (input.custom_fields as string[]).reduce(
       (acc, field) => {
         if (typeof field === 'string') {

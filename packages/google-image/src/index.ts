@@ -2,7 +2,6 @@
  * Based on https://gist.github.com/Sauerstoffdioxid/2a0206da9f44dde1fdfce290f38d2703
  */
 
-import { isBoolean, isNull, isNumber, isString, isUndefined, isURL } from '@deox/utils/predicate';
 import { getParamInfo, HOSTS_REGEX, PARAMS_REGEX } from './utils';
 
 export interface GoogleImageOptions {
@@ -38,9 +37,9 @@ export class GoogleImage {
    */
   constructor(url: string | URL, { existing = true, pass = false }: GoogleImageOptions = {}) {
     let imageUrl: string;
-    if (isURL(url)) {
+    if (url instanceof URL) {
       imageUrl = url.toString();
-    } else if (isString(url)) {
+    } else if (typeof url === 'string') {
       imageUrl = url;
     } else {
       throw new TypeError("Argument 'url' must be of type string | URL");
@@ -95,7 +94,7 @@ export class GoogleImage {
     const key = `${0}${param}`;
 
     // get
-    if (isUndefined(value)) {
+    if (value === undefined) {
       if (ok) {
         return (this._params[key] ?? false) as boolean;
       }
@@ -134,7 +133,7 @@ export class GoogleImage {
     const key = `${1}${param}`;
 
     // get
-    if (isUndefined(value)) {
+    if (value === undefined) {
       if (ok) {
         return (this._params[key] ?? null) as number | null;
       }
@@ -142,13 +141,13 @@ export class GoogleImage {
     }
 
     // delete
-    if (isNull(value)) {
+    if (value === null) {
       if (ok && key in this._params) {
         delete this._params[key];
       }
     }
     // set
-    else if (isNumber(value)) {
+    else if (typeof value === 'number') {
       if (ok) {
         this._params[key] = value;
       }
@@ -167,7 +166,7 @@ export class GoogleImage {
     const key = `${2}${param}`;
 
     // get
-    if (isUndefined(value)) {
+    if (value === undefined) {
       if (ok) {
         return (this._params[key] ?? null) as string | null;
       }
@@ -175,13 +174,13 @@ export class GoogleImage {
     }
 
     // delete
-    if (isNull(value)) {
+    if (value === null) {
       if (ok && key in this._params) {
         delete this._params[key];
       }
     }
     // set
-    else if (isString(value)) {
+    else if (typeof value === 'string') {
       if (!regex.test(value)) {
         throw new Error("Argument 'value' must be of format '0xrrggbb' or '0xaarrggbb'");
       }
@@ -451,9 +450,9 @@ export class GoogleImage {
       const prefix = key.slice(1);
       const value = this._params[key];
 
-      if (isString(value) || isNumber(value)) {
+      if (typeof value === 'string' || typeof value === 'number') {
         newParams.push(prefix + value);
-      } else if (isBoolean(value)) {
+      } else if (typeof value === 'boolean') {
         newParams.push(prefix);
       }
     }

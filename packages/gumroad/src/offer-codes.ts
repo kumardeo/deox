@@ -1,10 +1,8 @@
 import { Methods } from './methods';
 import type { OfferCode } from './types';
-import { addProperties, validators } from './utils';
+import { addProperties, assertNonBlankString } from './utils';
 
-/**
- * Bindings for {@link OfferCode}
- */
+/** Bindings for {@link OfferCode} */
 export interface OfferCodeProps {
   /**
    * Updates the offer code
@@ -36,13 +34,11 @@ export interface OfferCodeProps {
   delete(requestOptions?: { signal?: AbortSignal }): Promise<true>;
 }
 
-/**
- * A class having API methods related to Offer Codes
- */
-export class OfferCodes extends Methods {
-  protected _bind_offer_code(offer_code: OfferCode, product_id: string) {
+/** A class having API methods related to Offer Codes */
+export class OfferCodesMethods extends Methods {
+  protected _bindOfferCode(offer_code: OfferCode, product_id: string): OfferCode & OfferCodeProps {
     const properties: OfferCodeProps = {
-      update: async (update_options, requestOptions) => this.update(product_id, offer_code.id, update_options, requestOptions),
+      update: async (options, requestOptions) => this.update(product_id, offer_code.id, options, requestOptions),
 
       delete: async (requestOptions) => this.delete(product_id, offer_code.id, requestOptions),
     };
@@ -63,15 +59,15 @@ export class OfferCodes extends Methods {
    *
    * @see https://app.gumroad.com/api#get-/products/:product_id/offer_codes
    */
-  async list(product_id: string, { signal }: { signal?: AbortSignal } = {}) {
+  async list(product_id: string, { signal }: { signal?: AbortSignal } = {}): Promise<(OfferCode & OfferCodeProps)[]> {
     try {
-      validators.notBlank(product_id, "Argument 'product_id'");
+      assertNonBlankString(product_id, "Argument 'product_id'");
 
       return (
         await this.client.request<{ offer_codes: OfferCode[] }>(`./products/${encodeURI(product_id)}/offer_codes`, {
           signal,
         })
-      ).offer_codes.map((offer_code) => this._bind_offer_code(offer_code, product_id));
+      ).offer_codes.map((offer_code) => this._bindOfferCode(offer_code, product_id));
     } catch (e) {
       this.logger.function(e, 'OfferCodes.list', { product_id });
 
@@ -89,12 +85,12 @@ export class OfferCodes extends Methods {
    *
    * @see https://app.gumroad.com/api#get-/products/:product_id/offer_codes/:id
    */
-  async get(product_id: string, offer_code_id: string, { signal }: { signal?: AbortSignal } = {}): Promise<OfferCode | null> {
+  async get(product_id: string, offer_code_id: string, { signal }: { signal?: AbortSignal } = {}): Promise<OfferCode & OfferCodeProps> {
     try {
-      validators.notBlank(product_id, "Argument 'product_id'");
-      validators.notBlank(offer_code_id, "Argument 'offer_code_id'");
+      assertNonBlankString(product_id, "Argument 'product_id'");
+      assertNonBlankString(offer_code_id, "Argument 'offer_code_id'");
 
-      return this._bind_offer_code(
+      return this._bindOfferCode(
         (
           await this.client.request<{ offer_code: OfferCode }>(`./products/${encodeURI(product_id)}/offer_codes/${encodeURI(offer_code_id)}`, {
             signal,
@@ -127,24 +123,26 @@ export class OfferCodes extends Methods {
     product_id: string,
     name: string,
     amount_off: number,
-    options?: {
+    options: {
       /**
        * @default "cents"
        */
       offer_type?: 'cents' | 'percent';
       max_purchase_count?: number;
       universal?: boolean;
-    },
+    } = {},
     { signal }: { signal?: AbortSignal } = {},
-  ) {
+  ): Promise<OfferCode & OfferCodeProps> {
     try {
-      validators.notBlank(product_id, "Argument 'product_id'");
+      assertNonBlankString(product_id, "Argument 'product_id'");
 
-      return this._bind_offer_code(
+      const { offer_type, max_purchase_count, universal } = options;
+
+      return this._bindOfferCode(
         (
           await this.client.request<{ offer_code: OfferCode }>(`./products/${encodeURI(product_id)}/offer_codes`, {
             method: 'POST',
-            params: { ...options, name, amount_off },
+            params: { name, amount_off, offer_type, max_purchase_count, universal },
             signal,
           })
         ).offer_code,
@@ -176,19 +174,14 @@ export class OfferCodes extends Methods {
   async update(
     product_id: string,
     offer_code_id: string,
-    options:
-      | { offer_code: string }
-      | {
-          max_purchase_count: number;
-        }
-      | { offer_code: string; max_purchase_count: number },
+    options: { offer_code: string } | { max_purchase_count: number } | { offer_code: string; max_purchase_count: number },
     { signal }: { signal?: AbortSignal } = {},
-  ) {
+  ): Promise<OfferCode & OfferCodeProps> {
     try {
-      validators.notBlank(product_id, "Argument 'product_id'");
-      validators.notBlank(offer_code_id, "Argument 'offer_code_id'");
+      assertNonBlankString(product_id, "Argument 'product_id'");
+      assertNonBlankString(offer_code_id, "Argument 'offer_code_id'");
 
-      return this._bind_offer_code(
+      return this._bindOfferCode(
         (
           await this.client.request<{ offer_code: OfferCode }>(`./products/${encodeURI(product_id)}/offer_codes/${encodeURI(offer_code_id)}`, {
             method: 'PUT',
@@ -219,14 +212,14 @@ export class OfferCodes extends Methods {
    *
    * @see https://app.gumroad.com/api#delete-/products/:product_id/offer_codes/:id
    */
-  async delete(product_id: string, offer_code_id: string, { signal }: { signal?: AbortSignal } = {}) {
+  async delete(product_id: string, offer_code_id: string, { signal }: { signal?: AbortSignal } = {}): Promise<true> {
     try {
-      validators.notBlank(product_id, "Argument 'product_id'");
-      validators.notBlank(offer_code_id, "Argument 'offer_code_id'");
+      assertNonBlankString(product_id, "Argument 'product_id'");
+      assertNonBlankString(offer_code_id, "Argument 'offer_code_id'");
 
       await this.client.request(`./products/${encodeURI(product_id)}/offer_codes/${encodeURI(offer_code_id)}`, { method: 'DELETE', signal });
 
-      return true as const;
+      return true;
     } catch (e) {
       this.logger.function(e, 'OfferCodes.delete', {
         product_id,

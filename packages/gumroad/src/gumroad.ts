@@ -1,71 +1,48 @@
+import { deserialize } from '@deox/utils/params';
 import { API, type APIOptions } from './api';
 import { UPDATE_NAMES } from './constants';
 import { SDKError } from './errors';
 import type { MayBePromise, UpdateMap } from './types';
-import { parseDeepFormData, validators } from './utils';
+import { assertNonBlankString } from './utils';
 
-/**
- * An interface representing options for {@link Gumroad} constructor
- */
+/** An interface representing options for {@link Gumroad} constructor */
 export interface GumroadOptions extends APIOptions {}
 
-/**
- * Represents context for handler
- */
+/** Represents context for handler */
 export type Context<T extends keyof UpdateMap = keyof UpdateMap> = {
-  /**
-   * The data for current context
-   */
+  /** The data for current context */
   data: UpdateMap[T];
 
-  /**
-   * The {@link Gumroad}
-   */
+  /** The {@link API} */
   api: API;
 
-  /**
-   * Type of current update name
-   */
+  /** Type of current update name */
   type: T;
 
-  /**
-   * Can be used to read and write custom variables in handlers
-   */
+  /** Can be used to read and write custom variables in handlers */
   // biome-ignore lint/suspicious/noExplicitAny: we need to use `any` here
   vars: Record<string, any>;
 };
 
-/**
- * A handler for update
- */
+/** A handler for update */
 export type Handler<T extends keyof UpdateMap = keyof UpdateMap> = (
-  /**
-   * Context for the current update
-   */
+  /** Context for the current update */
   ctx: Context<T>,
 
-  /**
-   * When invoked and awaited, it triggers the next corresponding handler
-   */
+  /** When invoked and awaited, it triggers the next corresponding handler */
   next: () => Promise<void>,
 ) => MayBePromise<unknown>;
 
-/**
- * An error handler
- */
+/** An error handler */
 export type ErrorHandler = (err: Error, ctx: Context) => MayBePromise<unknown>;
 
 export class Gumroad extends API {
-  /**
-   * Record of events for handling pings
-   */
+  /** Record of events for handling pings */
   private _events: {
     [K in keyof UpdateMap]?: Handler<K>[];
   } = {};
 
-  /**
-   * The error handler for the pings handlers
-   */
+  /** The error handler for the pings handlers */
   private _errorHandler: ErrorHandler | undefined;
 
   /**
@@ -75,7 +52,7 @@ export class Gumroad extends API {
    *
    * @param handler An error handling function
    */
-  onError(handler: ErrorHandler) {
+  onError(handler: ErrorHandler): this {
     if (typeof handler !== 'function') {
       throw new TypeError(`Argument 'handler' must be of type function, provided type is ${typeof handler}`);
     }
@@ -90,7 +67,7 @@ export class Gumroad extends API {
    * @param err The `Error` object
    * @param context The {@link Context}
    */
-  private async _handleError(err: unknown, context: Context) {
+  private async _handleError(err: unknown, context: Context): Promise<void> {
     if (err instanceof Error && this._errorHandler) {
       await this._errorHandler(err, context);
     } else {
@@ -104,8 +81,8 @@ export class Gumroad extends API {
    * @param update_name The name of update
    * @param handlers A function for handling the ping
    */
-  on<T extends keyof UpdateMap>(update_name: T, ...handlers: Handler<T>[]) {
-    validators.notBlank(update_name, "Argument 'update_name'");
+  on<T extends keyof UpdateMap>(update_name: T, ...handlers: Handler<T>[]): this {
+    assertNonBlankString(update_name, "Argument 'update_name'");
 
     if (!UPDATE_NAMES.includes(update_name)) {
       throw new TypeError(
@@ -178,7 +155,7 @@ export class Gumroad extends API {
    * @param update_name The name of update (event)
    * @param payload The payload for context
    */
-  private async _dispatch<T extends keyof UpdateMap>(update_name: T, payload: UpdateMap[T]) {
+  private async _dispatch<T extends keyof UpdateMap>(update_name: T, payload: UpdateMap[T]): Promise<void> {
     const handlers = this._events[update_name];
 
     if (handlers && handlers.length !== 0) {
@@ -211,7 +188,7 @@ export class Gumroad extends API {
    *
    * @returns The same reference to the payload data but formatted
    */
-  private _formatPayload<T extends keyof UpdateMap>(payload: UpdateMap[T]) {
+  private _formatPayload<T extends keyof UpdateMap>(payload: UpdateMap[T]): UpdateMap[T] {
     // Validate card field
     if ('card' in payload) {
       const card = payload.card || {};
@@ -236,7 +213,7 @@ export class Gumroad extends API {
    *
    * @returns On success, a `Response` object with 200 status code
    */
-  async handle<T extends keyof UpdateMap>(request: Request, update_name: T) {
+  async handle<T extends keyof UpdateMap>(request: Request, update_name: T): Promise<Response> {
     if (!(request instanceof Request)) {
       throw new TypeError("Argument 'request' must be an instance of Request");
     }
@@ -253,7 +230,7 @@ export class Gumroad extends API {
       );
     }
 
-    validators.notBlank(update_name, "Argument 'update_name'");
+    assertNonBlankString(update_name, "Argument 'update_name'");
 
     if (!UPDATE_NAMES.includes(update_name)) {
       throw new TypeError(
@@ -268,13 +245,23 @@ export class Gumroad extends API {
 
     let payload: UpdateMap[T];
     if (contentType.startsWith('multipart/form-data') || contentType.startsWith('application/x-www-form-urlencoded')) {
-      payload = parseDeepFormData(await request.formData(), {
-        parseBoolean: true,
-        parseNull: true,
-        parseNumber: true,
-      }) as UpdateMap[T];
+      try {
+        const formData = await request.formData();
+        payload = deserialize(formData) as UpdateMap[T];
+      } catch (e) {
+        throw new SDKError('Failed to deserialize form data', {
+          cause: e,
+        });
+      }
     } else if (contentType.startsWith('application/json')) {
-      payload = (await request.json()) as UpdateMap[T];
+      try {
+        const parsed = await request.json();
+        payload = parsed as UpdateMap[T];
+      } catch (e) {
+        throw new SDKError('Failed to parse JSON body', {
+          cause: e,
+        });
+      }
     } else {
       throw new SDKError(`Content-Type '${contentType}' is not supported`);
     }
