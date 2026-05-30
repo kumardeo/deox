@@ -6,10 +6,6 @@ Crafting handy libraries for hobbies, simplifying tasks with ease.
 
 This monorepo contains the following packages:
 
-### [@deox/blogger-feed](./packages/blogger-feed/README.md)
-
-A blogger feed API client.
-
 ### [@deox/worker-rpc](./packages/worker-rpc/README.md)
 
 Lightweight RPC utility for calling functions in Web Workers and receiving results with simple, promise-based syntax.  
