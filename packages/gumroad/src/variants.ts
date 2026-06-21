@@ -4,271 +4,314 @@ import { addProperties, assertNonBlankString } from './utils';
 
 /** Bindings for {@link Variant} */
 export interface VariantProps {
-  /**
-   * Updates the variant
-   *
-   * @param options Options, provide at-least one property (`name`, `price_difference_cents` or `max_purchase_count`)
-   *
-   * @returns On success, a {@link Variant}
-   */
-  update(
-    options: {
-      name?: string | undefined;
-      price_difference_cents?: number | undefined;
-      max_purchase_count?: number | undefined;
-    },
-    requestOptions?: { signal?: AbortSignal },
-  ): Promise<Variant & VariantProps>;
+	/**
+	 * Updates the variant
+	 *
+	 * @param options Options, provide at-least one property (`name`, `price_difference_cents` or `max_purchase_count`)
+	 *
+	 * @returns On success, a {@link Variant}
+	 */
+	update(
+		options: {
+			name?: string | undefined;
+			price_difference_cents?: number | undefined;
+			max_purchase_count?: number | undefined;
+		},
+		requestOptions?: { signal?: AbortSignal },
+	): Promise<Variant & VariantProps>;
 
-  /**
-   * Deletes the variant
-   *
-   * @returns On success, `true`
-   */
-  delete(requestOptions?: { signal?: AbortSignal }): Promise<true>;
+	/**
+	 * Deletes the variant
+	 *
+	 * @returns On success, `true`
+	 */
+	delete(requestOptions?: { signal?: AbortSignal }): Promise<true>;
 }
 
 /** A class having API methods related to Variants */
 export class VariantsMethods extends Methods {
-  protected _bindVariant(variant: Variant, product_id: string, variant_category_id: string): Variant & VariantProps {
-    const properties: VariantProps = {
-      update: async (options, requestOptions) => this.update(product_id, variant_category_id, variant.id, options, requestOptions),
+	protected _bindVariant(
+		variant: Variant,
+		product_id: string,
+		variant_category_id: string,
+	): Variant & VariantProps {
+		const properties: VariantProps = {
+			update: async (options, requestOptions) =>
+				this.update(
+					product_id,
+					variant_category_id,
+					variant.id,
+					options,
+					requestOptions,
+				),
 
-      delete: async (requestOptions) => this.delete(product_id, variant_category_id, variant.id, requestOptions),
-    };
+			delete: async (requestOptions) =>
+				this.delete(
+					product_id,
+					variant_category_id,
+					variant.id,
+					requestOptions,
+				),
+		};
 
-    return addProperties(variant, properties);
-  }
+		return addProperties(variant, properties);
+	}
 
-  /**
-   * Retrieve all of the existing variants in a variant category.
-   *
-   * @param product_id The id of the product
-   * @param variant_category_id The id of the variant category
-   *
-   * @returns On success, an Array of {@link Variant}
-   *
-   * @see https://app.gumroad.com/api#get-/products/:product_id/variant_categories/:variant_category_id/variants
-   */
-  async list(product_id: string, variant_category_id: string, { signal }: { signal?: AbortSignal } = {}): Promise<(Variant & VariantProps)[]> {
-    try {
-      assertNonBlankString(product_id, "Argument 'product_id'");
-      assertNonBlankString(variant_category_id, "Argument 'variant_category_id'");
+	/**
+	 * Retrieve all of the existing variants in a variant category.
+	 *
+	 * @param product_id The id of the product
+	 * @param variant_category_id The id of the variant category
+	 *
+	 * @returns On success, an Array of {@link Variant}
+	 *
+	 * @see https://app.gumroad.com/api#get-/products/:product_id/variant_categories/:variant_category_id/variants
+	 */
+	async list(
+		product_id: string,
+		variant_category_id: string,
+		{ signal }: { signal?: AbortSignal } = {},
+	): Promise<(Variant & VariantProps)[]> {
+		try {
+			assertNonBlankString(product_id, "Argument 'product_id'");
+			assertNonBlankString(
+				variant_category_id,
+				"Argument 'variant_category_id'",
+			);
 
-      return (
-        await this.client.request<{ variants: Variant[] }>(
-          `./products/${encodeURI(product_id)}/variant_categories/${encodeURI(variant_category_id)}/variants`,
-          {
-            signal,
-          },
-        )
-      ).variants.map((variant) => this._bindVariant(variant, product_id, variant_category_id));
-    } catch (e) {
-      this.logger.function(e, 'Variants.list', {
-        product_id,
-        variant_category_id,
-      });
+			return (
+				await this.client.request<{ variants: Variant[] }>(
+					`./products/${encodeURI(product_id)}/variant_categories/${encodeURI(variant_category_id)}/variants`,
+					{
+						signal,
+					},
+				)
+			).variants.map((variant) =>
+				this._bindVariant(variant, product_id, variant_category_id),
+			);
+		} catch (e) {
+			this.logger.function(e, 'Variants.list', {
+				product_id,
+				variant_category_id,
+			});
 
-      throw e;
-    }
-  }
+			throw e;
+		}
+	}
 
-  /**
-   * Retrieve the details of a variant of a product.
-   *
-   * @param product_id The id of the product
-   * @param variant_category_id The id of the variant category
-   * @param variant_id The id of the variant
-   *
-   * @returns On success, a {@link Variant}
-   *
-   * @see https://app.gumroad.com/api#get-/products/:product_id/variant_categories/:variant_category_id/variants/:id
-   */
-  async get(
-    product_id: string,
-    variant_category_id: string,
-    variant_id: string,
-    { signal }: { signal?: AbortSignal } = {},
-  ): Promise<Variant & VariantProps> {
-    try {
-      assertNonBlankString(product_id, "Argument 'product_id'");
-      assertNonBlankString(variant_category_id, "Argument 'variant_category_id'");
-      assertNonBlankString(variant_id, "Argument 'variant_id'");
+	/**
+	 * Retrieve the details of a variant of a product.
+	 *
+	 * @param product_id The id of the product
+	 * @param variant_category_id The id of the variant category
+	 * @param variant_id The id of the variant
+	 *
+	 * @returns On success, a {@link Variant}
+	 *
+	 * @see https://app.gumroad.com/api#get-/products/:product_id/variant_categories/:variant_category_id/variants/:id
+	 */
+	async get(
+		product_id: string,
+		variant_category_id: string,
+		variant_id: string,
+		{ signal }: { signal?: AbortSignal } = {},
+	): Promise<Variant & VariantProps> {
+		try {
+			assertNonBlankString(product_id, "Argument 'product_id'");
+			assertNonBlankString(
+				variant_category_id,
+				"Argument 'variant_category_id'",
+			);
+			assertNonBlankString(variant_id, "Argument 'variant_id'");
 
-      return this._bindVariant(
-        (
-          await this.client.request<{ variant: Variant }>(
-            `./products/${encodeURI(product_id)}/variant_categories/${encodeURI(variant_category_id)}/variants/${encodeURI(variant_id)}`,
-            {
-              signal,
-            },
-          )
-        ).variant,
-        product_id,
-        variant_category_id,
-      );
-    } catch (e) {
-      this.logger.function(e, 'Variants.get', {
-        product_id,
-        variant_category_id,
-        variant_id,
-      });
+			return this._bindVariant(
+				(
+					await this.client.request<{ variant: Variant }>(
+						`./products/${encodeURI(product_id)}/variant_categories/${encodeURI(variant_category_id)}/variants/${encodeURI(variant_id)}`,
+						{
+							signal,
+						},
+					)
+				).variant,
+				product_id,
+				variant_category_id,
+			);
+		} catch (e) {
+			this.logger.function(e, 'Variants.get', {
+				product_id,
+				variant_category_id,
+				variant_id,
+			});
 
-      throw e;
-    }
-  }
+			throw e;
+		}
+	}
 
-  /**
-   * Create a new variant of a product.
-   *
-   * @param product_id The id of the product
-   * @param variant_category_id The id of variant category
-   * @param name The name of the variant to create
-   * @param price_difference_cents The price difference in cents
-   *
-   * @returns On success, a {@link Variant}
-   *
-   * @see https://app.gumroad.com/api#post-/products/:product_id/variant_categories/:variant_category_id/variants
-   */
-  async create(
-    product_id: string,
-    variant_category_id: string,
-    name: string,
-    price_difference_cents: number,
-    options: {
-      /** The maximum purchase count */
-      max_purchase_count?: number;
-    } = {},
-    { signal }: { signal?: AbortSignal } = {},
-  ): Promise<Variant & VariantProps> {
-    try {
-      assertNonBlankString(product_id, "Argument 'product_id'");
-      assertNonBlankString(variant_category_id, "Argument 'variant_category_id'");
-      assertNonBlankString(name, "Argument 'name'");
+	/**
+	 * Create a new variant of a product.
+	 *
+	 * @param product_id The id of the product
+	 * @param variant_category_id The id of variant category
+	 * @param name The name of the variant to create
+	 * @param price_difference_cents The price difference in cents
+	 *
+	 * @returns On success, a {@link Variant}
+	 *
+	 * @see https://app.gumroad.com/api#post-/products/:product_id/variant_categories/:variant_category_id/variants
+	 */
+	async create(
+		product_id: string,
+		variant_category_id: string,
+		name: string,
+		price_difference_cents: number,
+		options: {
+			/** The maximum purchase count */
+			max_purchase_count?: number;
+		} = {},
+		{ signal }: { signal?: AbortSignal } = {},
+	): Promise<Variant & VariantProps> {
+		try {
+			assertNonBlankString(product_id, "Argument 'product_id'");
+			assertNonBlankString(
+				variant_category_id,
+				"Argument 'variant_category_id'",
+			);
+			assertNonBlankString(name, "Argument 'name'");
 
-      const { max_purchase_count } = options;
+			const { max_purchase_count } = options;
 
-      return this._bindVariant(
-        (
-          await this.client.request<{ variant: Variant }>(
-            `./products/${encodeURI(product_id)}/variant_categories/${encodeURI(variant_category_id)}/variants`,
-            {
-              method: 'POST',
-              params: {
-                name,
-                price_difference_cents,
-                max_purchase_count,
-              },
-              signal,
-            },
-          )
-        ).variant,
-        product_id,
-        variant_category_id,
-      );
-    } catch (e) {
-      this.logger.function(e, 'Variants.create', {
-        product_id,
-        variant_category_id,
-        name,
-        price_difference_cents,
-        options,
-      });
+			return this._bindVariant(
+				(
+					await this.client.request<{ variant: Variant }>(
+						`./products/${encodeURI(product_id)}/variant_categories/${encodeURI(variant_category_id)}/variants`,
+						{
+							method: 'POST',
+							params: {
+								name,
+								price_difference_cents,
+								max_purchase_count,
+							},
+							signal,
+						},
+					)
+				).variant,
+				product_id,
+				variant_category_id,
+			);
+		} catch (e) {
+			this.logger.function(e, 'Variants.create', {
+				product_id,
+				variant_category_id,
+				name,
+				price_difference_cents,
+				options,
+			});
 
-      throw e;
-    }
-  }
+			throw e;
+		}
+	}
 
-  /**
-   * Edit a variant of an existing product.
-   *
-   * @param product_id The id of the product
-   * @param variant_category_id The id of the variant category
-   * @param variant_id The id of the category
-   * @param options Options, provide at-least one property (`name`, `price_difference_cents` or `max_purchase_count`)
-   *
-   * @returns On success, a {@link Variant}
-   *
-   * @see https://app.gumroad.com/api#put-/products/:product_id/variant_categories/:variant_category_id/variants/:id
-   */
-  async update(
-    product_id: string,
-    variant_category_id: string,
-    variant_id: string,
-    options: {
-      name?: string;
-      price_difference_cents?: number;
-      max_purchase_count?: number;
-    } = {},
-    { signal }: { signal?: AbortSignal } = {},
-  ): Promise<Variant & VariantProps> {
-    try {
-      assertNonBlankString(product_id, "Argument 'product_id'");
-      assertNonBlankString(variant_category_id, "Argument 'variant_category_id'");
-      assertNonBlankString(variant_id, "Argument 'variant_id'");
+	/**
+	 * Edit a variant of an existing product.
+	 *
+	 * @param product_id The id of the product
+	 * @param variant_category_id The id of the variant category
+	 * @param variant_id The id of the category
+	 * @param options Options, provide at-least one property (`name`, `price_difference_cents` or `max_purchase_count`)
+	 *
+	 * @returns On success, a {@link Variant}
+	 *
+	 * @see https://app.gumroad.com/api#put-/products/:product_id/variant_categories/:variant_category_id/variants/:id
+	 */
+	async update(
+		product_id: string,
+		variant_category_id: string,
+		variant_id: string,
+		options: {
+			name?: string;
+			price_difference_cents?: number;
+			max_purchase_count?: number;
+		} = {},
+		{ signal }: { signal?: AbortSignal } = {},
+	): Promise<Variant & VariantProps> {
+		try {
+			assertNonBlankString(product_id, "Argument 'product_id'");
+			assertNonBlankString(
+				variant_category_id,
+				"Argument 'variant_category_id'",
+			);
+			assertNonBlankString(variant_id, "Argument 'variant_id'");
 
-      const { name, price_difference_cents, max_purchase_count } = options;
+			const { name, price_difference_cents, max_purchase_count } = options;
 
-      return this._bindVariant(
-        (
-          await this.client.request<{ variant: Variant }>(
-            `./products/${encodeURI(product_id)}/variant_categories/${encodeURI(variant_category_id)}/variants/${encodeURI(variant_id)}`,
-            {
-              method: 'PUT',
-              params: { name, price_difference_cents, max_purchase_count },
-              signal,
-            },
-          )
-        ).variant,
-        product_id,
-        variant_category_id,
-      );
-    } catch (e) {
-      this.logger.function(e, 'Variants.update', {
-        product_id,
-        variant_category_id,
-        variant_id,
-        options,
-      });
+			return this._bindVariant(
+				(
+					await this.client.request<{ variant: Variant }>(
+						`./products/${encodeURI(product_id)}/variant_categories/${encodeURI(variant_category_id)}/variants/${encodeURI(variant_id)}`,
+						{
+							method: 'PUT',
+							params: { name, price_difference_cents, max_purchase_count },
+							signal,
+						},
+					)
+				).variant,
+				product_id,
+				variant_category_id,
+			);
+		} catch (e) {
+			this.logger.function(e, 'Variants.update', {
+				product_id,
+				variant_category_id,
+				variant_id,
+				options,
+			});
 
-      throw e;
-    }
-  }
+			throw e;
+		}
+	}
 
-  /**
-   * Permanently delete a variant of a product.
-   *
-   * @param product_id The id of the product
-   * @param variant_category_id The id of the variant category
-   * @param variant_id The id of the variant
-   *
-   * @returns On success, `true`
-   *
-   * @see https://app.gumroad.com/api#delete-/products/:product_id/variant_categories/:variant_category_id/variants/:id
-   */
-  async delete(product_id: string, variant_category_id: string, variant_id: string, { signal }: { signal?: AbortSignal } = {}): Promise<true> {
-    try {
-      assertNonBlankString(product_id, "Argument 'product_id'");
-      assertNonBlankString(variant_category_id, "Argument 'variant_category_id'");
-      assertNonBlankString(variant_id, "Argument 'variant_id'");
+	/**
+	 * Permanently delete a variant of a product.
+	 *
+	 * @param product_id The id of the product
+	 * @param variant_category_id The id of the variant category
+	 * @param variant_id The id of the variant
+	 *
+	 * @returns On success, `true`
+	 *
+	 * @see https://app.gumroad.com/api#delete-/products/:product_id/variant_categories/:variant_category_id/variants/:id
+	 */
+	async delete(
+		product_id: string,
+		variant_category_id: string,
+		variant_id: string,
+		{ signal }: { signal?: AbortSignal } = {},
+	): Promise<true> {
+		try {
+			assertNonBlankString(product_id, "Argument 'product_id'");
+			assertNonBlankString(
+				variant_category_id,
+				"Argument 'variant_category_id'",
+			);
+			assertNonBlankString(variant_id, "Argument 'variant_id'");
 
-      await this.client.request(
-        `./products/${encodeURI(product_id)}/variant_categories/${encodeURI(variant_category_id)}/variants/${encodeURI(variant_id)}`,
-        {
-          method: 'DELETE',
-          signal,
-        },
-      );
+			await this.client.request(
+				`./products/${encodeURI(product_id)}/variant_categories/${encodeURI(variant_category_id)}/variants/${encodeURI(variant_id)}`,
+				{
+					method: 'DELETE',
+					signal,
+				},
+			);
 
-      return true;
-    } catch (e) {
-      this.logger.function(e, 'Variants.delete', {
-        product_id,
-        variant_category_id,
-        variant_id,
-      });
+			return true;
+		} catch (e) {
+			this.logger.function(e, 'Variants.delete', {
+				product_id,
+				variant_category_id,
+				variant_id,
+			});
 
-      throw e;
-    }
-  }
+			throw e;
+		}
+	}
 }

@@ -33,8 +33,10 @@
   },
   "formatter": {
     "enabled": true,
-    "indentStyle": "space",
-    "lineWidth": 150
+    "useEditorconfig": true,
+    "indentStyle": "tab",
+    "indentWidth": 2,
+    "lineWidth": 80
   },
   "javascript": {
     "formatter": {
@@ -64,7 +66,10 @@
       }
     },
     {
-      "includes": ["**/packages/worker-rpc/**", "**/packages/utils/src/predicate.ts"],
+      "includes": [
+        "**/packages/worker-rpc/**",
+        "**/packages/utils/src/predicate.ts"
+      ],
       "linter": {
         "rules": {
           "suspicious": {

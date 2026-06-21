@@ -5,131 +5,147 @@ import { addProperties, assertNonBlankString } from './utils';
 
 /** Bindings for {@link ResourceSubscription} */
 export interface ResourceSubscriptionProps {
-  /**
-   * Deletes the resource subscription
-   *
-   * @returns On success, `true`
-   */
-  delete(requestOptions?: { signal?: AbortSignal }): Promise<true>;
+	/**
+	 * Deletes the resource subscription
+	 *
+	 * @returns On success, `true`
+	 */
+	delete(requestOptions?: { signal?: AbortSignal }): Promise<true>;
 }
 
 /** A class having API methods related to Resource Subscriptions */
 export class ResourceSubscriptionsMethods extends Methods {
-  protected _bindResourceSubscription(resource_subscription: ResourceSubscription): ResourceSubscription & ResourceSubscriptionProps {
-    const properties: ResourceSubscriptionProps = {
-      delete: async (requestOptions) => this.delete(resource_subscription.id, requestOptions),
-    };
+	protected _bindResourceSubscription(
+		resource_subscription: ResourceSubscription,
+	): ResourceSubscription & ResourceSubscriptionProps {
+		const properties: ResourceSubscriptionProps = {
+			delete: async (requestOptions) =>
+				this.delete(resource_subscription.id, requestOptions),
+		};
 
-    return addProperties(resource_subscription, properties);
-  }
+		return addProperties(resource_subscription, properties);
+	}
 
-  /**
-   * Show all active subscriptions of user for the input resource.
-   *
-   * @param resource_name The name of resource
-   *
-   * @returns On success, an Array of {@link ResourceSubscription}
-   *
-   * @see https://app.gumroad.com/api#get-/resource_subscriptions
-   */
-  async list(
-    resource_name: ResourceSubscriptionName,
-    { signal }: { signal?: AbortSignal } = {},
-  ): Promise<(ResourceSubscription & ResourceSubscriptionProps)[]> {
-    try {
-      assertNonBlankString(resource_name, "Argument 'resource_name'");
+	/**
+	 * Show all active subscriptions of user for the input resource.
+	 *
+	 * @param resource_name The name of resource
+	 *
+	 * @returns On success, an Array of {@link ResourceSubscription}
+	 *
+	 * @see https://app.gumroad.com/api#get-/resource_subscriptions
+	 */
+	async list(
+		resource_name: ResourceSubscriptionName,
+		{ signal }: { signal?: AbortSignal } = {},
+	): Promise<(ResourceSubscription & ResourceSubscriptionProps)[]> {
+		try {
+			assertNonBlankString(resource_name, "Argument 'resource_name'");
 
-      return (
-        await this.client.request<{
-          resource_subscriptions: ResourceSubscription[];
-        }>('./resource_subscriptions', {
-          params: { resource_name },
-          signal,
-        })
-      ).resource_subscriptions.map((resource_subscription) => this._bindResourceSubscription(resource_subscription));
-    } catch (e) {
-      this.logger.function(e, 'ResourceSubscriptions.list', { resource_name });
+			return (
+				await this.client.request<{
+					resource_subscriptions: ResourceSubscription[];
+				}>('./resource_subscriptions', {
+					params: { resource_name },
+					signal,
+				})
+			).resource_subscriptions.map((resource_subscription) =>
+				this._bindResourceSubscription(resource_subscription),
+			);
+		} catch (e) {
+			this.logger.function(e, 'ResourceSubscriptions.list', { resource_name });
 
-      throw e;
-    }
-  }
+			throw e;
+		}
+	}
 
-  /**
-   * Subscribe to a resource.
-   *
-   * Currently there are 8 supported resource names:
-   * "sale", "refund", "dispute", "dispute_won",
-   * "cancellation", "subscription_updated", "subscription_ended", and "subscription_restarted".
-   *
-   * @param post_url The url where resource updates should be send
-   * @param resource_name The {@link ResourceSubscriptionName}
-   *
-   * @returns On success, a {@link ResourceSubscription}
-   *
-   * @see https://app.gumroad.com/api#put-/resource_subscriptions
-   */
-  async create(
-    post_url: string,
-    resource_name: ResourceSubscriptionName,
-    { signal }: { signal?: AbortSignal } = {},
-  ): Promise<ResourceSubscription & ResourceSubscriptionProps> {
-    try {
-      assertNonBlankString(post_url, "Argument 'post_url'");
-      assertNonBlankString(resource_name, "Argument 'resource_name'");
+	/**
+	 * Subscribe to a resource.
+	 *
+	 * Currently there are 8 supported resource names:
+	 * "sale", "refund", "dispute", "dispute_won",
+	 * "cancellation", "subscription_updated", "subscription_ended", and "subscription_restarted".
+	 *
+	 * @param post_url The url where resource updates should be send
+	 * @param resource_name The {@link ResourceSubscriptionName}
+	 *
+	 * @returns On success, a {@link ResourceSubscription}
+	 *
+	 * @see https://app.gumroad.com/api#put-/resource_subscriptions
+	 */
+	async create(
+		post_url: string,
+		resource_name: ResourceSubscriptionName,
+		{ signal }: { signal?: AbortSignal } = {},
+	): Promise<ResourceSubscription & ResourceSubscriptionProps> {
+		try {
+			assertNonBlankString(post_url, "Argument 'post_url'");
+			assertNonBlankString(resource_name, "Argument 'resource_name'");
 
-      if (!RESOURCE_SUBSCRIPTION_NAMES.includes(resource_name)) {
-        throw new TypeError(`'${resource_name}' is not a valid 'resource_name'`);
-      }
+			if (!RESOURCE_SUBSCRIPTION_NAMES.includes(resource_name)) {
+				throw new TypeError(
+					`'${resource_name}' is not a valid 'resource_name'`,
+				);
+			}
 
-      return this._bindResourceSubscription(
-        (
-          await this.client.request<{
-            resource_subscription: {
-              id: string;
-              post_url: string;
-              resource_name: ResourceSubscriptionName;
-            };
-          }>('./resource_subscriptions', {
-            method: 'PUT',
-            signal,
-          })
-        ).resource_subscription,
-      );
-    } catch (e) {
-      this.logger.function(e, 'ResourceSubscriptions.create', {
-        post_url,
-        resource_name,
-      });
+			return this._bindResourceSubscription(
+				(
+					await this.client.request<{
+						resource_subscription: {
+							id: string;
+							post_url: string;
+							resource_name: ResourceSubscriptionName;
+						};
+					}>('./resource_subscriptions', {
+						method: 'PUT',
+						signal,
+					})
+				).resource_subscription,
+			);
+		} catch (e) {
+			this.logger.function(e, 'ResourceSubscriptions.create', {
+				post_url,
+				resource_name,
+			});
 
-      throw e;
-    }
-  }
+			throw e;
+		}
+	}
 
-  /**
-   * Unsubscribe from a resource.
-   *
-   * @param resource_subscription_id The id of resource
-   *
-   * @returns On success, `true`
-   *
-   * @see https://app.gumroad.com/api#delete-/resource_subscriptions/:resource_subscription_id
-   */
-  async delete(resource_subscription_id: string, { signal }: { signal?: AbortSignal } = {}): Promise<true> {
-    try {
-      assertNonBlankString(resource_subscription_id, "Argument 'resource_subscription_id'");
+	/**
+	 * Unsubscribe from a resource.
+	 *
+	 * @param resource_subscription_id The id of resource
+	 *
+	 * @returns On success, `true`
+	 *
+	 * @see https://app.gumroad.com/api#delete-/resource_subscriptions/:resource_subscription_id
+	 */
+	async delete(
+		resource_subscription_id: string,
+		{ signal }: { signal?: AbortSignal } = {},
+	): Promise<true> {
+		try {
+			assertNonBlankString(
+				resource_subscription_id,
+				"Argument 'resource_subscription_id'",
+			);
 
-      await this.client.request(`./resource_subscriptions/${encodeURI(resource_subscription_id)}`, {
-        method: 'DELETE',
-        signal,
-      });
+			await this.client.request(
+				`./resource_subscriptions/${encodeURI(resource_subscription_id)}`,
+				{
+					method: 'DELETE',
+					signal,
+				},
+			);
 
-      return true;
-    } catch (e) {
-      this.logger.function(e, 'ResourceSubscriptions.delete', {
-        resource_subscription_id,
-      });
+			return true;
+		} catch (e) {
+			this.logger.function(e, 'ResourceSubscriptions.delete', {
+				resource_subscription_id,
+			});
 
-      throw e;
-    }
-  }
+			throw e;
+		}
+	}
 }

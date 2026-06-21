@@ -2,9 +2,10 @@
   "$schema": "../node_modules/@changesets/config/schema.json",
   "changelog": ["@changesets/changelog-github", { "repo": "kumardeo/deox" }],
   "commit": false,
-  "linked": [],
   "access": "public",
-  "baseBranch": "main",
+  "baseBranch": "origin/main",
   "updateInternalDependencies": "patch",
+  "fixed": [],
+  "linked": [],
   "ignore": ["@deox-tests/*"]
 }

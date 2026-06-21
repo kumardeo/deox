@@ -1,268 +1,298 @@
 import { Methods } from './methods';
 import type { Purchase } from './types';
-import { addProperties, assertNonBlankString, formatCustomField } from './utils';
+import {
+	addProperties,
+	assertNonBlankString,
+	formatCustomField,
+} from './utils';
 
 /** Bindings for {@link Purchase} */
 export interface PurchaseProps {
-  /** The number of license uses */
-  readonly license_uses: number;
+	/** The number of license uses */
+	readonly license_uses: number;
 
-  /**
-   * Verifies the license of the purchase
-   *
-   * @returns On success, a {@link Purchase}
-   */
-  verify(
-    options: {
-      /** If `true`, increment the uses count of a license. Default: `true` */
-      increment_uses_count?: boolean;
-    },
-    requestOptions?: { signal?: AbortSignal },
-  ): Promise<Purchase & PurchaseProps>;
+	/**
+	 * Verifies the license of the purchase
+	 *
+	 * @returns On success, a {@link Purchase}
+	 */
+	verify(
+		options: {
+			/** If `true`, increment the uses count of a license. Default: `true` */
+			increment_uses_count?: boolean;
+		},
+		requestOptions?: { signal?: AbortSignal },
+	): Promise<Purchase & PurchaseProps>;
 
-  /**
-   * Enables the license of the purchase
-   *
-   * @returns On success, a {@link Purchase}
-   */
-  enable(requestOptions?: { signal?: AbortSignal }): Promise<Purchase & PurchaseProps>;
+	/**
+	 * Enables the license of the purchase
+	 *
+	 * @returns On success, a {@link Purchase}
+	 */
+	enable(requestOptions?: {
+		signal?: AbortSignal;
+	}): Promise<Purchase & PurchaseProps>;
 
-  /**
-   * Disables the license of the purchase
-   *
-   * @returns On success, a {@link Purchase}
-   */
-  disable(requestOptions?: { signal?: AbortSignal }): Promise<Purchase & PurchaseProps>;
+	/**
+	 * Disables the license of the purchase
+	 *
+	 * @returns On success, a {@link Purchase}
+	 */
+	disable(requestOptions?: {
+		signal?: AbortSignal;
+	}): Promise<Purchase & PurchaseProps>;
 
-  /**
-   * Decrement the uses count of the license of the product
-   *
-   * @returns On success, a {@link Purchase}
-   */
-  decrementUsesCount(requestOptions?: { signal?: AbortSignal }): Promise<Purchase & PurchaseProps>;
+	/**
+	 * Decrement the uses count of the license of the product
+	 *
+	 * @returns On success, a {@link Purchase}
+	 */
+	decrementUsesCount(requestOptions?: {
+		signal?: AbortSignal;
+	}): Promise<Purchase & PurchaseProps>;
 }
 
 /** A class having API methods related to Licenses */
 export class LicensesMethods extends Methods {
-  protected _bindPurchase({
-    purchase,
-    uses,
-    product_id,
-    license_key,
-  }: {
-    purchase: Purchase;
-    uses: number;
-    product_id: string;
-    license_key: string;
-  }): Purchase & PurchaseProps {
-    const properties: PurchaseProps = {
-      license_uses: uses,
+	protected _bindPurchase({
+		purchase,
+		uses,
+		product_id,
+		license_key,
+	}: {
+		purchase: Purchase;
+		uses: number;
+		product_id: string;
+		license_key: string;
+	}): Purchase & PurchaseProps {
+		const properties: PurchaseProps = {
+			license_uses: uses,
 
-      verify: async (options, requestOptions) => this.verify(product_id, license_key, options, requestOptions),
+			verify: async (options, requestOptions) =>
+				this.verify(product_id, license_key, options, requestOptions),
 
-      enable: async (requestOptions) => this.enable(product_id, license_key, requestOptions),
+			enable: async (requestOptions) =>
+				this.enable(product_id, license_key, requestOptions),
 
-      disable: async (requestOptions) => this.disable(product_id, license_key, requestOptions),
+			disable: async (requestOptions) =>
+				this.disable(product_id, license_key, requestOptions),
 
-      decrementUsesCount: async (requestOptions) => this.decrementUsesCount(product_id, license_key, requestOptions),
-    };
+			decrementUsesCount: async (requestOptions) =>
+				this.decrementUsesCount(product_id, license_key, requestOptions),
+		};
 
-    return addProperties(purchase, properties);
-  }
+		return addProperties(purchase, properties);
+	}
 
-  /**
-   * Verify a license
-   *
-   * @param product_id The unique ID of the product, available on product's edit page
-   * @param license_key The license key provided by your customer
-   *
-   * @returns On success, a {@link Purchase}
-   *
-   * @see https://app.gumroad.com/api#post-/licenses/verify
-   */
-  async verify(
-    product_id: string,
-    license_key: string,
-    options: {
-      /** If `true`, increment the uses count of a license. Default: `true` */
-      increment_uses_count?: boolean;
-    } = {},
-    { signal }: { signal?: AbortSignal } = {},
-  ): Promise<Purchase & PurchaseProps> {
-    try {
-      assertNonBlankString(product_id, "Argument 'product_id'");
-      assertNonBlankString(license_key, "Argument 'license_key'");
+	/**
+	 * Verify a license
+	 *
+	 * @param product_id The unique ID of the product, available on product's edit page
+	 * @param license_key The license key provided by your customer
+	 *
+	 * @returns On success, a {@link Purchase}
+	 *
+	 * @see https://app.gumroad.com/api#post-/licenses/verify
+	 */
+	async verify(
+		product_id: string,
+		license_key: string,
+		options: {
+			/** If `true`, increment the uses count of a license. Default: `true` */
+			increment_uses_count?: boolean;
+		} = {},
+		{ signal }: { signal?: AbortSignal } = {},
+	): Promise<Purchase & PurchaseProps> {
+		try {
+			assertNonBlankString(product_id, "Argument 'product_id'");
+			assertNonBlankString(license_key, "Argument 'license_key'");
 
-      const { increment_uses_count } = options;
+			const { increment_uses_count } = options;
 
-      const { purchase, uses } = await this.client.request<{
-        uses: number;
-        purchase: Purchase;
-      }>('./licenses/verify', {
-        method: 'POST',
-        params: { product_id, license_key, increment_uses_count },
-        signal,
-      });
+			const { purchase, uses } = await this.client.request<{
+				uses: number;
+				purchase: Purchase;
+			}>('./licenses/verify', {
+				method: 'POST',
+				params: { product_id, license_key, increment_uses_count },
+				signal,
+			});
 
-      formatCustomField(purchase);
+			formatCustomField(purchase);
 
-      return this._bindPurchase({ product_id, license_key, purchase, uses });
-    } catch (e) {
-      this.logger.function(e, 'Licenses.verify', {
-        product_id,
-        license_key,
-        options,
-      });
+			return this._bindPurchase({ product_id, license_key, purchase, uses });
+		} catch (e) {
+			this.logger.function(e, 'Licenses.verify', {
+				product_id,
+				license_key,
+				options,
+			});
 
-      throw e;
-    }
-  }
+			throw e;
+		}
+	}
 
-  /**
-   * Enable a license
-   *
-   * @param product_id The unique ID of the product, available on product's edit page
-   * @param license_key The license key provided by your customer
-   *
-   * @returns On success, a {@link Purchase}
-   *
-   * @see https://app.gumroad.com/api#put-/licenses/enable
-   */
-  async enable(product_id: string, license_key: string, { signal }: { signal?: AbortSignal } = {}): Promise<Purchase & PurchaseProps> {
-    try {
-      assertNonBlankString(product_id, "Argument 'product_id'");
-      assertNonBlankString(license_key, "Argument 'license_key'");
+	/**
+	 * Enable a license
+	 *
+	 * @param product_id The unique ID of the product, available on product's edit page
+	 * @param license_key The license key provided by your customer
+	 *
+	 * @returns On success, a {@link Purchase}
+	 *
+	 * @see https://app.gumroad.com/api#put-/licenses/enable
+	 */
+	async enable(
+		product_id: string,
+		license_key: string,
+		{ signal }: { signal?: AbortSignal } = {},
+	): Promise<Purchase & PurchaseProps> {
+		try {
+			assertNonBlankString(product_id, "Argument 'product_id'");
+			assertNonBlankString(license_key, "Argument 'license_key'");
 
-      const { purchase, uses } = await this.client.request<{
-        uses: number;
-        purchase: Purchase;
-      }>('./licenses/enable', {
-        method: 'PUT',
-        params: { product_id, license_key },
-        signal,
-      });
+			const { purchase, uses } = await this.client.request<{
+				uses: number;
+				purchase: Purchase;
+			}>('./licenses/enable', {
+				method: 'PUT',
+				params: { product_id, license_key },
+				signal,
+			});
 
-      formatCustomField(purchase);
+			formatCustomField(purchase);
 
-      return this._bindPurchase({ product_id, license_key, purchase, uses });
-    } catch (e) {
-      this.logger.function(e, 'Licenses.enable', {
-        product_id,
-        license_key,
-      });
+			return this._bindPurchase({ product_id, license_key, purchase, uses });
+		} catch (e) {
+			this.logger.function(e, 'Licenses.enable', {
+				product_id,
+				license_key,
+			});
 
-      throw e;
-    }
-  }
+			throw e;
+		}
+	}
 
-  /**
-   * Disable a license
-   *
-   * @param product_id The unique ID of the product, available on product's edit page
-   * @param license_key The license key provided by your customer
-   *
-   * @returns On success, a {@link Purchase}
-   *
-   * @see https://app.gumroad.com/api#put-/licenses/disable
-   */
-  async disable(product_id: string, license_key: string, { signal }: { signal?: AbortSignal } = {}): Promise<Purchase & PurchaseProps> {
-    try {
-      assertNonBlankString(product_id, "Argument 'product_id'");
-      assertNonBlankString(license_key, "Argument 'license_key'");
+	/**
+	 * Disable a license
+	 *
+	 * @param product_id The unique ID of the product, available on product's edit page
+	 * @param license_key The license key provided by your customer
+	 *
+	 * @returns On success, a {@link Purchase}
+	 *
+	 * @see https://app.gumroad.com/api#put-/licenses/disable
+	 */
+	async disable(
+		product_id: string,
+		license_key: string,
+		{ signal }: { signal?: AbortSignal } = {},
+	): Promise<Purchase & PurchaseProps> {
+		try {
+			assertNonBlankString(product_id, "Argument 'product_id'");
+			assertNonBlankString(license_key, "Argument 'license_key'");
 
-      const { purchase, uses } = await this.client.request<{
-        uses: number;
-        purchase: Purchase;
-      }>('./licenses/disable', {
-        method: 'PUT',
-        params: { product_id, license_key },
-        signal,
-      });
+			const { purchase, uses } = await this.client.request<{
+				uses: number;
+				purchase: Purchase;
+			}>('./licenses/disable', {
+				method: 'PUT',
+				params: { product_id, license_key },
+				signal,
+			});
 
-      formatCustomField(purchase);
+			formatCustomField(purchase);
 
-      return this._bindPurchase({ product_id, license_key, purchase, uses });
-    } catch (e) {
-      this.logger.function(e, 'Licenses.disable', {
-        product_id,
-        license_key,
-      });
+			return this._bindPurchase({ product_id, license_key, purchase, uses });
+		} catch (e) {
+			this.logger.function(e, 'Licenses.disable', {
+				product_id,
+				license_key,
+			});
 
-      throw e;
-    }
-  }
+			throw e;
+		}
+	}
 
-  /**
-   * Decrement the uses count of a license
-   *
-   * @param product_id The unique ID of the product, available on product's edit page
-   * @param license_key The license key provided by your customer
-   *
-   * @returns On success, a {@link Purchase}
-   *
-   * @see https://app.gumroad.com/api#put-/licenses/decrement_uses_count
-   */
-  async decrementUsesCount(product_id: string, license_key: string, { signal }: { signal?: AbortSignal } = {}): Promise<Purchase & PurchaseProps> {
-    try {
-      assertNonBlankString(product_id, "Argument 'product_id'");
-      assertNonBlankString(license_key, "Argument 'license_key'");
+	/**
+	 * Decrement the uses count of a license
+	 *
+	 * @param product_id The unique ID of the product, available on product's edit page
+	 * @param license_key The license key provided by your customer
+	 *
+	 * @returns On success, a {@link Purchase}
+	 *
+	 * @see https://app.gumroad.com/api#put-/licenses/decrement_uses_count
+	 */
+	async decrementUsesCount(
+		product_id: string,
+		license_key: string,
+		{ signal }: { signal?: AbortSignal } = {},
+	): Promise<Purchase & PurchaseProps> {
+		try {
+			assertNonBlankString(product_id, "Argument 'product_id'");
+			assertNonBlankString(license_key, "Argument 'license_key'");
 
-      const { purchase, uses } = await this.client.request<{
-        uses: number;
-        purchase: Purchase;
-      }>('./licenses/decrement_uses_count', {
-        method: 'PUT',
-        params: { product_id, license_key },
-        signal,
-      });
+			const { purchase, uses } = await this.client.request<{
+				uses: number;
+				purchase: Purchase;
+			}>('./licenses/decrement_uses_count', {
+				method: 'PUT',
+				params: { product_id, license_key },
+				signal,
+			});
 
-      formatCustomField(purchase);
+			formatCustomField(purchase);
 
-      return this._bindPurchase({ product_id, license_key, purchase, uses });
-    } catch (e) {
-      this.logger.function(e, 'Licenses.decrementUsesCount', {
-        product_id,
-        license_key,
-      });
+			return this._bindPurchase({ product_id, license_key, purchase, uses });
+		} catch (e) {
+			this.logger.function(e, 'Licenses.decrementUsesCount', {
+				product_id,
+				license_key,
+			});
 
-      throw e;
-    }
-  }
+			throw e;
+		}
+	}
 
-  /**
-   * Rotate a license key. The old license key will no longer be valid.
-   *
-   * @param product_id The unique ID of the product, available on product's edit page
-   * @param license_key The license key provided by your customer
-   *
-   * @returns On success, a {@link Purchase}
-   *
-   * @see https://app.gumroad.com/api#put-/licenses/rotate
-   */
-  async rotate(product_id: string, license_key: string, { signal }: { signal?: AbortSignal } = {}): Promise<Purchase & PurchaseProps> {
-    try {
-      assertNonBlankString(product_id, "Argument 'product_id'");
-      assertNonBlankString(license_key, "Argument 'license_key'");
+	/**
+	 * Rotate a license key. The old license key will no longer be valid.
+	 *
+	 * @param product_id The unique ID of the product, available on product's edit page
+	 * @param license_key The license key provided by your customer
+	 *
+	 * @returns On success, a {@link Purchase}
+	 *
+	 * @see https://app.gumroad.com/api#put-/licenses/rotate
+	 */
+	async rotate(
+		product_id: string,
+		license_key: string,
+		{ signal }: { signal?: AbortSignal } = {},
+	): Promise<Purchase & PurchaseProps> {
+		try {
+			assertNonBlankString(product_id, "Argument 'product_id'");
+			assertNonBlankString(license_key, "Argument 'license_key'");
 
-      const { purchase, uses } = await this.client.request<{
-        uses: number;
-        purchase: Purchase;
-      }>('./licenses/rotate', {
-        method: 'PUT',
-        params: { product_id, license_key },
-        signal,
-      });
+			const { purchase, uses } = await this.client.request<{
+				uses: number;
+				purchase: Purchase;
+			}>('./licenses/rotate', {
+				method: 'PUT',
+				params: { product_id, license_key },
+				signal,
+			});
 
-      formatCustomField(purchase);
+			formatCustomField(purchase);
 
-      return this._bindPurchase({ product_id, license_key, purchase, uses });
-    } catch (e) {
-      this.logger.function(e, 'Licenses.rotate', {
-        product_id,
-        license_key,
-      });
+			return this._bindPurchase({ product_id, license_key, purchase, uses });
+		} catch (e) {
+			this.logger.function(e, 'Licenses.rotate', {
+				product_id,
+				license_key,
+			});
 
-      throw e;
-    }
-  }
+			throw e;
+		}
+	}
 }

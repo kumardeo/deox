@@ -54,7 +54,6 @@ jobs:
           title: "[ci] release"
           publish: pnpm publish-packages
           version: pnpm version-packages
-          commitMode: github-api
         env:
           GITHUB_TOKEN: ${{ secrets.FDBOT_GITHUB_TOKEN }}
           # Use OIDC for npm authentication instead of NPM_TOKEN

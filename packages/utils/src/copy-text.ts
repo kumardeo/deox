@@ -8,29 +8,32 @@ import { isString } from './predicate';
  * @returns Promise which resolves with the same input string
  */
 export async function copyText(text: string): Promise<string> {
-  if (!isString(text)) {
-    throw new TypeError('Argument 1 must be a string.');
-  }
+	if (!isString(text)) {
+		throw new TypeError('Argument 1 must be a string.');
+	}
 
-  if ('clipboard' in navigator) {
-    await navigator.clipboard.writeText(text);
-    return text;
-  }
+	if ('clipboard' in navigator) {
+		await navigator.clipboard.writeText(text);
+		return text;
+	}
 
-  const textarea = document.createElement('textarea');
-  textarea.setAttribute('style', 'position: fixed; left: 100%; width: 0; height: 0; opacity: 0');
-  textarea.textContent = text;
+	const textarea = document.createElement('textarea');
+	textarea.setAttribute(
+		'style',
+		'position: fixed; left: 100%; width: 0; height: 0; opacity: 0',
+	);
+	textarea.textContent = text;
 
-  document.body.appendChild(textarea);
-  textarea.focus();
-  textarea.select();
+	document.body.appendChild(textarea);
+	textarea.focus();
+	textarea.select();
 
-  const copied = !!document.execCommand('copy');
-  textarea.remove();
+	const copied = !!document.execCommand('copy');
+	textarea.remove();
 
-  if (copied) {
-    return text;
-  }
+	if (copied) {
+		return text;
+	}
 
-  throw new Error('Failed to copy text.');
+	throw new Error('Failed to copy text.');
 }

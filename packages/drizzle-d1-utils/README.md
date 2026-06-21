@@ -106,10 +106,10 @@ export default drizzleD1Config(
 
 Builds and returns a complete Drizzle Kit `Config`.
 
-| Parameter | Type               | Description                                                                                                                                                            |
+| Parameter | Type | Description |
 | --------- | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `config`  | `DrizzleKitConfig` | Base Drizzle Kit config — `schema`, `out`, `migrations`, etc. The `dialect`, `driver`, and `dbCredentials` fields are injected automatically and must not be set here. |
-| `options` | `DrizzleD1Options` | D1-specific options (see below). All fields are optional.                                                                                                              |
+| `config` | `DrizzleKitConfig` | Base Drizzle Kit config — `schema`, `out`, `migrations`, etc. The `dialect`, `driver`, and `dbCredentials` fields are injected automatically and must not be set here. |
+| `options` | `DrizzleD1Options` | D1-specific options (see below). All fields are optional. |
 
 **Returns** a complete `Config` object ready to be the default export of `drizzle.config.ts`.
 
@@ -117,16 +117,16 @@ Builds and returns a complete Drizzle Kit `Config`.
 
 ### `DrizzleD1Options`
 
-| Option        | Type      | Default                             | Description                                                                                                       |
+| Option | Type | Default | Description |
 | ------------- | --------- | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| `binding`     | `string`  | First D1 binding found              | Name of the D1 binding as declared in the Wrangler config.                                                        |
-| `environment` | `string`  | —                                   | Wrangler environment name (e.g. `"staging"`, `"production"`).                                                     |
-| `configPath`  | `string`  | —                                   | Path to the Wrangler config file (`wrangler.toml` or `wrangler.json`).                                            |
-| `persistTo`   | `string`  | —                                   | Directory where the local D1 SQLite file is persisted.                                                            |
-| `remote`      | `boolean` | Binding's `remote` flag, or `false` | When `true`, connects to the remote Cloudflare D1 database via the HTTP API. Requires `accountId` and `apiToken`. |
-| `preview`     | `boolean` | `false`                             | When `true`, targets the `preview_database_id` instead of `database_id`.                                          |
-| `accountId`   | `string`  | —                                   | Cloudflare account ID. Required when `remote` is `true`.                                                          |
-| `apiToken`    | `string`  | —                                   | Cloudflare API token with D1 read/write permissions. Required when `remote` is `true`.                            |
+| `binding` | `string` | First D1 binding found | Name of the D1 binding as declared in the Wrangler config. |
+| `environment` | `string` | — | Wrangler environment name (e.g. `"staging"`, `"production"`). |
+| `configPath` | `string` | — | Path to the Wrangler config file (`wrangler.toml` or `wrangler.json`). |
+| `persistTo` | `string` | — | Directory where the local D1 SQLite file is persisted. |
+| `remote` | `boolean` | Binding's `remote` flag, or `false` | When `true`, connects to the remote Cloudflare D1 database via the HTTP API. Requires `accountId` and `apiToken`. |
+| `preview` | `boolean` | `false` | When `true`, targets the `preview_database_id` instead of `database_id`. |
+| `accountId` | `string` | — | Cloudflare account ID. Required when `remote` is `true`. |
+| `apiToken` | `string` | — | Cloudflare API token with D1 read/write permissions. Required when `remote` is `true`. |
 
 ---
 
@@ -147,13 +147,13 @@ const base: DrizzleKitConfig = {
 
 ## Error Reference
 
-| Error                                                                               | Cause                                                                                                                                   |
+| Error | Cause |
 | ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `Options accountId, apiToken are required when using remote database. Missing: ...` | `remote: true` was set but one or both credentials were not provided.                                                                   |
-| `database_id is not set for D1 binding '...'`                                       | The resolved binding has no `database_id` in the Wrangler config.                                                                       |
-| `preview_database_id is not set for D1 binding '...'`                               | `preview: true` was set but the binding has no `preview_database_id`.                                                                   |
-| `Could not find SQLite file for D1 binding '...'`                                   | Local mode: the SQLite file does not exist and could not be created (either `wrangler` was not found, or the user declined the prompt). |
-| `Aborted by user.`                                                                  | The interactive prompt to create the SQLite file was declined.                                                                          |
+| `Options accountId, apiToken are required when using remote database. Missing: ...` | `remote: true` was set but one or both credentials were not provided. |
+| `database_id is not set for D1 binding '...'` | The resolved binding has no `database_id` in the Wrangler config. |
+| `preview_database_id is not set for D1 binding '...'` | `preview: true` was set but the binding has no `preview_database_id`. |
+| `Could not find SQLite file for D1 binding '...'` | Local mode: the SQLite file does not exist and could not be created (either `wrangler` was not found, or the user declined the prompt). |
+| `Aborted by user.` | The interactive prompt to create the SQLite file was declined. |
 
 ---
 
