@@ -1,7 +1,7 @@
 import { existsSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import promptSync from 'prompt-sync';
-import { unstable_readConfig } from 'wrangler/wrangler-dist/cli';
+import { unstable_readConfig } from 'wrangler';
 import { durableObjectNamespaceIdFromName } from './hash';
 import type { MinimalD1Database, WranglerMinimalConfig } from './types';
 
@@ -9,6 +9,19 @@ export function confirmSync(message: string): boolean {
 	const prompt = promptSync();
 	const answer = prompt(`${message} (y/N): `);
 	return answer?.toLowerCase() === 'y';
+}
+
+export function readWranglerConfig({
+	env,
+	config,
+}: {
+	env?: string;
+	config?: string;
+} = {}): WranglerMinimalConfig {
+	return unstable_readConfig({
+		env,
+		config,
+	});
 }
 
 export interface GetD1BindingInfoOptions {
@@ -41,10 +54,10 @@ export function getD1BindingInfo({
 	persistTo,
 	configPath: wranglerConfigPath,
 }: GetD1BindingInfoOptions = {}): GetD1BindingInfoResult {
-	const { d1_databases, configPath } = unstable_readConfig({
+	const { d1_databases, configPath } = readWranglerConfig({
 		env: environment,
 		config: wranglerConfigPath,
-	}) as WranglerMinimalConfig;
+	});
 	if (typeof configPath !== 'string') {
 		throw new Error('Failed to get wrangler config path');
 	}
