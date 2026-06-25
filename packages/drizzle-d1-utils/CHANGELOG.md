@@ -1,5 +1,11 @@
 # @deox/drizzle-d1-utils
 
+## 0.0.4
+
+### Patch Changes
+
+- [#47](https://github.com/kumardeo/deox/pull/47) [`a9a0ec3`](https://github.com/kumardeo/deox/commit/a9a0ec3a1f9191cca8c967c3e39a3cccbd4d14c1) Thanks [@kumardeo](https://github.com/kumardeo)! - fix: import `unstable_readConfig` correctly
+
 ## 0.0.3
 
 ### Patch Changes
