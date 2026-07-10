@@ -4,7 +4,7 @@
   "description": "Internal Packages for personal projects (Plus UI, Web Apps, etc)",
   "author": "Deo Kumar",
   "homepage": "https://github.com/kumardeo/deox",
-  "packageManager": "pnpm@11.3.0",
+  "packageManager": "pnpm@11.10.0",
   "scripts": {
     "format": "biome format --max-diagnostics=100 --log-kind=compact",
     "format:all": "pnpm run format .",
@@ -16,7 +16,7 @@
     "check:all": "biome check --max-diagnostics=150 --log-kind=compact .",
     "check:fix": "pnpm run check:all --write",
     "check:types": "FORCE_COLOR=1 turbo check:types",
-    "upgrade": "pnpm dlx npm-check-updates@latest --workspaces --root --interactive --format group",
+    "upgrade": "pnpm dlx npm-check-updates@latest --workspaces --root --peer --interactive --format group,cooldown,time",
     "build": "FORCE_COLOR=1 turbo run build --filter='./packages/*'",
     "dev": "FORCE_COLOR=1 turbo run dev --concurrency=24 --filter='./packages/*'",
     "test": "FORCE_COLOR=1 turbo run test",

@@ -9,6 +9,7 @@ export interface MinimalD1Database {
 }
 
 export interface WranglerMinimalConfig {
-	d1_databases?: MinimalD1Database[];
 	configPath?: string;
+	account_id?: string;
+	d1_databases?: MinimalD1Database[];
 }

@@ -59,6 +59,7 @@
     "prompt-sync": "^4.2.0"
   },
   "devDependencies": {
+    "@cloudflare/workers-utils": "^0.26.0",
     "@types/node": "catalog:",
     "@types/prompt-sync": "^4.2.3",
     "drizzle-kit": "^0.31.10",

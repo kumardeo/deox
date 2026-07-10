@@ -39,6 +39,7 @@ export interface D1DatabaseInfo {
 
 export interface GetD1BindingInfoResult {
 	configPath: string;
+	accountId?: string;
 	binding?: string;
 	databaseName?: string;
 	database?: D1DatabaseInfo;
@@ -54,7 +55,7 @@ export function getD1BindingInfo({
 	persistTo,
 	configPath: wranglerConfigPath,
 }: GetD1BindingInfoOptions = {}): GetD1BindingInfoResult {
-	const { d1_databases, configPath } = readWranglerConfig({
+	const { configPath, account_id, d1_databases } = readWranglerConfig({
 		env: environment,
 		config: wranglerConfigPath,
 	});
@@ -110,6 +111,7 @@ export function getD1BindingInfo({
 
 	return {
 		configPath,
+		accountId: account_id,
 		binding: bindingConfig.binding,
 		databaseName: bindingConfig.database_name,
 		database: database ?? undefined,

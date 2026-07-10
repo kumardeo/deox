@@ -2,12 +2,14 @@ packages:
   - packages/*
   - __tests__
 
-engineStrict: true
-strictPeerDependencies: true
 shellEmulator: true
+enablePrePostScripts: true
+engineStrict: true
 preferWorkspacePackages: true
 linkWorkspacePackages: true
-enablePrePostScripts: true
+strictPeerDependencies: true
+autoInstallPeers: false
+dedupePeers: true
 
 minimumReleaseAge: 1440
 
