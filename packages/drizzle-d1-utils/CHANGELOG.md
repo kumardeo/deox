@@ -1,5 +1,11 @@
 # @deox/drizzle-d1-utils
 
+## 0.0.5
+
+### Patch Changes
+
+- [#49](https://github.com/kumardeo/deox/pull/49) [`e20f73e`](https://github.com/kumardeo/deox/commit/e20f73e3a4efe32f27b04c735079f412de9d9f08) Thanks [@kumardeo](https://github.com/kumardeo)! - feat: use `account_id` from wrangler config if set
+
 ## 0.0.4
 
 ### Patch Changes
