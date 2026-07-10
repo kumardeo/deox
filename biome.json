@@ -43,11 +43,6 @@
       "quoteStyle": "single"
     }
   },
-  "json": {
-    "parser": {
-      "allowComments": true
-    }
-  },
   "overrides": [
     {
       "includes": ["**/packages/clc/**"],

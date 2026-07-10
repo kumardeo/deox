@@ -117,15 +117,22 @@ export function drizzleD1Config(
 	const useRemote = options.remote ?? binding.remote ?? false;
 	const usePreview = options.preview ?? false;
 
+	const accountId = options.accountId ?? binding.accountId;
+	const apiToken = options.apiToken;
+
 	if (useRemote) {
-		const requiredOptions: (keyof DrizzleD1Options)[] = [
-			'accountId',
-			'apiToken',
-		];
-		const missingOptions = requiredOptions.filter((name) => !options[name]);
+		const missingOptions: (keyof DrizzleD1Options)[] = [];
+
+		if (!accountId) {
+			missingOptions.push('accountId');
+		}
+		if (!apiToken) {
+			missingOptions.push('apiToken');
+		}
+
 		if (missingOptions.length > 0) {
 			throw new Error(
-				`Options ${requiredOptions.join(', ')} are required when using remote database. Missing: ${missingOptions.join(', ')}`,
+				`Options ${missingOptions.join(', ')} are required when using remote database.`,
 			);
 		}
 	}
@@ -213,6 +220,7 @@ export function drizzleD1Config(
 	if (useRemote) {
 		console.log('  Mode           : REMOTE');
 		console.log('                   (using remote Cloudflare D1 database)');
+		console.log(`  Account Id     : ${accountId}`);
 	} else {
 		console.log('  Mode           : LOCAL');
 		console.log('                   (using local SQLite database)');
@@ -232,8 +240,8 @@ export function drizzleD1Config(
 					driver: 'd1-http',
 					dbCredentials: {
 						databaseId: database.id,
-						accountId: options.accountId,
-						token: options.apiToken,
+						accountId,
+						token: apiToken,
 					},
 				}
 			: {
