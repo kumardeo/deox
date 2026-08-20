@@ -1,8 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
-import { createRequire } from 'node:module';
 import type { Config } from 'drizzle-kit';
-import { confirmSync, getD1BindingInfo } from './utils';
+import { confirmSync, getD1BindingInfo, getWranglerBinPath } from './utils';
 
 /**
  * Options for configuring a Drizzle Kit setup targeting a Cloudflare D1 database.
@@ -147,10 +146,7 @@ export function drizzleD1Config(
 
 	if (!useRemote && !database.exists) {
 		if (binding.databaseName) {
-			let bin: string | undefined;
-			try {
-				bin = createRequire(import.meta.url).resolve('wrangler/bin/wrangler');
-			} catch (_) {}
+			const bin = getWranglerBinPath();
 
 			if (bin) {
 				const args: string[] = [

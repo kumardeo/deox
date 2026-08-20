@@ -1,28 +1,10 @@
 import { existsSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import { dirname, join, relative } from 'node:path';
 import promptSync from 'prompt-sync';
 import { unstable_readConfig } from 'wrangler';
 import { durableObjectNamespaceIdFromName } from './hash';
 import type { MinimalD1Database, WranglerMinimalConfig } from './types';
-
-export function confirmSync(message: string): boolean {
-	const prompt = promptSync();
-	const answer = prompt(`${message} (y/N): `);
-	return answer?.toLowerCase() === 'y';
-}
-
-export function readWranglerConfig({
-	env,
-	config,
-}: {
-	env?: string;
-	config?: string;
-} = {}): WranglerMinimalConfig {
-	return unstable_readConfig({
-		env,
-		config,
-	});
-}
 
 export interface GetD1BindingInfoOptions {
 	binding?: string;
@@ -120,4 +102,38 @@ export function getD1BindingInfo({
 		migrationsTable: bindingConfig.migrations_table,
 		remote: bindingConfig.remote,
 	};
+}
+
+export function readWranglerConfig({
+	env,
+	config,
+}: {
+	env?: string;
+	config?: string;
+} = {}): WranglerMinimalConfig {
+	return unstable_readConfig({
+		env,
+		config,
+	});
+}
+
+export function getWranglerBinPath(): string | null {
+	let bin: string | null = null;
+	try {
+		const wranglerPackage = createRequire(import.meta.url).resolve(
+			'wrangler/package.json',
+		);
+		bin = join(dirname(wranglerPackage), 'bin', 'wrangler.js');
+		if (!existsSync(bin)) {
+			return null;
+		}
+	} catch (_) {}
+
+	return bin;
+}
+
+export function confirmSync(message: string): boolean {
+	const prompt = promptSync();
+	const answer = prompt(`${message} (y/N): `);
+	return answer?.toLowerCase() === 'y';
 }
