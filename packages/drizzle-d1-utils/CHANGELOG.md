@@ -1,5 +1,11 @@
 # @deox/drizzle-d1-utils
 
+## 0.0.6
+
+### Patch Changes
+
+- [`4b6bf93`](https://github.com/kumardeo/deox/commit/4b6bf93dc7a87ba17a40c7b80e966ae83c391a4b) Thanks [@kumardeo](https://github.com/kumardeo)! - fix: correctly resolve wrangler bin path
+
 ## 0.0.5
 
 ### Patch Changes
