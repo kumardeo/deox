@@ -1,10 +1,9 @@
 import { defineConfig } from 'tsdown';
 
-export default defineConfig((_) => ({
-	entry: ['src/**/*.{ts,js}'],
-	format: ['esm', 'cjs'],
-	platform: 'neutral',
-	target: 'es2018',
+export default defineConfig({
+	entry: ['src/**/*.{js,ts}', '!src/**/*.{test,spec}.{js,ts}'],
+	format: 'esm',
+	platform: 'node',
 	sourcemap: true,
 	unbundle: true,
 	deps: {
@@ -12,6 +11,5 @@ export default defineConfig((_) => ({
 	},
 	dts: true,
 	clean: true,
-	shims: true,
 	ignoreWatch: ['.turbo'],
-}));
+});

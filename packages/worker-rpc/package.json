@@ -36,40 +36,22 @@
     "dist"
   ],
   "type": "module",
-  "main": "./dist/index.cjs",
+  "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
     "./package.json": "./package.json",
     ".": {
-      "import": {
-        "types": "./dist/index.d.ts",
-        "default": "./dist/index.js"
-      },
-      "require": {
-        "types": "./dist/index.d.cts",
-        "default": "./dist/index.cjs"
-      }
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     },
     "./register": {
-      "import": {
-        "types": "./dist/register.d.ts",
-        "default": "./dist/register.js"
-      },
-      "require": {
-        "types": "./dist/register.d.cts",
-        "default": "./dist/register.cjs"
-      }
+      "types": "./dist/register/index.d.ts",
+      "default": "./dist/register/index.js"
     },
     "./helpers": {
-      "import": {
-        "types": "./dist/helpers.d.ts",
-        "default": "./dist/helpers.js"
-      },
-      "require": {
-        "types": "./dist/helpers.d.cts",
-        "default": "./dist/helpers.cjs"
-      }
+      "types": "./dist/helpers.d.ts",
+      "default": "./dist/helpers.js"
     }
   },
   "dependencies": {

@@ -1,21 +1,18 @@
 {
   "compilerOptions": {
-    "target": "ES2015",
-    "module": "ESNext",
-    "lib": ["ESNext", "ES2018", "DOM", "WebWorker"],
-    "moduleResolution": "Bundler",
-    "esModuleInterop": true,
-    "strict": true,
-    "resolveJsonModule": true,
-    "allowJs": true,
-    "checkJs": false,
-    "noEmit": false,
-    "isolatedModules": true,
-    "allowSyntheticDefaultImports": true,
+    "target": "es2023",
+    "lib": ["ESNext", "DOM", "WebWorker"],
+    "module": "esnext",
+    "declaration": true,
+    "moduleResolution": "bundler",
     "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
+    "isolatedModules": true,
+    "strict": true,
+    "allowJs": true,
     "skipLibCheck": true,
-    "baseUrl": "."
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
   },
-  "include": [".", "../src"],
-  "exclude": ["node_modules", "webpack.dev.cjs"]
+  "include": [".", "../src"]
 }

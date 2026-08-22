@@ -2,12 +2,11 @@ import { defineConfig } from 'tsdown';
 
 export default defineConfig([
 	{
-		entry: ['src/index.ts'],
-		format: ['esm', 'cjs'],
+		entry: ['src/**/*.{js,ts}', '!src/**/*.{test,spec}.{js,ts}'],
+		format: 'esm',
 		platform: 'neutral',
-		target: 'es2018',
 		sourcemap: true,
-		unbundle: false,
+		unbundle: true,
 		deps: {
 			neverBundle: true,
 		},

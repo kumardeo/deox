@@ -13,22 +13,9 @@ npm install @deox/worker-rpc
 
 ## Usage
 
-The module can be imported using `import` in ES Modules and `require` in Common JS as shown below:
-
-ES Modules:
-
 ```ts
 // index.ts
 import { Worker } from "@deox/worker-rpc";
-
-// ...
-```
-
-Common JS:
-
-```cjs
-// index.cjs
-const { Worker } = require("@deox/worker-rpc");
 
 // ...
 ```
@@ -49,7 +36,7 @@ export type Context = {
 
 const registered = register((ctx: Context) => ({
   hello: () => `Hello from worker with info: ${ctx.info}`,
-  sum: (...numbers: number[]) => numbers.reduce((p, c) => p + c, 0)
+  sum: (...numbers: number[]) => numbers.reduce((p, c) => p + c, 0),
 }));
 
 export type Registered = typeof registered;
@@ -63,22 +50,22 @@ import { Worker } from "@deox/worker-rpc";
 import type { Context, Registered } from "./worker";
 
 const context: Context = {
-  info: "This works!"
+  info: "This works!",
 };
 
-const worker = new Worker<Registered>(
-  new URL("./worker", import.meta.url),
-  { context, name: "my-worker" }
-);
+const worker = new Worker<Registered>(new URL("./worker", import.meta.url), {
+  context,
+  name: "my-worker",
+});
 
 // Call the methods :)
-worker.call("hello").then(result => {
+worker.call("hello").then((result) => {
   // Do something with result
   console.log(result);
 });
 
 // Or use ES6 Proxy
-worker.proxy.sum(20, 50, 30).then(result => {
+worker.proxy.sum(20, 50, 30).then((result) => {
   // Do something with result
   console.log(result);
 });
@@ -98,6 +85,7 @@ To transfer transferable objects from the main thread to the worker thread, pass
 > The transferable objects should be passed as method parameters; otherwise, they may be moved, but not actually accessible within the worker thread.
 
 `worker.ts`:
+
 ```ts
 // worker.ts
 import { register } from "@deox/worker-rpc/register";
@@ -105,22 +93,22 @@ import { register } from "@deox/worker-rpc/register";
 const registered = register(() => ({
   doSomething: (bytes: Uint8Array) => {
     // do something with bytes
-  }
+  },
 }));
 
 export type Registered = typeof registered;
 ```
 
 `index.ts`:
+
 ```ts
 // index.ts
 import { Worker } from "@deox/worker-rpc";
 import type { Registered } from "./worker";
 
-const worker = new Worker<Registered>(
-  new URL("./worker", import.meta.url),
-  { name: "my-worker" }
-);
+const worker = new Worker<Registered>(new URL("./worker", import.meta.url), {
+  name: "my-worker",
+});
 
 const bytes = new Uint8Array([1, 2, 3, 4]);
 
@@ -141,6 +129,7 @@ To transfer transferable objects from the worker thread to the main thread, use 
 > The transferable objects should be attached to the result; otherwise, they may be moved but not accessible in the main thread.
 
 `worker.ts`:
+
 ```ts
 // worker.ts
 import { register, withOptions } from "@deox/worker-rpc/register";
@@ -155,22 +144,22 @@ const registered = register(() => ({
       transfer: [bytes.buffer]
     });
     */
-  }
+  },
 }));
 
 export type Registered = typeof registered;
 ```
 
 `index.ts`:
+
 ```ts
 // index.ts
 import { Worker } from "@deox/worker-rpc";
 import type { Registered } from "./worker";
 
-const worker = new Worker<Registered>(
-  new URL("./worker", import.meta.url),
-  { name: "my-worker" }
-);
+const worker = new Worker<Registered>(new URL("./worker", import.meta.url), {
+  name: "my-worker",
+});
 
 worker.call("doSomething").then((bytes) => {
   // do something with bytes
