@@ -1,5 +1,5 @@
 import { generateId } from '@deox/utils/generate-id';
-import { WORKER_NAMESPACE } from './constants';
+import { WORKER_RPC_KEY } from './constants';
 import type {
 	InferContext,
 	InferMethods,
@@ -12,39 +12,21 @@ import type {
 	RegisterOutput,
 	RequestOptions,
 } from './types';
-import { eventIsResponse, getBlobContent } from './utils';
-
-/** Worker constructor from global object */
-let MayBeWorker: (typeof globalThis)['Worker'] | undefined;
-if (typeof globalThis !== 'undefined' && globalThis.Worker) {
-	MayBeWorker = globalThis.Worker;
-} else if (typeof window !== 'undefined' && window.Worker) {
-	MayBeWorker = window.Worker;
-} else if (typeof self !== 'undefined' && self.Worker) {
-	MayBeWorker = self.Worker;
-}
-
-/** This is dummy constructor to extend if `Worker` constructor is not available */
-class DummyWorker {
-	constructor() {
-		throw new Error(
-			"Cannot create 'Worker' instance. Make sure you are using on a Web Worker supported runtime which has a global 'Worker' constructor.",
-		);
-	}
-}
-
-/** Use dummy constructor if global `Worker` constructor is not available to make sure we can extend on ssr */
-const ExtendWorker =
-	(MayBeWorker as (typeof globalThis)['Worker']) ?? DummyWorker;
+import {
+	createWorkerFromSource,
+	eventIsResponse,
+	getCrossOriginWorkerSource,
+} from './utils';
 
 /**
- * A subclass of Worker with more features.
+ * Provides an RPC interface for communicating with a Web Worker.
  *
- * It can be used to create Worker instance for script from different origin using Blob URLs.
+ * It can also be used to create and communicate with a worker script from a
+ * different origin using a Blob URL.
  *
  * **Example for webpack**:
  *
- * Create a `worker.ts` file with following content:
+ * Create a `worker.ts` file with the following content:
  *
  * ```ts
  * // worker.ts
@@ -62,43 +44,44 @@ const ExtendWorker =
  * export type Registered = typeof registered;
  * ```
  *
- * Now you can create a {@link Worker} instance and use the registered methods in your entrypoints:
+ * You can then create an `RPCWorker` instance and use the registered methods:
  *
  * ```ts
  * import { Worker } from "@deox/worker-rpc";
  * import { type Context, type Registered } from "./worker";
  *
- * // Context data to be sent to worker
+ * // Context data to be sent to the worker
  * const context: Context = { from: "Worker Thread" };
  *
- * // Create a Worker instance
+ * // Create an RPCWorker instance
  * const worker = new Worker<Registered>(
  *   new URL("./worker", import.meta.url),
  *   { context }
  * );
  *
- * // Call registered method from worker using call method of instance
+ * // Call a registered method using the call method
  * worker.call("hello").then(
  *   console.log // "Hello from Worker Thread"
  * );
  *
- * // Or you can call registered method from worker using proxy
+ * // Or call a registered method using the proxy
  * worker.proxy.hello().then(
  *   console.log // "Hello from Worker Thread"
  * );
  * ```
  *
- * **Note**: It doesn't matter your registered methods are synchronous or asynchronous,
- * the methods called using Worker instance will always return a Promise which resolves or rejects based on method logic.
+ * **Note:** It doesn't matter whether registered methods are synchronous or
+ * asynchronous. Methods called through the `RPCWorker` instance always return
+ * a Promise that resolves or rejects based on the method's result.
  */
-export class Worker<
+export class RPCWorker<
 	R extends RegisterOutput<NonNullable<object>, any> = RegisterOutput<
 		Record<string | number, (...args: unknown[]) => unknown>,
 		unknown
 	>,
-> extends ExtendWorker {
-	/** The context provided through options (to be sent to worker) */
-	private _context: InferContext<R>;
+> {
+	/** The underlying Web Worker instance used to execute RPC calls. */
+	private _worker: Worker;
 
 	/** A promise which resolves when context is sent to worker */
 	private _setup: Promise<void>;
@@ -119,76 +102,47 @@ export class Worker<
 	private _generate: (message: MessageWorkerInput) => string;
 
 	/**
-	 * A method to request to worker
-	 *
-	 * @param message The message object to be sent
-	 *
-	 * @returns The response message object
-	 */
-	private _request(
-		message: MessageWorkerInput,
-		options: RequestOptions = {},
-	): Promise<MessageMain> {
-		return new Promise<MessageMain>((resolve, reject) => {
-			const { transfer, signal } = Array.isArray(options)
-				? { transfer: options }
-				: options;
-
-			if (signal?.aborted) {
-				return reject(
-					signal.reason ?? new DOMException('Aborted', 'AbortError'),
-				);
-			}
-
-			signal?.addEventListener(
-				'abort',
-				() => {
-					this._queue.delete(requestId);
-					reject(signal.reason ?? new DOMException('Aborted', 'AbortError'));
-				},
-				{ once: true },
-			);
-
-			const requestId = this._generate(message);
-			const messageData: MessageWorker = {
-				...message,
-				id: requestId,
-			};
-			Object.assign(messageData, { [WORKER_NAMESPACE]: true });
-
-			this._queue.set(requestId, { resolve, reject });
-			if (transfer) {
-				this.postMessage(messageData, { transfer });
-			} else {
-				this.postMessage(messageData);
-			}
-		});
-	}
-
-	/**
-	 * Creates a new instance of Worker
+	 * Creates a new instance of RPCWorker
 	 *
 	 * @param scriptURL The url of the worker script
 	 * @param options Options
 	 */
-	constructor(scriptURL: string | URL, options: InferWorkerOptions<R>) {
-		const workerUrl =
-			scriptURL instanceof URL
-				? scriptURL
-				: new URL(scriptURL, window.location.href);
+	constructor(scriptURL: string | URL, options: InferWorkerOptions<R>);
+	constructor(
+		worker: Worker,
+		options: Pick<InferWorkerOptions<R>, 'context' | 'generate'>,
+	);
+	constructor(
+		urlOrWorker: string | URL | Worker,
+		options: InferWorkerOptions<R>,
+	) {
+		if (typeof Worker === 'undefined') {
+			throw new Error(
+				"Cannot create an 'RPCWorker' instance. The current runtime does not support Web Workers or does not provide a global 'Worker' constructor.",
+			);
+		}
 
-		// construct normally if script url is same-origin otherwise use blob url
-		if (workerUrl.origin === window.location.origin) {
-			super(scriptURL, options);
+		if (urlOrWorker instanceof Worker) {
+			this._worker = urlOrWorker;
 		} else {
-			const blob = new Blob([getBlobContent(workerUrl.href, options?.type)], {
-				type: 'text/javascript',
-			});
-			super(URL.createObjectURL(blob), options);
+			const scriptURL =
+				urlOrWorker instanceof URL
+					? urlOrWorker
+					: new URL(urlOrWorker, window.location.href);
+
+			// Construct normally if script URL is same-origin otherwise use Blob URL
+			if (scriptURL.origin === window.location.origin) {
+				this._worker = new Worker(scriptURL, options);
+			} else {
+				const source = getCrossOriginWorkerSource(
+					scriptURL.href,
+					options?.type,
+				);
+				this._worker = createWorkerFromSource(source, options);
+			}
 		}
 
 		this._queue = new Map();
-		this._context = options?.context as InferContext<R>;
 		this._terminated = false;
 
 		this._generate = (message) => {
@@ -233,7 +187,7 @@ export class Worker<
 
 		this._setup = this._request({
 			type: 'context',
-			context: this._context,
+			context: options?.context as InferContext<R>,
 		}).then((data) => {
 			if (data.type !== 'context') {
 				throw new Error(
@@ -243,6 +197,53 @@ export class Worker<
 
 			if (data.status !== 'success') {
 				throw data.error;
+			}
+		});
+	}
+
+	/**
+	 * A method to request to worker
+	 *
+	 * @param message The message object to be sent
+	 *
+	 * @returns The response message object
+	 */
+	private _request(
+		message: MessageWorkerInput,
+		options: RequestOptions = {},
+	): Promise<MessageMain> {
+		return new Promise<MessageMain>((resolve, reject) => {
+			const { transfer, signal } = Array.isArray(options)
+				? { transfer: options }
+				: options;
+
+			if (signal?.aborted) {
+				return reject(
+					signal.reason ?? new DOMException('Aborted', 'AbortError'),
+				);
+			}
+
+			signal?.addEventListener(
+				'abort',
+				() => {
+					this._queue.delete(requestId);
+					reject(signal.reason ?? new DOMException('Aborted', 'AbortError'));
+				},
+				{ once: true },
+			);
+
+			const requestId = this._generate(message);
+			const messageData: MessageWorker = {
+				...message,
+				id: requestId,
+			};
+			Object.assign(messageData, { [WORKER_RPC_KEY]: true });
+
+			this._queue.set(requestId, { resolve, reject });
+			if (transfer) {
+				this.postMessage(messageData, { transfer });
+			} else {
+				this.postMessage(messageData);
 			}
 		});
 	}
@@ -373,14 +374,99 @@ export class Worker<
 		return this._proxy;
 	}
 
-	override terminate(): void {
-		super.terminate();
+	/** The underlying Web Worker instance */
+	get worker(): Worker {
+		return this._worker;
+	}
+
+	get onerror(): ((this: AbstractWorker, ev: ErrorEvent) => any) | null {
+		return this.worker.onerror;
+	}
+	set onerror(onerror: ((this: AbstractWorker, ev: ErrorEvent) => any) | null) {
+		this._worker.onerror = onerror;
+	}
+
+	get onmessage(): ((this: Worker, ev: MessageEvent) => any) | null {
+		return this._worker.onmessage;
+	}
+	set onmessage(onmessage: ((this: Worker, ev: MessageEvent) => any) | null) {
+		this._worker.onmessage = onmessage;
+	}
+
+	get onmessageerror(): ((this: Worker, ev: MessageEvent) => any) | null {
+		return this._worker.onmessageerror;
+	}
+	set onmessageerror(onmessageerror:
+		| ((this: Worker, ev: MessageEvent) => any)
+		| null) {
+		this._worker.onmessageerror = onmessageerror;
+	}
+
+	postMessage(message: unknown, transfer: Transferable[]): void;
+	postMessage(message: unknown, options?: StructuredSerializeOptions): void;
+	postMessage(
+		message: unknown,
+		transferOrOptions?: Transferable[] | StructuredSerializeOptions,
+	): void {
+		if (transferOrOptions === undefined) {
+			this._worker.postMessage(message);
+		} else {
+			this._worker.postMessage(
+				message,
+				// @ts-expect-error
+				transferOrOptions,
+			);
+		}
+	}
+
+	terminate(): void {
+		this._worker.terminate();
 		this._terminated = true;
 		const error = new Error('Worker terminated');
 		for (const { reject } of this._queue.values()) {
 			reject(error);
 		}
 		this._queue.clear();
+	}
+
+	addEventListener<K extends keyof WorkerEventMap>(
+		type: K,
+		listener: (this: Worker, ev: WorkerEventMap[K]) => any,
+		options?: boolean | AddEventListenerOptions,
+	): void;
+	addEventListener(
+		type: string,
+		listener: EventListenerOrEventListenerObject,
+		options?: boolean | AddEventListenerOptions,
+	): void;
+	addEventListener(
+		type: string,
+		listener: EventListenerOrEventListenerObject,
+		options?: boolean | AddEventListenerOptions,
+	): void {
+		this._worker.addEventListener(type, listener, options);
+	}
+
+	removeEventListener<K extends keyof WorkerEventMap>(
+		type: K,
+		listener: (this: Worker, ev: WorkerEventMap[K]) => any,
+		options?: boolean | EventListenerOptions,
+	): void;
+	removeEventListener(
+		type: string,
+		listener: EventListenerOrEventListenerObject,
+		options?: boolean | EventListenerOptions,
+	): void;
+	removeEventListener(
+		type: string,
+		listener: EventListenerOrEventListenerObject,
+		options?: boolean | EventListenerOptions,
+	): void {
+		this._worker.removeEventListener(type, listener, options);
+	}
+
+	dispatchEvent(event: Event): boolean {
+		return this._worker.dispatchEvent(event);
 	}
 }
 
@@ -397,3 +483,4 @@ export type {
 	RegisterOutput,
 	RequestOptions,
 } from './types';
+export { RPCWorker as Worker };

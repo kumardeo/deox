@@ -1,6 +1,6 @@
 /// <reference lib="WebWorker" />
 
-import { WORKER_NAMESPACE } from '../constants';
+import { WORKER_RPC_KEY } from '../constants';
 import type {
 	CallerType,
 	MessageMain,
@@ -60,7 +60,7 @@ export const respond = {
 				id,
 				timestamp: Date.now(),
 			},
-			{ [WORKER_NAMESPACE]: true },
+			{ [WORKER_RPC_KEY]: true },
 		);
 
 		if (options) {
@@ -168,7 +168,7 @@ export function isRequestEvent(event: MessageEvent<unknown>): boolean {
 	return (
 		!!request &&
 		typeof request === 'object' &&
-		Object.hasOwn(request, WORKER_NAMESPACE)
+		Object.hasOwn(request, WORKER_RPC_KEY)
 	);
 }
 
