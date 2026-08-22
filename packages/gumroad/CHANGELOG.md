@@ -1,5 +1,16 @@
 # @deox/gumroad
 
+## 0.2.0
+
+### Minor Changes
+
+- [#53](https://github.com/kumardeo/deox/pull/53) [`8e1a8d7`](https://github.com/kumardeo/deox/commit/8e1a8d78e4b389501b5b1292507a7083f3ebea84) Thanks [@kumardeo](https://github.com/kumardeo)! - feat!: migrate to pure ESM
+
+### Patch Changes
+
+- Updated dependencies [[`8e1a8d7`](https://github.com/kumardeo/deox/commit/8e1a8d78e4b389501b5b1292507a7083f3ebea84)]:
+  - @deox/utils@0.1.0
+
 ## 0.1.0
 
 ### Minor Changes

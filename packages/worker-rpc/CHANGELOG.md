@@ -1,5 +1,18 @@
 # @deox/worker-rpc
 
+## 0.1.0
+
+### Minor Changes
+
+- [#53](https://github.com/kumardeo/deox/pull/53) [`8e1a8d7`](https://github.com/kumardeo/deox/commit/8e1a8d78e4b389501b5b1292507a7083f3ebea84) Thanks [@kumardeo](https://github.com/kumardeo)! - feat!: migrate to pure ESM
+
+### Patch Changes
+
+- [`4084464`](https://github.com/kumardeo/deox/commit/4084464dbca1045b4aadd516958b03e374e0fcbc) Thanks [@kumardeo](https://github.com/kumardeo)! - feat: support passing `Worker` instance to `RPCWorker`
+
+- Updated dependencies [[`8e1a8d7`](https://github.com/kumardeo/deox/commit/8e1a8d78e4b389501b5b1292507a7083f3ebea84)]:
+  - @deox/utils@0.1.0
+
 ## 0.0.21
 
 ### Patch Changes
