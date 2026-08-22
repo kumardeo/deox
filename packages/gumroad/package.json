@@ -58,7 +58,7 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "catalog:",
-    "hono": "^4.12.23",
+    "hono": "^4.13.3",
     "tsdown": "catalog:",
     "wrangler": "catalog:"
   }

@@ -9,7 +9,7 @@ export default defineConfig([
 		sourcemap: true,
 		unbundle: false,
 		deps: {
-			skipNodeModulesBundle: true,
+			neverBundle: true,
 		},
 		dts: true,
 		clean: true,
