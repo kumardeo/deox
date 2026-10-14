@@ -14,3 +14,7 @@ Can be used with webpack or other bundlers.
 ### [@deox/gumroad](./packages/gumroad/README.md)
 
 API client and Resource Subscriptions (Gumroad Webhooks) handler for Gumroad.
+
+### [pjax-navigate](./packages/pjax-navigate/README.md)
+
+Framework-agnostic client-side navigation for multi-page apps using the View Transitions API, inspired by Astro's ClientRouter.

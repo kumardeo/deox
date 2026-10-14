@@ -1,0 +1,64 @@
+{
+  "name": "pjax-navigate",
+  "version": "0.0.2",
+  "description": "Framework-agnostic client-side navigation for multi-page apps using the View Transitions API, inspired by Astro's ClientRouter",
+  "keywords": [
+    "pjax",
+    "navigation",
+    "router",
+    "view-transitions",
+    "mpa",
+    "prefetch",
+    "astro"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "Deo Kumar",
+    "email": "deo@fineshopdesign.com",
+    "url": "https://github.com/kumardeo"
+  },
+  "contributors": [
+    {
+      "name": "Astro",
+      "url": "https://astro.build/"
+    }
+  ],
+  "homepage": "https://github.com/kumardeo/deox/tree/main/packages/pjax-navigate#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kumardeo/deox",
+    "directory": "packages/pjax-navigate"
+  },
+  "bugs": {
+    "url": "https://github.com/kumardeo/deox/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "lint": "biome lint ./src",
+    "check": "biome check ./src",
+    "check:types": "tsc --noEmit",
+    "build": "NODE_ENV=production tsdown",
+    "dev": "NODE_ENV=development tsdown --watch"
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "devDependencies": {
+    "tsdown": "catalog:"
+  }
+}
