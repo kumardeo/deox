@@ -173,10 +173,11 @@ function swapHeadElements(newDoc: Document): void {
 		const newChild = persistedHeadElement(child as HTMLElement, newDoc);
 
 		// If the element exists in the document already, remove it
-		// from the new document and leave the current node alone
+		// from the new document and leave the current node alone.
+		// Elements with an empty persist attribute are always kept.
 		if (newChild) {
 			newChild.remove();
-		} else {
+		} else if (child.getAttribute(PERSIST_ATTR) !== '') {
 			if (isDev && child instanceof HTMLStyleElement) {
 				const viteDevId = child.getAttribute(VITE_DEV_ID_ATTR);
 				if (viteDevId) {
@@ -368,7 +369,8 @@ function saveFocus(): () => void {
 	// The element that currently has the focus is part of a DOM tree
 	// that will survive the transition to the new document.
 	// Save the element and the cursor position
-	if (activeElement?.closest(`[${PERSIST_ATTR}]`)) {
+	// Empty persist attributes are ignored in the body
+	if (activeElement?.closest(`[${PERSIST_ATTR}]:not([${PERSIST_ATTR}=""])`)) {
 		if (
 			activeElement instanceof HTMLInputElement ||
 			activeElement instanceof HTMLTextAreaElement
