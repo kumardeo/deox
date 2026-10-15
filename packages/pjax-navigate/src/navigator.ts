@@ -832,7 +832,10 @@ function onScrollEnd(): void {
 
 export function initializeNavigator(options: NavigatorOptions = {}): void {
 	if (hasConfig()) {
-		console.warn('[pjax-navigate]', 'Already initialized!');
+		console.warn(
+			'[pjax-navigate]',
+			'initializeNavigator() was called more than once. The navigator has already been initialized, so this call is ignored and the new options will not be applied. Make sure initializeNavigator() is only called once.',
+		);
 		return;
 	}
 

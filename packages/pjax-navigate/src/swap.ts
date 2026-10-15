@@ -11,8 +11,6 @@ import type { SavedFocus } from './types';
 
 const NON_OVERRIDABLE_ATTRS = [DIRECTION_ATTR, FALLBACK_ATTR];
 
-const knownVueScopedStyles = new Map<string, HTMLStyleElement>();
-
 const executedSources = new Set<string>();
 const executedContents = new Set<string>();
 const executedIds = new Set<string>();
@@ -86,6 +84,58 @@ function deselectScripts(doc: Document): void {
 	}
 }
 
+// Vite's CSS HMR runtime keeps references to the style nodes it injects, so preserve
+// those nodes across ClientRouter head swaps. https://github.com/withastro/astro/pull/17612
+let $viteStyleState: {
+	styles: Map<string, HTMLStyleElement>;
+	observe: () => void;
+} | null = null;
+function getViteStyleState() {
+	const { isDev } = getConfig();
+
+	if (!isDev) {
+		return null;
+	}
+
+	if (!$viteStyleState) {
+		const styles = new Map<string, HTMLStyleElement>();
+		let observer: MutationObserver | undefined;
+
+		const observe = (): void => {
+			if (observer) {
+				return;
+			}
+			observer = new MutationObserver((records) => {
+				for (const record of records) {
+					for (const node of record.addedNodes) {
+						if (!(node instanceof HTMLStyleElement)) {
+							continue;
+						}
+						const viteDevId = node.getAttribute(VITE_DEV_ID_ATTR);
+						if (!viteDevId) {
+							continue;
+						}
+						const knownStyle = styles.get(viteDevId);
+						if (node === knownStyle) {
+							continue;
+						}
+
+						// ClientRouter appends the fetched style before Vite injects the node
+						// registered for HMR. Replace it and track Vite's node instead.
+						knownStyle?.remove();
+						styles.set(viteDevId, node);
+					}
+				}
+			});
+			observer.observe(document.head, { childList: true });
+		};
+
+		$viteStyleState = { styles, observe };
+	}
+
+	return $viteStyleState;
+}
+
 /*
  * swap attributes of the html element
  * delete all attributes from the current document
@@ -111,7 +161,7 @@ function swapRootAttributes(newDoc: Document): void {
 /*
  * make the old head look like the new one
  */
-function swapHeadElements(doc: Document): void {
+function swapHeadElements(newDoc: Document): void {
 	const { isDev } = getConfig();
 
 	for (const child of Array.from(document.head.childNodes)) {
@@ -120,7 +170,7 @@ function swapHeadElements(doc: Document): void {
 			continue;
 		}
 
-		const newChild = persistedHeadElement(child as HTMLElement, doc);
+		const newChild = persistedHeadElement(child as HTMLElement, newDoc);
 
 		// If the element exists in the document already, remove it
 		// from the new document and leave the current node alone
@@ -128,10 +178,9 @@ function swapHeadElements(doc: Document): void {
 			newChild.remove();
 		} else {
 			if (isDev && child instanceof HTMLStyleElement) {
-				// In DEV mode, keep updated Vue scoped styles for later reuse
-				const viteDevId = vueScopedStyleId(child);
+				const viteDevId = child.getAttribute(VITE_DEV_ID_ATTR);
 				if (viteDevId) {
-					knownVueScopedStyles.set(viteDevId, child);
+					getViteStyleState()?.styles.set(viteDevId, child);
 				}
 			}
 			// If the element does not exist in the new document, remove the element from the current head.
@@ -140,7 +189,7 @@ function swapHeadElements(doc: Document): void {
 	}
 
 	// Everything left in the new head is new, append it all.
-	for (const child of Array.from(doc.head.childNodes)) {
+	for (const child of Array.from(newDoc.head.childNodes)) {
 		if (child.nodeType === Node.COMMENT_NODE) {
 			document.head.appendChild(child);
 			continue;
@@ -150,25 +199,47 @@ function swapHeadElements(doc: Document): void {
 			continue;
 		}
 
-		// In DEV mode, replace known Vue scoped styles with the versions we remembered
 		if (isDev) {
-			const viteId = child.getAttribute(VITE_DEV_ID_ATTR);
-			document.head.appendChild(
-				viteId ? (knownVueScopedStyles.get(viteId) ?? child) : child,
-			);
+			const viteDevId =
+				child instanceof HTMLStyleElement
+					? child.getAttribute(VITE_DEV_ID_ATTR)
+					: null;
+			const knownStyle = viteDevId
+				? getViteStyleState()?.styles.get(viteDevId)
+				: undefined;
+
+			if (knownStyle) {
+				// Generated styles such as UnoCSS can keep the same Vite ID while their CSS changes
+				// between routes, so copy the incoming CSS into the style element Vite uses for HMR.
+				// https://github.com/withastro/astro/pull/16242
+				// Vue scoped styles are excluded because their content may be transformed in the browser.
+				if (!vueScopedStyleId(knownStyle)) {
+					knownStyle.textContent = child.textContent;
+				}
+				document.head.append(knownStyle);
+			} else {
+				if (viteDevId) {
+					getViteStyleState()?.styles.set(viteDevId, child as HTMLStyleElement);
+					getViteStyleState()?.observe();
+				}
+				document.head.append(child);
+			}
 		} else {
 			document.head.appendChild(child);
 		}
 	}
 }
 
-function swapBodyElement(newElement: Element, oldElement: Element): void {
+function swapBodyElement(newDoc: Document): void {
+	const newBody = newDoc.body;
+	const oldBody = document.body;
+	const docEl = document.documentElement;
+
 	// Lift persist elements to <html> before the body swap so they stay in the DOM
 	// throughout replaceWith(). This prevents Safari from losing WebGL context on
 	// <canvas> elements due to brief DOM detachment. Uses moveBefore() where available
 	// (Chrome 133+) for zero-detachment atomic moves.
 	const persistPairs: { old: Element; newTarget: Element }[] = [];
-	const docEl = oldElement.ownerDocument.documentElement;
 
 	// Media that are live right now. The only way for one of these nodes to end up in
 	// the new body is the persist transfer below (a matched `transition:persist`
@@ -176,9 +247,7 @@ function swapBodyElement(newElement: Element, oldElement: Element): void {
 	// persist container that has no counterpart on the new page, and the attribute
 	// placed on the media element itself). Such nodes were never inert and must keep
 	// their identity and playback state; see reifyMediaElements().
-	const liveMedia = new Set<Element>(
-		oldElement.querySelectorAll('video, audio'),
-	);
+	const liveMedia = new Set<Element>(oldBody.querySelectorAll('video, audio'));
 
 	// moveBefore() is not yet in TypeScript's DOM lib, feature-detect and wrap.
 	const moveBefore:
@@ -188,12 +257,12 @@ function swapBodyElement(newElement: Element, oldElement: Element): void {
 			? (parent, node, child) => (parent as Element).moveBefore(node, child)
 			: null;
 
-	for (const el of oldElement.querySelectorAll(`[${PERSIST_ATTR}]`)) {
+	for (const el of oldBody.querySelectorAll(`[${PERSIST_ATTR}]`)) {
 		const persistId = el.getAttribute(PERSIST_ATTR);
 		if (!persistId) {
 			continue;
 		}
-		const newEl = newElement.querySelector(`[${PERSIST_ATTR}="${persistId}"]`);
+		const newEl = newBody.querySelector(`[${PERSIST_ATTR}="${persistId}"]`);
 		if (!newEl) {
 			continue; // no matching target — leave in old body to be discarded
 		}
@@ -206,7 +275,7 @@ function swapBodyElement(newElement: Element, oldElement: Element): void {
 	}
 
 	// this will reset scroll Position
-	oldElement.replaceWith(newElement);
+	oldBody.replaceWith(newBody);
 
 	// Move persist elements into the new body at the position of their targets
 	for (const { old: el, newTarget } of persistPairs) {
@@ -219,7 +288,7 @@ function swapBodyElement(newElement: Element, oldElement: Element): void {
 	}
 
 	// This will upgrade any Declarative Shadow DOM in the new body.
-	attachShadowRoots(newElement);
+	attachShadowRoots(newBody);
 
 	// Re-create media elements so the browser initialises their media stack.
 	// DOMParser produces elements in an inert document where <video>/<audio>
@@ -229,7 +298,7 @@ function swapBodyElement(newElement: Element, oldElement: Element): void {
 	// the browser to set up playback.
 	// Media carried over from the previous page were never inert: they are the live
 	// nodes of the old body, and re-creating them would destroy their playback state.
-	reifyMediaElements(newElement, liveMedia);
+	reifyMediaElements(newBody, liveMedia);
 }
 
 /**
@@ -412,11 +481,19 @@ function persistedHeadElement(
 	return null;
 }
 
+export const swapFunctions = {
+	deselectScripts,
+	swapRootAttributes,
+	swapHeadElements,
+	swapBodyElement,
+	saveFocus,
+};
+
 export function swap(doc: Document): void {
 	deselectScripts(doc);
 	swapRootAttributes(doc);
 	swapHeadElements(doc);
 	const restoreFocusFunction = saveFocus();
-	swapBodyElement(doc.body, document.body);
+	swapBodyElement(doc);
 	restoreFocusFunction();
 }

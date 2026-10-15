@@ -258,7 +258,7 @@ function prefetch($url: string, opts?: PrefetchOptions): void {
 	else {
 		debug('prefetch', `Prefetching ${url} with fetch`);
 
-		fetchCallback(url, { priority: 'low', prefetch: true });
+		fetchCallback(url, { priority: 'low', trigger: 'prefetch' });
 	}
 }
 
