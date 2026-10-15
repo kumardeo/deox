@@ -5,9 +5,8 @@ export default defineConfig({
 	format: 'esm',
 	platform: 'neutral',
 	target: 'es2018',
-	sourcemap: false,
-	unbundle: false,
-	minify: true,
+	sourcemap: true,
+	unbundle: true,
 	deps: {
 		neverBundle: true,
 	},

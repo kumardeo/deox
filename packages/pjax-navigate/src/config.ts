@@ -16,11 +16,11 @@ export function setConfig(options: NavigatorOptions = {}): void {
 		isDev: dev === true,
 		collectClientStyles: styles,
 		prefetchEnabled: prefetch === true,
-		fetchCallback: async (url, { prefetch = false, ...init } = {}) => {
+		fetchCallback: async (url, { trigger = null, ...init } = {}) => {
 			if (typeof fetchCallback === 'function') {
 				return fetchCallback(url instanceof URL ? url : new URL(url), {
 					...init,
-					prefetch,
+					trigger,
 				});
 			}
 			return fetch(url, init);
@@ -30,7 +30,9 @@ export function setConfig(options: NavigatorOptions = {}): void {
 
 export function getConfig(): NavigatorConfig {
 	if (!config) {
-		throw new Error();
+		throw new Error(
+			'[pjax-navigate] The navigator config was accessed before initialization. Make sure initializeNavigator() has been called before using any navigator API.',
+		);
 	}
 	return config;
 }

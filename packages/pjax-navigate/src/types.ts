@@ -53,7 +53,7 @@ export interface PrefetchOptions {
 }
 
 export interface FetchOptions extends RequestInit {
-	prefetch: boolean;
+	trigger: 'prefetch' | null;
 }
 
 export interface NavigatorOptions {

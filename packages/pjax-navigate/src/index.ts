@@ -17,6 +17,8 @@ export {
 
 export { initializeNavigator, navigate } from './navigator';
 
+export { swapFunctions } from './swap';
+
 export type {
 	Direction,
 	Fallback,
