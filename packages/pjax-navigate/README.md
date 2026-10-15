@@ -64,36 +64,38 @@ initializeNavigator({
   // In dev mode, collect client-only styles of the next page before swapping.
   styles: true,
   // Custom fetch used for navigations and prefetching.
-  fetch: (url, { prefetch, ...init }) => fetch(url, init),
+  // `trigger` is `"prefetch"` for prefetch requests, otherwise `null`.
+  fetch: (url, { trigger, ...init }) => fetch(url, init),
 });
 ```
 
 ### `navigate(href, options?)`
 
-| Option          | Type                              | Description                                                  |
-| --------------- | --------------------------------- | ------------------------------------------------------------ |
+| Option          | Type                                | Description                                                 |
+| --------------- | ----------------------------------- | ----------------------------------------------------------- |
 | `history`       | `"auto"` \| `"push"` \| `"replace"` | How to update the history. Defaults to pushing a new entry. |
-| `state`         | `any`                             | Extra state stored in the history entry.                     |
-| `info`          | `any`                             | Arbitrary data passed to the navigation events.              |
-| `formData`      | `FormData`                        | Sends a `POST` request with this body.                       |
-| `sourceElement` | `Element`                         | The element that triggered the navigation.                   |
+| `state`         | `any`                               | Extra state stored in the history entry.                    |
+| `info`          | `any`                               | Arbitrary data passed to the navigation events.             |
+| `formData`      | `FormData`                          | Sends a `POST` request with this body.                      |
+| `sourceElement` | `Element`                           | The element that triggered the navigation.                  |
 
 ## Attributes
 
-| Attribute                   | On                | Description                                                                                       |
-| --------------------------- | ----------------- | ------------------------------------------------------------------------------------------------- |
-| `data-pjax-persist="<id>"`  | any element       | Keeps the element (and its state) across navigations when the next page has a matching id.       |
-| `data-pjax-reload`          | `<a>`, `<form>`   | Skips soft navigation and lets the browser do a full page load.                                   |
-| `data-pjax-history="replace"` | `<a>`           | Replaces the current history entry instead of pushing a new one.                                  |
-| `data-pjax-rerun`           | `<script>`        | Re-executes the script on every navigation, even if it already ran.                               |
-| `data-pjax-prefetch="<strategy>"` | `<a>`       | Prefetches the link using `tap`, `hover`, `viewport` or `load`. An empty value uses `hover`; `"false"` opts out. |
+| Attribute                         | On                | Description                                                                                                      |
+| --------------------------------- | ----------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `data-pjax-persist="<id>"`        | any element       | Keeps the element (and its state) across navigations when the next page has a matching id.                       |
+| `data-pjax-persist`               | `<head>` elements | Always keeps the element in `<head>`, even if the next page doesn't contain it. Ignored on body elements.        |
+| `data-pjax-reload`                | links, `<form>`   | Skips soft navigation and lets the browser do a full page load.                                                  |
+| `data-pjax-history="replace"`     | links             | Replaces the current history entry instead of pushing a new one.                                                 |
+| `data-pjax-rerun`                 | `<script>`        | Re-executes the script on every navigation, even if it already ran.                                              |
+| `data-pjax-prefetch="<strategy>"` | `<a>`             | Prefetches the link using `tap`, `hover`, `viewport` or `load`. An empty value uses `hover`; `"false"` opts out. |
 
 The navigator also sets these on `<html>` during a navigation, which you can use in your CSS:
 
-| Attribute              | Values                 | Description                                         |
-| ---------------------- | ---------------------- | --------------------------------------------------- |
-| `data-pjax-transition` | `forward` \| `back`    | Direction of the current navigation.                |
-| `data-pjax-fallback`   | `old` \| `new`         | Phase of the fallback animation (non-supporting browsers). |
+| Attribute              | Values              | Description                                                |
+| ---------------------- | ------------------- | ---------------------------------------------------------- |
+| `data-pjax-transition` | `forward` \| `back` | Direction of the current navigation.                       |
+| `data-pjax-fallback`   | `old` \| `new`      | Phase of the fallback animation (non-supporting browsers). |
 
 ## Fallback
 
@@ -120,13 +122,13 @@ html[data-pjax-fallback="new"] main {
 
 All events are dispatched on `document` and are fully typed through `DocumentEventMap`.
 
-| Event                     | Event type                         | When                                                         |
-| ------------------------- | ---------------------------------- | ------------------------------------------------------------ |
-| `pjax:before-preparation` | `TransitionBeforePreparationEvent` | Before the next page is fetched. Cancelable.                 |
-| `pjax:after-preparation`  | `Event`                            | After the next page is fetched and parsed.                   |
-| `pjax:before-swap`        | `TransitionBeforeSwapEvent`        | Before the document is swapped, inside the view transition.  |
-| `pjax:after-swap`         | `Event`                            | Right after the swap, before new scripts run.                |
-| `pjax:page-load`          | `Event`                            | After scripts ran, and on the initial page load.             |
+| Event                     | Event type                         | When                                                        |
+| ------------------------- | ---------------------------------- | ----------------------------------------------------------- |
+| `pjax:before-preparation` | `TransitionBeforePreparationEvent` | Before the next page is fetched. Cancelable.                |
+| `pjax:after-preparation`  | `Event`                            | After the next page is fetched and parsed.                  |
+| `pjax:before-swap`        | `TransitionBeforeSwapEvent`        | Before the document is swapped, inside the view transition. |
+| `pjax:after-swap`         | `Event`                            | Right after the swap, before new scripts run.               |
+| `pjax:page-load`          | `Event`                            | After scripts ran, and on the initial page load.            |
 
 Override the loader, e.g. to show a progress bar or change the destination:
 
@@ -162,15 +164,20 @@ Calling `event.preventDefault()` on `pjax:before-preparation` falls back to a fu
 
 ## Prefetching
 
-With `prefetch: true`, links marked with `data-pjax-prefetch` are prefetched on the chosen strategy:
+With `prefetch: true`, all `<a>` links are prefetched on `hover`. Use `data-pjax-prefetch` to choose another strategy or `data-pjax-prefetch="false"` to opt out:
 
 ```html
-<a href="/blog" data-pjax-prefetch>Blog</a> <!-- hover -->
+<!-- hover -->
+<a href="/blog" data-pjax-prefetch>Blog</a>
+
+<!-- viewport -->
 <a href="/docs" data-pjax-prefetch="viewport">Docs</a>
+
+<!-- load -->
 <a href="/pricing" data-pjax-prefetch="load">Pricing</a>
 ```
 
-Prefetching is skipped when offline, on data saver or 2G connections (except for `tap`), for cross-origin URLs and for the current page.
+Prefetching is skipped when offline, for cross-origin URLs and for the current page. On data saver or 2G connections, links are only prefetched on `tap`.
 
 ## Credits
 
