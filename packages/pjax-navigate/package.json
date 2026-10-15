@@ -1,6 +1,6 @@
 {
   "name": "pjax-navigate",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Framework-agnostic client-side navigation for multi-page apps using the View Transitions API, inspired by Astro's ClientRouter",
   "keywords": [
     "pjax",

@@ -1,5 +1,11 @@
 # pjax-navigate
 
+## 0.0.4
+
+### Patch Changes
+
+- [#57](https://github.com/kumardeo/deox/pull/57) [`7c04981`](https://github.com/kumardeo/deox/commit/7c04981b430ffa54eee68836a1b379707ba6a4e7) Thanks [@kumardeo](https://github.com/kumardeo)! - feat: always keep head elements with empty `data-pjax-persist` attribute
+
 ## 0.0.3
 
 ### Patch Changes
